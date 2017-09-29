@@ -22,7 +22,7 @@ class Skipgram(nn.Module):
     """
     def __init__(self, hidden_layer_size, vocab_size, huffman_tree=None):
         super(Skipgram, self).__init__()
-        self.embeddings = nn.Embedding(vocab_size, hidden_layer_size)
+        self.embeddings = nn.Embedding(vocab_size, hidden_layer_size, sparse=True)
 
         if huffman_tree is None:
             self.softmax_layer = nn.Linear(hidden_layer_size, vocab_size)
