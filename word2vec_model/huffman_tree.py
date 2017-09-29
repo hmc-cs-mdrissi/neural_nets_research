@@ -103,7 +103,7 @@ class HuffmanTree(object):
 
     @staticmethod
     def __get_modules_helper(root):
-        if root.isLeaf():
+        if root.is_leaf():
             return [root.linear]
 
         return [root.linear] + HuffmanTree.__get_modules_helper(root.left) + \
@@ -116,7 +116,7 @@ class HuffmanTree(object):
     @staticmethod
     def __is_data_in_subtree(root, data):
         """Returns true if word is in subtree"""
-        if root.isLeaf():
+        if root.is_leaf():
             return root.data == data
 
         return HuffmanTree.__is_data_in_subtree(root.left, data) or \
