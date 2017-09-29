@@ -1,8 +1,8 @@
-# Huffman Tree
-#
-# Neural Networks Research - September, 2017
-# Implemention by Pedro Sandoval
-#
+"""
+Huffman Tree
+Neural Networks Research - September, 2017
+Implemention by Pedro Sandoval
+"""
 import torch.nn as nn
 
 
