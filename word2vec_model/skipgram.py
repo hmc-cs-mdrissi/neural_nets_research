@@ -31,7 +31,7 @@ class Skipgram(nn.Module):
 
     def forward(self, input, id_list=None):
         if id_list is None:
-            word_vector = self.embeddings(input).squeeze()
+            word_vector = self.embeddings(input).squeeze(1)
             probabilities = self.softmax_layer(word_vector)
         else:
             word_vector = self.embeddings(input).squeeze()
