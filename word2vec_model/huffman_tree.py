@@ -4,7 +4,7 @@ Neural Networks Research - September, 2017
 Implemention by Pedro Sandoval
 """
 import torch.nn as nn
-
+from queue import PriorityQueue
 
 class Node(object):
     """
@@ -29,6 +29,10 @@ class Node(object):
     def is_leaf(self):
         """Returns true if the node is a leaf."""
         return self.left is None and self.right is  None
+    
+    def __lt__(self, other):
+        """Implementation of < operator for queue sorting purposes"""
+        return self.frequency < other.frequency
 
 class HuffmanTree(object):
     """
@@ -52,20 +56,27 @@ class HuffmanTree(object):
         # Convert tuple list to a list of nodes with empty left/right subtrees
         node_list = [Node(None, None, x[0], x[1], hidden_size) for x in tuple_list]
 
+        # Enqueue all nodes with priority
+        priority_queue = PriorityQueue()
+        for node in node_list:
+            priority_queue.put((node.frequency, node))
+
         # Find and discard min freq. nodes to make new node
-        while len(node_list) != 1:
-            least_node1, index_to_pop = HuffmanTree.__find_least_frequency(node_list)
-            node_list.pop(index_to_pop)
+        while priority_queue.qsize() != 1:
+            _, least_node1 = priority_queue.get()
+            _, least_node2 = priority_queue.get()
 
-            least_node2, index_to_pop = HuffmanTree.__find_least_frequency(node_list)
-            node_list.pop(index_to_pop)
-
-            node_list.append(self.make_branch(least_node1, least_node2))
+            new_node = self.make_branch(least_node1, least_node2)
+            priority_queue.put((new_node.frequency, new_node))
 
         # Save root node
-        self.root = node_list[0]
+        _, self.root = priority_queue.get()
 
-
+    def make_branch(self, left_node, right_node):
+        """Create a new node with children"""
+        new_frequency = left_node.frequency + right_node.frequency
+        return Node(left_node, right_node, None, new_frequency, self.hidden_size)
+    
     def get_path(self, data):
         """Get the prefix code (path) for data in the tree"""
         return HuffmanTree.__get_path_helper(self.root, data)
@@ -139,7 +150,4 @@ class HuffmanTree(object):
 
         return node_list[minimum_index], minimum_index
 
-    def make_branch(self, left_node, right_node):
-        """Create a new node with children"""
-        new_frequency = left_node.frequency + right_node.frequency
-        return Node(left_node, right_node, None, new_frequency, self.hidden_size)
+
