@@ -17,9 +17,10 @@ class Node(object):
         frequency: the frequency at which 'data' occurs in the sequence
         hidden_size: The dimension of the word representation.
     """
-    def __init__(self, left, right, data, frequency, hidden_size):
+    def __init__(self, left, right, parent, data, frequency, hidden_size):
         self.left = left
         self.right = right
+        self.parent = parent
         self.data = data
         self.frequency = frequency
 
@@ -45,6 +46,7 @@ class HuffmanTree(object):
 
     Attributes:
         root: The root node of the tree
+        data_to_path: A dictionary containing data to path mappings
     """
     def __init__(self, tuple_list, hidden_size):
         """Initialize a HuffmanTree with a list of tuples
@@ -54,7 +56,7 @@ class HuffmanTree(object):
         self.hidden_size = hidden_size
 
         # Convert tuple list to a list of nodes with empty left/right subtrees
-        node_list = [Node(None, None, x[0], x[1], hidden_size) for x in tuple_list]
+        node_list = [Node(None, None, None, x[0], x[1], hidden_size) for x in tuple_list]
 
         # Enqueue all nodes with priority
         priority_queue = PriorityQueue()
@@ -71,27 +73,50 @@ class HuffmanTree(object):
 
         # Save root node
         _, self.root = priority_queue.get()
-
+        
+        # Load dictionary with all paths to data
+        self.data_to_path = dict()
+        for leaf in self.get_leaf_nodes():
+            self.data_to_path[leaf.data] = HuffmanTree.__get_path_for_node(leaf)
+        
     def make_branch(self, left_node, right_node):
         """Create a new node with children"""
         new_frequency = left_node.frequency + right_node.frequency
-        return Node(left_node, right_node, None, new_frequency, self.hidden_size)
+        new_node = Node(left_node, right_node, None, None, new_frequency, self.hidden_size)
+        left_node.parent = new_node; right_node.parent = new_node;
+        return new_node
+    
+    def get_leaf_nodes(self):
+        """Get all the leaf nodes containing data"""
+        return HuffmanTree.__get_leaf_nodes_helper(self.root)
+    
+    @staticmethod
+    def __get_leaf_nodes_helper(root):
+        if root.is_leaf():
+            return [root]
+
+        return HuffmanTree.__get_leaf_nodes_helper(root.left) + \
+               HuffmanTree.__get_leaf_nodes_helper(root.right)
     
     def get_path(self, data):
         """Get the prefix code (path) for data in the tree"""
-        return HuffmanTree.__get_path_helper(self.root, data)
+        return self.data_to_path[data]
 
     @staticmethod
-    def __get_path_helper(root, data):
-        """See getPath(self, data)"""
-        if root.data == data:
-            return ""
+    def __get_path_for_node(node):
+        """Travel up tree from leaf node to compute path"""
+        path = ""
+        while node.parent != None:
+            current_parent = node.parent
+            if current_parent.left == node:
+                path = "0" + path
+            else:
+                path = "1" + path
 
-        if HuffmanTree.__is_data_in_subtree(root.left, data):
-            return "0" + HuffmanTree.__get_path_helper(root.left, data)
+            node = current_parent
 
-        return "1" + HuffmanTree.__get_path_helper(root.right, data)
-
+        return path
+    
     def get_modules_on_path(self, data):
         """Get the linear modules along a path for data in tree"""
         path = self.get_path(data)
@@ -119,35 +144,3 @@ class HuffmanTree(object):
 
         return [root.linear] + HuffmanTree.__get_modules_helper(root.left) + \
                                HuffmanTree.__get_modules_helper(root.right)
-
-    def is_data_in_tree(self, data):
-        """Return true if word is in tree"""
-        return HuffmanTree.__is_data_in_subtree(self.root, data)
-
-    @staticmethod
-    def __is_data_in_subtree(root, data):
-        """Returns true if word is in subtree"""
-        if root.is_leaf():
-            return root.data == data
-
-        return HuffmanTree.__is_data_in_subtree(root.left, data) or \
-               HuffmanTree.__is_data_in_subtree(root.right, data)
-
-    @staticmethod
-    def __find_least_frequency(node_list):
-        """Get the node with the minimum frequency from a list of nodes"""
-
-        # Initially, assume the first tuple has the minimum amount of occurrences
-        minimum_frequency = node_list[0].frequency
-        minimum_index = 0
-
-        for index, node in enumerate(node_list):
-            current_frequency = node.frequency
-
-            if current_frequency < minimum_frequency:
-                minimum_frequency = current_frequency
-                minimum_index = index
-
-        return node_list[minimum_index], minimum_index
-
-
