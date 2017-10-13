@@ -22,20 +22,22 @@ class Skipgram(nn.Module):
     """
     def __init__(self, hidden_layer_size, vocab_size, huffman_tree=None):
         super(Skipgram, self).__init__()
-        self.embeddings = nn.Embedding(vocab_size, hidden_layer_size)
+        self.embeddings = nn.Embedding(vocab_size, hidden_layer_size, sparse=True)
 
         if huffman_tree is None:
             self.softmax_layer = nn.Linear(hidden_layer_size, vocab_size)
+            self.use_hierarchical_softmax = False
         else:
             self.softmax_layer = HierarchicalSoftmax(huffman_tree)
+            self.use_hierarchical_softmax = True
 
     def forward(self, input, id_list=None):
-        if id_list is None:
-            word_vector = self.embeddings(input).squeeze()
-            probabilities = self.softmax_layer(word_vector)
-        else:
+        if self.use_hierarchical_softmax:
             word_vector = self.embeddings(input).squeeze()
             probabilities = self.softmax_layer(word_vector, id_list.squeeze())
+        else:
+            word_vector = self.embeddings(input).squeeze(1)
+            probabilities = self.softmax_layer(word_vector)
 
         return probabilities
 
@@ -59,7 +61,7 @@ class Skipgram(nn.Module):
             should have been called before this. The reason to use this instead of an optimizer is
             to avoid iterating over all parameters.
         """
-        if not isinstance(self.softmax_layer, HierarchicalSoftmax):
+        if not self.use_hierarchical_softmax:
             raise ValueError('You can only call backprop when using hierarchical softmax.')
 
         self.softmax_layer.backprop(id_list, lr)
