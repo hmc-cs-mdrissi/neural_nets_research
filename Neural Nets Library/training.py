@@ -1,7 +1,5 @@
-"""
-    The purpose of this file is to contain a collection of useful
-    helper functions for training and testing supervised models.
-"""
+#   The purpose of this file is to contain a collection of useful
+#   helper functions for training and testing supervised models.
 
 import copy
 import time
@@ -11,6 +9,11 @@ from torch.autograd import Variable
 import torch.utils.data as data
 
 def split_dataset(dset):
+    """
+    Given a dataset, samples elements randomly from a given list of indices, without replacement,
+    to create a training, test, and validation sets.
+    These sets are then used to return training, testing, and validation DataLoaders.
+    """
     sampler_dset_train = data.sampler.SubsetRandomSampler(list(range(int(0.7*len(dset)))))
     sampler_dset_test = data.sampler.SubsetRandomSampler(list(range(int(0.7*len(dset)),
                                                                     int(0.85*len(dset)))))
@@ -31,6 +34,10 @@ def split_dataset(dset):
 
 def train_model_with_validation(model, train_loader, validation_loader, criterion,
                                 optimizer, lr_scheduler, num_epochs=20):
+    """
+    Trains a model while printing updates on loss and accuracy. Once training is complete,
+    it is tested on the validation data set.
+    """
     since = time.time()
 
     best_model = model
@@ -103,7 +110,9 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
     return best_model
 
 def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
-    """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
+    """
+    Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs.
+    """
     lr = init_lr * (0.1**(epoch // lr_decay_epoch))
 
     if epoch % lr_decay_epoch == 0:
@@ -116,6 +125,9 @@ def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
 
 def train_model(model, dset_loader, criterion, optimizer, lr_scheduler = exp_lr_scheduler, num_epochs=20,
                 print_every=200, plot_every=100):
+    """
+    Trains a model while printing updates on loss and accuracy.
+    """
     since = time.time()
 
     best_model = model
@@ -188,6 +200,10 @@ def train_model(model, dset_loader, criterion, optimizer, lr_scheduler = exp_lr_
     return best_model, all_losses
 
 def test_model(model, dset_loader):
+    """
+    Tests a model on a given data set and returns the accuracy of the model
+    on the set.
+    """
     model.train(False)
 
     running_corrects = 0
