@@ -4,7 +4,7 @@ Neural Networks Research - September, 2017
 Implemention by Pedro Sandoval
 """
 import torch.nn as nn
-
+from queue import PriorityQueue
 
 class Node(object):
     """
@@ -17,9 +17,10 @@ class Node(object):
         frequency: the frequency at which 'data' occurs in the sequence
         hidden_size: The dimension of the word representation.
     """
-    def __init__(self, left, right, data, frequency, hidden_size):
+    def __init__(self, left, right, parent, data, frequency, hidden_size):
         self.left = left
         self.right = right
+        self.parent = parent
         self.data = data
         self.frequency = frequency
 
@@ -29,6 +30,10 @@ class Node(object):
     def is_leaf(self):
         """Returns true if the node is a leaf."""
         return self.left is None and self.right is  None
+    
+    def __lt__(self, other):
+        """Implementation of < operator for queue sorting purposes"""
+        return self.frequency < other.frequency
 
 class HuffmanTree(object):
     """
@@ -41,6 +46,7 @@ class HuffmanTree(object):
 
     Attributes:
         root: The root node of the tree
+        data_to_path: A dictionary containing data to path mappings
     """
     def __init__(self, tuple_list, hidden_size):
         """Initialize a HuffmanTree with a list of tuples
@@ -50,37 +56,67 @@ class HuffmanTree(object):
         self.hidden_size = hidden_size
 
         # Convert tuple list to a list of nodes with empty left/right subtrees
-        node_list = [Node(None, None, x[0], x[1], hidden_size) for x in tuple_list]
+        node_list = [Node(None, None, None, x[0], x[1], hidden_size) for x in tuple_list]
+
+        # Enqueue all nodes with priority
+        priority_queue = PriorityQueue()
+        for node in node_list:
+            priority_queue.put((node.frequency, node))
 
         # Find and discard min freq. nodes to make new node
-        while len(node_list) != 1:
-            least_node1, index_to_pop = HuffmanTree.__find_least_frequency(node_list)
-            node_list.pop(index_to_pop)
+        while priority_queue.qsize() != 1:
+            _, least_node1 = priority_queue.get()
+            _, least_node2 = priority_queue.get()
 
-            least_node2, index_to_pop = HuffmanTree.__find_least_frequency(node_list)
-            node_list.pop(index_to_pop)
-
-            node_list.append(self.make_branch(least_node1, least_node2))
+            new_node = self.make_branch(least_node1, least_node2)
+            priority_queue.put((new_node.frequency, new_node))
 
         # Save root node
-        self.root = node_list[0]
+        _, self.root = priority_queue.get()
+        
+        # Load dictionary with all paths to data
+        self.data_to_path = dict()
+        for leaf in self.get_leaf_nodes():
+            self.data_to_path[leaf.data] = HuffmanTree.__get_path_for_node(leaf)
+        
+    def make_branch(self, left_node, right_node):
+        """Create a new node with children"""
+        new_frequency = left_node.frequency + right_node.frequency
+        new_node = Node(left_node, right_node, None, None, new_frequency, self.hidden_size)
+        left_node.parent = new_node; right_node.parent = new_node;
+        return new_node
+    
+    def get_leaf_nodes(self):
+        """Get all the leaf nodes containing data"""
+        return HuffmanTree.__get_leaf_nodes_helper(self.root)
+    
+    @staticmethod
+    def __get_leaf_nodes_helper(root):
+        if root.is_leaf():
+            return [root]
 
-
+        return HuffmanTree.__get_leaf_nodes_helper(root.left) + \
+               HuffmanTree.__get_leaf_nodes_helper(root.right)
+    
     def get_path(self, data):
         """Get the prefix code (path) for data in the tree"""
-        return HuffmanTree.__get_path_helper(self.root, data)
+        return self.data_to_path[data]
 
     @staticmethod
-    def __get_path_helper(root, data):
-        """See getPath(self, data)"""
-        if root.data == data:
-            return ""
+    def __get_path_for_node(node):
+        """Travel up tree from leaf node to compute path"""
+        path = ""
+        while node.parent != None:
+            current_parent = node.parent
+            if current_parent.left == node:
+                path = "0" + path
+            else:
+                path = "1" + path
 
-        if HuffmanTree.__is_data_in_subtree(root.left, data):
-            return "0" + HuffmanTree.__get_path_helper(root.left, data)
+            node = current_parent
 
-        return "1" + HuffmanTree.__get_path_helper(root.right, data)
-
+        return path
+    
     def get_modules_on_path(self, data):
         """Get the linear modules along a path for data in tree"""
         path = self.get_path(data)
@@ -103,43 +139,8 @@ class HuffmanTree(object):
 
     @staticmethod
     def __get_modules_helper(root):
-        if root.isLeaf():
+        if root.is_leaf():
             return [root.linear]
 
         return [root.linear] + HuffmanTree.__get_modules_helper(root.left) + \
                                HuffmanTree.__get_modules_helper(root.right)
-
-    def is_data_in_tree(self, data):
-        """Return true if word is in tree"""
-        return HuffmanTree.__is_data_in_subtree(self.root, data)
-
-    @staticmethod
-    def __is_data_in_subtree(root, data):
-        """Returns true if word is in subtree"""
-        if root.isLeaf():
-            return root.data == data
-
-        return HuffmanTree.__is_data_in_subtree(root.left, data) or \
-               HuffmanTree.__is_data_in_subtree(root.right, data)
-
-    @staticmethod
-    def __find_least_frequency(node_list):
-        """Get the node with the minimum frequency from a list of nodes"""
-
-        # Initially, assume the first tuple has the minimum amount of occurrences
-        minimum_frequency = node_list[0].frequency
-        minimum_index = 0
-
-        for index, node in enumerate(node_list):
-            current_frequency = node.frequency
-
-            if current_frequency < minimum_frequency:
-                minimum_frequency = current_frequency
-                minimum_index = index
-
-        return node_list[minimum_index], minimum_index
-
-    def make_branch(self, left_node, right_node):
-        """Create a new node with children"""
-        new_frequency = left_node.frequency + right_node.frequency
-        return Node(left_node, right_node, None, new_frequency, self.hidden_size)

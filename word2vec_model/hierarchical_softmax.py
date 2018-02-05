@@ -1,60 +1,56 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
-class HierarchicalSoftmaxTree(nn.Module):
+class HierarchicalSoftmax(nn.Module):
     def __init__(self, huffman_tree):
-        super(HierarchicalSoftmaxTree, self).__init__()
+        super(HierarchicalSoftmax, self).__init__()
         self.huffman_tree = huffman_tree
-        self.modules = nn.ModuleList()
+        self.module_list = nn.ModuleList()
         self.sigmoid = nn.Sigmoid()
         self.root = huffman_tree.root
 
-        for linear_module in huffman_tree.getModules():
-            self.modules.append(linear_module)
+        for linear_module in huffman_tree.get_modules():
+            self.module_list.append(linear_module)
 
     def forward_on_path(self, input_word_vec, desired_output):
-        modules_on_path = self.huffman_tree.getModulesOnPath(desired_output)
-        probability = Variable(torch.ones(1), requires_grad=True)
+        modules_on_path = self.huffman_tree.get_modules_on_path(desired_output.data[0])
+        probability = 1.0
 
         for module in modules_on_path:
             branch_probability = self.sigmoid(module(input_word_vec))
-            probability *= branch_probability
+            probability = probability * branch_probability
 
         return probability
 
     def forward(self, input_word_vec, id_list):
         probability_list = []
 
-        for batch in id_list:
-            probability_list.append([self.forward_on_path(input_word_vec, desired_output)
-                                     for desired_output in batch])
+        for desired_output in id_list:
+            probability_list.append(self.forward_on_path(input_word_vec, desired_output))
 
-        return torch.FloatTensor(probability_list)
+        return torch.cat(probability_list)
 
-    def backprop_on_path(self, desired_output, learning_rate):
-        modules_on_path = self.huffman_tree.getModulesOnPath(desired_output)
+    def backprop_on_path(self, desired_output, lr):
+        modules_on_path = self.huffman_tree.get_modules_on_path(desired_output.data[0])
 
         for module in modules_on_path:
             for p in module.parameters():
-                p -= learning_rate * p.grad
+                p.data -= lr * p.grad.data
                 # zero gradients after we make the calculation
-                p.zero_grad()
+                p.grad.data.zero_()
 
 
-    def backprop(self, id_list, learning_rate):
-        for batch in id_list:
-            for desired_output in batch:
-                self.backProp_on_path(desired_output, learning_rate)
+    def backprop(self, id_list, lr):
+        for desired_output in id_list:
+            self.backprop_on_path(desired_output, lr)
 
-    @staticmethod
-    def negative_log_likelihood(probability_list):
-        sum_var = Variable(torch.zeros(1), requires_grad=True)
-        count = 0.0
 
-        for batch in probability_list:
-            for probability in batch:
-                sum_var += -1 * torch.log(probability)
-                count += 1
+def nll_cost(probabilities):
+    return -1 * torch.sum(torch.log(probabilities))
 
-        return sum_var / count
+def lr_scheduler(epoch, init_lr=0.001, lr_decay_epoch=7):
+    """
+    Returns the current learning rate given the epoch. This decays the learning rate
+    by a factor of 0.1 every lr_decay_epoch epochs.
+    """
+    return init_lr * (0.1**(epoch // lr_decay_epoch))
