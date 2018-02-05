@@ -6,14 +6,23 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 def category_from_output(output):
+    """
+    Get the index of the maximum value in output.data tensor
+    """
     _, category_i = output.data.max(1) # Tensor out of Variable with .data
     return category_i
 
 def category_and_prob(output):
+    """
+    Get the maximum and index of maximum in the output.data tensor
+    """
     top_value, category_i = output.data.max(1) # Tensor out of Variable with .data
     return top_value, category_i
 
 def confusion_matrix(model, data_loader, all_categories):
+    """
+    Create a confusion matrix using a model, data loader, and a categories list
+    """
     n_categories = len(all_categories)
     # Keep track of correct guesses in a confusion matrix
     confusion = torch.zeros(n_categories, n_categories)
@@ -49,6 +58,10 @@ def confusion_matrix(model, data_loader, all_categories):
     plt.show()
 
 def missed_confidences(model, data_loader, logsoftmax_used = False):
+    """
+    Plots a histogram of a model's missed guesses.
+    Probability assigned to model's guess when wrong.
+    """
     missed_confidence_list = []
 
     for inputs, labels in data_loader:
@@ -70,6 +83,10 @@ def missed_confidences(model, data_loader, logsoftmax_used = False):
     plt.show()
 
 def confidences_for_true_when_wrong(model, data_loader, logsoftmax_used = False):
+    """
+    Plots a histogram of probabilities.
+    Probability assigned to correct answer when model's guess is wrong.
+    """
     correct_confidence_list = []
 
     for inputs, labels in data_loader:
@@ -91,6 +108,9 @@ def confidences_for_true_when_wrong(model, data_loader, logsoftmax_used = False)
     plt.show()
 
 def compare_models(model1, model2, dset_loader):
+    """
+    Compares two models on data set provided by loader
+    """
     running_matches = 0
 
     for inputs, _ in dset_loader:
