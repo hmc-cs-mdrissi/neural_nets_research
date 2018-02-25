@@ -1,0 +1,16 @@
+let ycbv = lambda f. (lambda x y. f (x x) y) (lambda x y. f (x x) y) in
+let true = lambda a b. a (lambda x. x) in
+let false = lambda a b. b (lambda x. x) in
+let zero = lambda s z. z in
+let one = lambda s z. s z in
+let isZero = lambda m. m (lambda x. false) true in
+let succ = lambda n. lambda s z. s (n s z) in
+let five = succ (succ (succ (succ one))) in
+let plus = lambda m n. m succ n in
+let times = lambda m n. m (plus n) zero in
+let pair = lambda a b. lambda c. c a b in
+let fst = lambda p. p (lambda f t. f) in
+let snd = lambda p. p (lambda f t. t) in
+let pred = lambda n. snd (n (lambda p. pair (succ (fst p)) (fst p)) (pair zero zero)) in
+let fac = ycbv (lambda facF. lambda n. (isZero n) (lambda x. one) (lambda x. (times n (facF (pred n))))) in
+fac five
