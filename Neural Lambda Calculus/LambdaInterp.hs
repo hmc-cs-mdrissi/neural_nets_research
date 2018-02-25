@@ -5,100 +5,66 @@ import Data.Function
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-free_variables :: LambdaExpressionS -> Set String
-free_variables (VariableS x) = Set.singleton x
-free_variables (ApplicationS x y) = on Set.union free_variables x y
-free_variables (AbstractionS x y) = Set.delete x $ free_variables y
+import Debug.Trace
 
-bound_variables :: LambdaExpressionS -> Set String
-bound_variables (VariableS x) = Set.empty
-bound_variables (ApplicationS x y) = on Set.union bound_variables x y
-bound_variables (AbstractionS x y) = Set.insert x $ bound_variables y
+data EvaluationError = UnboundVariable String | DivideByZero | NotImplemented
+
+instance Show EvaluationError where
+    show (UnboundVariable var) = "An unbound variable, " ++ var ++ " was found."
+    show DivideByZero = "A division by zero."
+    show NotImplemented = "This feature has not yet been implemented."
+
+free_variables :: LambdaExpression -> Set String
+free_variables (Variable x) = Set.singleton x
+free_variables (Application x y) = on Set.union free_variables x y
+free_variables (Abstraction x y) = Set.delete x $ free_variables y
+free_variables (Cons x y) = on Set.union free_variables x y
+free_variables (Foldr x y z) = (on Set.union free_variables x y) `Set.union` free_variables z
+free_variables (NatBinOp _ x y) = on Set.union free_variables x y
+free_variables _ = Set.empty
+
+bound_variables :: LambdaExpression -> Set String
+bound_variables (Variable x) = Set.empty
+bound_variables (Application x y) = on Set.union bound_variables x y
+bound_variables (Abstraction x y) = Set.insert x $ bound_variables y
+bound_variables (Cons x y) = on Set.union bound_variables x y
+bound_variables (Foldr x y z) = (on Set.union bound_variables x y) `Set.union` bound_variables z
+bound_variables (NatBinOp _ x y) = on Set.union bound_variables x y
+bound_variables _ = Set.empty
 
 fresh_variable :: Set String -> String
 fresh_variable bound = fresh_variable_aux bound 1
     where fresh_variable_aux bound n = if (name n) `Set.notMember` bound then name n else fresh_variable_aux bound (n+1)
           name n = "a" ++ show n
 
+check_nat_list :: LambdaExpression -> Bool
+check_nat_list Nil = True
+check_nat_list (Cons (Natural _) l) = check_nat_list l
+check_nat_list _ = False
 
-evalCBV :: LambdaExpressionS -> Either String LambdaExpressionS
-evalCBV (ApplicationS (AbstractionS var expr) val@(AbstractionS _ _)) = evalCBV (substitute expr var val)
-evalCBV (ApplicationS v@(AbstractionS _ _) e) = ApplicationS v <$> evalCBV e >>= evalCBV
-evalCBV (ApplicationS e1 e2) = ApplicationS <$> evalCBV e1 <*> pure e2 >>= evalCBV
-evalCBV v@(AbstractionS _ _) = Right v
-evalCBV (VariableS var) = Left $ "Error: Unbound variable " ++ var ++ "."
+check_value :: LambdaExpression -> Bool
+check_value (Abstraction _ _) = True
+check_value (Natural _) = True
+check_value x = check_nat_list x
 
-evalCBV' :: LambdaExpression -> Either String LambdaExpression
-evalCBV' expr = convert_to_multiple_arguments <$> (evalCBV . convert_to_one_argument) expr
+extract_binary_op :: NatBinOp -> (Int -> Int -> Int)
+extract_binary_op Plus = (+)
+extract_binary_op Minus = (-)
+extract_binary_op Div = div
+extract_binary_op Mult = (*)
 
-beta_normalize_one_step :: LambdaExpressionS -> LambdaExpressionS
-beta_normalize_one_step x@(VariableS y) = x
-beta_normalize_one_step (AbstractionS var expr) = AbstractionS var (beta_normalize_one_step expr)
-beta_normalize_one_step (ApplicationS (AbstractionS var expr) val) = on (flip substitute var) beta_normalize_one_step expr val
-beta_normalize_one_step (ApplicationS x y) = on ApplicationS beta_normalize_one_step x y
+evalCBV :: LambdaExpression -> Either EvaluationError LambdaExpression
+evalCBV n@(Natural _) = Right n
+evalCBV Nil = Right Nil
+evalCBV v@(Abstraction _ _) = Right v
+evalCBV v@(Cons n@(Natural _) e)  = if check_nat_list e then Right v else Cons n <$> evalCBV e >>= evalCBV
+evalCBV (Cons e1 e2) = Cons <$> evalCBV e1 <*> pure e2 >>= evalCBV
+evalCBV (Application v@(Abstraction var expr) e) | check_value e = evalCBV (substitute expr var e)
+                                                 | otherwise = Application v <$> evalCBV e >>= evalCBV
+evalCBV (Application e1 e2) = Application <$> evalCBV e1 <*> pure e2 >>= evalCBV
+evalCBV (Variable var) = Left $ UnboundVariable $ var
+evalCBV _ = Left $ NotImplemented
 
-
-beta_normalize :: LambdaExpressionS -> LambdaExpressionS
-beta_normalize x | x == y = x
-                 | otherwise = beta_normalize y
-                 where y = beta_normalize_one_step x
-
-beta_normalize' :: LambdaExpression -> LambdaExpression
-beta_normalize' = lift_to_multiple beta_normalize
-
-eta_normalize_one_step :: LambdaExpressionS -> LambdaExpressionS
-eta_normalize_one_step (AbstractionS var (ApplicationS expr (VariableS val))) | var == val && val `Set.notMember` (free_variables expr) = eta_normalize_one_step expr
-eta_normalize_one_step (ApplicationS x y) = on (ApplicationS) eta_normalize_one_step x y
-eta_normalize_one_step (AbstractionS var expr) = AbstractionS var (eta_normalize_one_step expr)
-eta_normalize_one_step x = x
-
-eta_normalize :: LambdaExpressionS -> LambdaExpressionS
-eta_normalize x | x == y = x
-                | otherwise = eta_normalize y
-                where y = eta_normalize_one_step x
-
-eta_normalize' :: LambdaExpression -> LambdaExpression
-eta_normalize' = lift_to_multiple eta_normalize
-
-beta_equivalent :: LambdaExpressionS -> LambdaExpressionS -> Bool
-beta_equivalent = on (==) beta_normalize
-
-beta_equivalent' :: LambdaExpression -> LambdaExpression -> Bool
-beta_equivalent' = on (==) beta_normalize'
-
-alpha_equivalent :: LambdaExpressionS -> LambdaExpressionS -> Bool
-alpha_equivalent (VariableS x) (VariableS y) = x == y
-alpha_equivalent (AbstractionS x expr) (AbstractionS y expr') = alpha_equivalent (substitute expr x (VariableS new_name)) (substitute expr' y (VariableS new_name))
-            where new_name = fresh_variable (on Set.union bound_variables expr expr')
-alpha_equivalent (ApplicationS x y) (ApplicationS x' y') = alpha_equivalent x x' && alpha_equivalent y y'
-alpha_equivalent _ _ = False
-
-alpha_equivalent' :: LambdaExpression -> LambdaExpression -> Bool
-alpha_equivalent' = on alpha_equivalent convert_to_one_argument
-
-alpha_beta_eta_equivalent :: LambdaExpressionS -> LambdaExpressionS -> Bool
-alpha_beta_eta_equivalent = on alpha_equivalent (eta_normalize . beta_normalize)
-
-alpha_beta_eta_equivalent' :: LambdaExpression -> LambdaExpression -> Bool
-alpha_beta_eta_equivalent' = on alpha_equivalent' (eta_normalize' . beta_normalize')
-
-convert_to_numeral :: LambdaExpressionS -> Either String Int
-convert_to_numeral expr = let normal_form = eta_normalize $ beta_normalize expr
-                          in if alpha_equivalent normal_form (AbstractionS "x" (VariableS "x")) 
-                                then Right 1
-                                else startCount normal_form
-
-startCount :: LambdaExpressionS -> Either String Int
-startCount (AbstractionS f (AbstractionS val expr)) = continueCount f val expr
-startCount x = Left $ "Error: Couldn't extract a number from alleged church numeral."
-
-continueCount :: String -> String -> LambdaExpressionS -> Either String Int
-continueCount f val (VariableS x) | x == val = Right 0
-                                  | otherwise = Left $ "Error: Couldn't extract a number from alleged church numeral."
-continueCount f val (ApplicationS (VariableS func) expr) | f == func = (+1) <$> continueCount f val expr
-                                                         | otherwise = Left $ "Error: Couldn't extract a number from alleged church numeral."
-continueCount _ _ _ = Left $ "Error: Couldn't extract a number from alleged church numeral."
-
-
-convert_to_numeral' :: LambdaExpression -> Either String Int
-convert_to_numeral' = convert_to_numeral . convert_to_one_argument
+--     Foldr LambdaExpression LambdaExpression LambdaExpression | 
+--     NatBinOp NatBinOp LambdaExpression LambdaExpression
+--     evalCBV_with_count :: Int -> LambdaExpression -> Either (String, Int) EvaluationError

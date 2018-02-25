@@ -58,10 +58,11 @@ substitute (Variable x) var expr | x == var = expr
 substitute x@(Abstraction bound expr1) var expr2 | bound == var =  x
                                                   | otherwise = Abstraction bound $ substitute expr1 var expr2
 substitute (Application expr1 expr2) var expr3 = Application (substitute expr1 var expr3) (substitute expr2 var expr3)
-substitute (Natural n) var expr = expr
-substitute (Nil) var expr = expr
+substitute n@(Natural _) _ _ = n
+substitute Nil _ _ = Nil
 substitute (Cons expr1 expr2) var expr = Cons (substitute expr1 var expr) (substitute expr2 var expr)
 substitute (Foldr expr1 expr2 expr3) var expr = Foldr (substitute expr1 var expr) (substitute expr2 var expr) (substitute expr3 var expr)
+substitute (NatBinOp op expr1 expr2) var expr = NatBinOp op (substitute expr1 var expr) (substitute expr2 var expr)
 
 lambdaDef :: P.LanguageDef ()
 lambdaDef = emptyDef {P.identStart = letter
