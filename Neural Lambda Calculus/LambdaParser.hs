@@ -125,7 +125,7 @@ abstraction :: Parser LambdaExpression
 abstraction = do reserved "lambda"
                  x <- identifier
                  dot
-                 y <- lambdaExpression <?> "lambda expression"
+                 y <- lambdaExpression' 0 <?> "lambda expression"
                  return $ Abstraction x y
 
                           
@@ -133,9 +133,9 @@ letExpression :: Parser LambdaExpression
 letExpression =  do reserved "let"
                     x <- identifier
                     equal
-                    y <- lambdaExpression <?> "lambda expression"
+                    y <- lambdaExpression' 0 <?> "lambda expression"
                     reserved "in"
-                    z <- lambdaExpression <?> "lambda expression"
+                    z <- lambdaExpression' 0 <?> "lambda expression"
                     return $ substitute z x y
 
 natural :: Parser LambdaExpression
@@ -148,12 +148,12 @@ nil = do listOpen
 
 cons :: Parser LambdaExpression
 cons = do reserved "cons"
-          n <- lambdaExpression <?> "lambda expression"
-          l <- lambdaExpression <?> "lambda expression"
+          n <- lambdaExpression' 3 <?> "lambda expression"
+          l <- lambdaExpression' 3 <?> "lambda expression"
           return $ Cons n l
 
 listHelp :: Parser LambdaExpression
-listHelp = lambdaExpression `chainr1` (semicolon *> return Cons)
+listHelp = lambdaExpression' 0 `chainr1` (semicolon *> return Cons)
 
 placeNil :: LambdaExpression -> LambdaExpression
 placeNil (Cons x y@(Cons _ _)) = Cons x (placeNil y)
@@ -165,27 +165,16 @@ list = try nil <|> placeNil <$> (listOpen *> listHelp <* listClose)
 
 foldrlc :: Parser LambdaExpression
 foldrlc = do reserved "foldrlc"
-             x <- term' <?> "lambda expression"
-             y <- term' <?> "lambda expression"
-             z <- term' <?> "lambda expression"
+             x <- lambdaExpression' 3 <?> "lambda expression"
+             y <- lambdaExpression' 3 <?> "lambda expression"
+             z <- lambdaExpression' 3 <?> "lambda expression"
              return $ Foldr x y z
-
-natbinop :: Int -> Parser LambdaExpression
-natbinop 0 = natbinop 1 `chainl1` ((plus *> pure (NatBinOp Plus)) <|> (minus *> pure (NatBinOp Minus)))
-natbinop 1 = term' `chainl1` ((mult *> pure (NatBinOp Mult)) <|> (divide *> pure (NatBinOp Div)))
-
-lambdaExpression, term, term' :: Parser LambdaExpression
 
 lambdaExpression' :: Int -> Parser LambdaExpression
 lambdaExpression' 0 = lambdaExpression' 1 `chainl1` ((plus *> pure (NatBinOp Plus)) <|> (minus *> pure (NatBinOp Minus)))
 lambdaExpression' 1 = lambdaExpression' 2 `chainl1` ((mult *> pure (NatBinOp Mult)) <|> (divide *> pure (NatBinOp Div)))
 lambdaExpression' 2 = lambdaExpression' 3 `chainl1` (lexeme $ return Application)
 lambdaExpression' 3 = letExpression <|> abstraction <|> foldrlc <|> variable <|> natural <|> cons <|> list <|> parens (lambdaExpression' 0)
-
-lambdaExpression = term `chainl1` (lexeme $ return Application)
-term = natbinop 0 <|> term'
-term' = letExpression <|> abstraction <|> foldrlc <|> variable <|> natural <|> cons <|> list <|> parens lambdaExpression
-
 
 parseLambda :: String -> Either ParseError LambdaExpression
 parseLambda = parse (whiteSpace *> lambdaExpression' 0) ""
