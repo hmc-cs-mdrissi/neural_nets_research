@@ -49,7 +49,7 @@ class ResidualNet(nn.Module):
         self.later_residual_blocks = nn.ModuleList()
 
         for _ in range(number_of_blocks-2):
-            self.laterResidualBlocks.append(ResidualBlock(64))
+            self.later_residual_blocks.append(ResidualBlock(64))
 
         self.dense_input_dim = height * width * 4
         self.dense = nn.Linear(self.dense_input_dim, classes)
