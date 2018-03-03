@@ -8,7 +8,7 @@ import torch
 from torch.autograd import Variable
 import torch.utils.data as data
 
-def split_dataset(dset):
+def split_dataset(dset, batch_size=128, thread_count=4):
     """
     Given a dataset, samples elements randomly from a given list of indices, without replacement,
     to create a training, test, and validation sets.
@@ -21,13 +21,13 @@ def split_dataset(dset):
                                                                           len(dset))))
 
     loader_dset_train = data.DataLoader(
-        dset, batch_size=128, num_workers=4,
+        dset, batch_size=batch_size, num_workers=thread_count,
         pin_memory=True, sampler=sampler_dset_train)
     loader_dset_test = data.DataLoader(
-        dset, batch_size=128, num_workers=4,
+        dset, batch_size=batch_size, num_workers=thread_count,
         pin_memory=True, sampler=sampler_dset_test)
     loader_dset_validation = data.DataLoader(
-        dset, batch_size=128, num_workers=4,
+        dset, batch_size=batch_size, num_workers=thread_count,
         pin_memory=True, sampler=sampler_dset_validation)
 
     return loader_dset_train, loader_dset_test, loader_dset_validation
