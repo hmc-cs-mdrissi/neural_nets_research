@@ -12,22 +12,10 @@ import Text.Parsec.Error
 import Control.Applicative (liftA2)
 import Data.Aeson
 import GHC.Generics
+import ForLambdaCommon
 
-
-data ExprLambda = VarL String | ConstL Integer | PlusL ExprLambda ExprLambda | MinusL ExprLambda ExprLambda deriving (Show, Generic)
-data CmpLambda = EqualL ExprLambda ExprLambda | LeL ExprLambda ExprLambda | GeL ExprLambda ExprLambda deriving (Show, Generic)
-data ProgLambda = UnitLambda | If CmpLambda ProgLambda ProgLambda | ExprL ExprLambda
+data ProgLambda = UnitLambda | If Cmp ProgLambda ProgLambda | ExprL Expr
                 | LetLambda String ProgLambda ProgLambda | LetRecLambda String String ProgLambda ProgLambda deriving (Show, Generic)
-
-instance ToJSON ExprLambda where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON ExprLambda
-
-instance ToJSON CmpLambda where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON CmpLambda
 
 instance ToJSON ProgLambda where
     toEncoding = genericToEncoding defaultOptions
@@ -75,16 +63,16 @@ identifier = P.identifier lexer
 parens :: Parser a -> Parser a
 parens = P.parens lexer
 
-exprL, exprL_term, varL, constL :: Parser ExprLambda
-exprL = exprL_term `chainl1` ((plus *> pure PlusL) <|> (minus *> pure MinusL))
+exprL, exprL_term, varL, constL :: Parser Expr
+exprL = exprL_term `chainl1` ((plus *> pure Plus) <|> (minus *> pure Minus))
 exprL_term = varL <|> constL
-varL = VarL <$> identifier
-constL = ConstL <$> P.integer lexer
+varL = Var <$> identifier
+constL = Const <$> P.integer lexer
 
-cmpP :: Parser CmpLambda
-cmpP = try (liftA2 EqualL (exprL <* double_equal) exprL) <|>
-       try (liftA2 LeL (exprL <* le) exprL) <|>
-       liftA2 (GeL) (exprL <* ge) exprL
+cmpP :: Parser Cmp
+cmpP = try (liftA2 Equal (exprL <* double_equal) exprL) <|>
+       try (liftA2 Le (exprL <* le) exprL) <|>
+       liftA2 (Ge) (exprL <* ge) exprL
 
 progP, unitP, ifP, letP, letrecP :: Parser ProgLambda
 progP = unitP <|> ifP <|> letP <|> letrecP <|> ExprL <$> exprL <|> parens progP
