@@ -12,22 +12,10 @@ import Text.Parsec.Error
 import Control.Applicative (liftA2)
 import Data.Aeson
 import GHC.Generics
+import ForLambdaCommon
 
-
-data ExprFor = Var String | Const Integer | Plus ExprFor ExprFor | Minus ExprFor ExprFor deriving (Show, Generic)
-data Cmp = EqualFor ExprFor ExprFor | LeFor ExprFor ExprFor | GeFor ExprFor ExprFor deriving (Show, Generic)
-data ProgFor = Assign String ExprFor | If Cmp ProgFor ProgFor | For String ExprFor Cmp ExprFor ProgFor
+data ProgFor = Assign String Expr | If Cmp ProgFor ProgFor | For String Expr Cmp Expr ProgFor
               | Seq ProgFor ProgFor deriving (Show, Generic)
-
-instance ToJSON ExprFor where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON ExprFor
-
-instance ToJSON Cmp where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON Cmp
 
 instance ToJSON ProgFor where
     toEncoding = genericToEncoding defaultOptions
@@ -78,16 +66,16 @@ identifier = P.identifier lexer
 parens :: Parser a -> Parser a
 parens = P.parens lexer
 
-exprE, exprE_term, varE, constE :: Parser ExprFor
+exprE, exprE_term, varE, constE :: Parser Expr
 exprE = exprE_term `chainl1` ((plus *> pure Plus) <|> (minus *> pure Minus))
 exprE_term = varE <|> constE
 varE = Var <$> identifier
 constE = Const <$> P.integer lexer
 
 cmpP :: Parser Cmp
-cmpP = try (liftA2 EqualFor (exprE <* double_equal) exprE) <|>
-       try (liftA2 LeFor (exprE <* le) exprE) <|>
-       liftA2 (GeFor) (exprE <* ge) exprE
+cmpP = try (liftA2 Equal (exprE <* double_equal) exprE) <|>
+       try (liftA2 Le (exprE <* le) exprE) <|>
+       liftA2 (Ge) (exprE <* ge) exprE
 
 progP, progP_term, ifP, assignP, forP :: Parser ProgFor
 progP = progP_term `chainl1` (semicolon *> pure Seq)
