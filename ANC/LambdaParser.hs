@@ -14,8 +14,28 @@ import Data.Aeson
 import GHC.Generics
 import ForLambdaCommon
 
-data ProgLambda = UnitLambda | If Cmp ProgLambda ProgLambda | ExprL Expr
-                | LetLambda String ProgLambda ProgLambda | LetRecLambda String String ProgLambda ProgLambda deriving (Show, Generic)
+data ProgLambda = UnitLambda | IfL Cmp ProgLambda ProgLambda | ExprL Expr
+                | LetLambda String ProgLambda ProgLambda | LetRecLambda String String ProgLambda ProgLambda 
+                | App App deriving Generic
+
+data App = SimpleApp String Expr | ComplexApp App Expr deriving Generic
+
+instance Show ProgLambda where
+  show UnitLambda = "unit"
+  show (IfL c p1 p2) = "if " ++ show c ++ " then " ++ show p1 ++ " else " ++ show p2
+  show (ExprL e) = show e
+  show (LetLambda s p1 p2) = "let " ++ s ++ " = " ++ show p1 ++ " in " ++ show p2
+  show (LetRecLambda s1 s2 p1 p2) = "letrec " ++ s1 ++ " " ++ s2 ++ " = " ++ show p1 ++ " in " ++ show p2
+  show (App a) = show a
+
+instance Show App where
+  show (SimpleApp s e) = s ++ " " ++ show e
+  show (ComplexApp a e) = "(" ++ show a ++ ") " ++ show e 
+
+instance ToJSON App where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON App
 
 instance ToJSON ProgLambda where
     toEncoding = genericToEncoding defaultOptions
@@ -86,7 +106,7 @@ ifP = do
         if_body <- progP
         reserved "else"
         else_body <- progP
-        return $ If cond if_body else_body
+        return $ IfL cond if_body else_body
 
 letP = do
         reserved "let"

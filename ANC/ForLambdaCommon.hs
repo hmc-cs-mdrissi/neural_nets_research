@@ -26,12 +26,12 @@ showExpr 1 (Const n) = show n
 showExpr 1 a = "(" ++ (showExpr 0 a) ++ ")"
 
 instance Show Expr where
-	show = showExpr 0
+    show = showExpr 0
 
 instance Show Cmp where
-	show (Equal x y) = show x ++ " == " ++ show y
-	show (Le x y) = show x ++ " < " ++ show y
-	show (Ge x y) = show x ++ " > " ++ show y  
+    show (Equal x y) = show x ++ " == " ++ show y
+    show (Le x y) = show x ++ " < " ++ show y
+    show (Ge x y) = show x ++ " > " ++ show y  
 
 instance ToJSON Expr where
     toEncoding = genericToEncoding defaultOptions
