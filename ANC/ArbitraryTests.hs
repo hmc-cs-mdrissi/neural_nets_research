@@ -5,7 +5,7 @@ import ForLambdaCommon
 import Test.QuickCheck
 
 arbitraryIdentifier :: Gen String
-arbitraryIdentifier = do firstChar <- elements $ ['a' .. 'z'] ++ ['A' .. 'Z']
+arbitraryIdentifier = do firstChar <- elements $ ['a' .. 'z']
                          return [firstChar]
 
 arbitraryConstant :: Gen Integer
