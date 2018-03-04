@@ -9,15 +9,17 @@ import Text.Parsec.String (Parser)
 import Text.Parsec.Expr
 import Text.Parsec.Error
 
-import Control.Applicative (some, many, liftA2)
+import Data.Aeson
+import GHC.Generics
 
+import Control.Applicative (some, many, liftA2)
 import Data.String
 import Data.Function
 import Data.Bifunctor
 import Data.Functor.Identity
 
 -- TFake is a type for evaluation purposes only when types are not examined.
-data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving Eq
+data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
 
 data LambdaExpression = 
     Variable String |
@@ -29,10 +31,30 @@ data LambdaExpression =
     UnaryOper UnaryOp LambdaExpression |
     BinaryOper LambdaExpression BinaryOp LambdaExpression |
     Let String LambdaExpression LambdaExpression |
-    LetRec (String, Type) LambdaExpression LambdaExpression deriving Eq
+    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic)
 
-data UnaryOp = Neg | Not deriving Eq
-data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving Eq
+data UnaryOp = Neg | Not deriving (Eq, Generic)
+data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
+
+instance ToJSON UnaryOp where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON UnaryOp
+
+instance ToJSON UnaryOp where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON UnaryOp
+
+instance ToJSON UnaryOp where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON UnaryOp
+
+instance ToJSON UnaryOp where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON UnaryOp
 
 show_variable_list :: [(String, Type)] -> String
 show_variable_list [] = ""

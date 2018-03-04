@@ -43,11 +43,6 @@ isValue Nil = True
 isValue (Cons (Number _) tl) = isValue tl
 isValue _ = False
 
-is_list_int :: LambdaExpression -> Bool
-is_list_int Nil = True
-is_list_int (Cons (Number _) tl) = is_list_int tl
-is_list_int _ = False
-
 functionType :: Type -> Bool
 functionType (TFun _ _) = True
 functionType _ = False
@@ -128,22 +123,22 @@ evalCBV x@(Let var y z) = if var `Set.member` free_variables y then Left $ Recur
 evalCBV x@(LetRec (var,t) y z) = case t of
                                     TFun _ _ -> evalCBV (BinaryOper (Abstraction (var,t) z) Application (BinaryOper y_cbv Application (Abstraction (var, t) y)))
                                     _ -> if var `Set.member` free_variables y then Left $ RecursiveDefinitionNonFunction x else evalCBV (BinaryOper (Abstraction (var, t) z) Application y)
-evalCBV x@(Cons (Number n) tl) = if is_list_int tl 
+evalCBV x@(Cons (Number n) tl) = if check_nat_list tl 
                                     then pure x 
                                     else do tl' <- evalCBV tl
-                                            if is_list_int tl' 
+                                            if check_nat_list tl' 
                                               then pure $ Cons (Number n) tl'
                                               else Left $ TypeMismatchE TIntList tl
 evalCBV (Cons h tl) = do h' <- evalCBV h
                          case h' of
                             n@(Number _) -> Cons n <$> evalCBV tl
                             _ -> Left $ TypeMismatchE TIntList h
-evalCBV (Match ls e1 e2) | is_list_int ls = case ls of
+evalCBV (Match ls e1 e2) | check_nat_list ls = case ls of
                                               Nil -> evalCBV e1
                                               Cons h t -> evalCBV (BinaryOper (BinaryOper e2 Application h) Application t)
                                               _ -> Left $ TypeMismatchE TIntList ls
                          | otherwise = do ls' <- evalCBV ls
-                                          if is_list_int ls' 
+                                          if check_nat_list ls' 
                                             then evalCBV (Match ls' e1 e2)
                                             else Left $ TypeMismatchE TIntList ls
 evalCBV val = pure val
