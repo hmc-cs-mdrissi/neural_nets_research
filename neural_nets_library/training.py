@@ -295,7 +295,7 @@ def train_model_anc(model,
                 loss += iteration_loss
             
                 if total_batch_number % batch_size == 0:
-                    loss /= batch_size
+                    loss /= batch_size 
                     loss.backward()
                     clip_grads(model)
                     optimizer.step()
