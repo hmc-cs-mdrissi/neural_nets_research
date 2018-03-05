@@ -1,6 +1,7 @@
 import random
 
 import torch
+from torch.autograd import Variable
 from torch.utils.data import Dataset
 from torch.utils.data import sampler
 from torchvision import datasets
@@ -102,6 +103,18 @@ def pad_to_width(desired_width, image):
     padding = torch.zeros(1, height, desired_width-width)
     return torch.cat((image, padding), dim=2)
 
+def square_padding(img):
+    _, height, width = img.size()
+    
+    if height > width:
+        padding = torch.zeros(1, height, height-width)
+        return torch.cat((padding, img), 2)
+    elif width > height:
+        padding = torch.zeros(1, width-height, width)
+        return torch.cat((padding, img), 1)
+    
+    return img
+
 class collate_by_padding(object):
     def __init__(self):
         pass
@@ -130,7 +143,7 @@ def greyscale_image_loader(path):
             return img.convert('L')
 
 def tightest_image_crop(img, preserve_aspect_ratio=False):
-    image_indices = F.threshold(img[0], 0.0000001, 0).data.nonzero()
+    image_indices = F.threshold(Variable(img[0]), 0.0000001, 0).data.nonzero()
     top_i = image_indices[0,0]
     bottom_i = image_indices[-1,0]
 
@@ -156,4 +169,4 @@ def tightest_image_crop(img, preserve_aspect_ratio=False):
 def vertical_scale_preserve_aspect_ratio(img, height=32):
     w, h = img.size
 
-    return transforms.Scale((int(height/h * w), height), interpolation=Image.LANCZOS)(img)
+    return transforms.Resize((height, int(height/h * w)), interpolation=Image.LANCZOS)(img)
