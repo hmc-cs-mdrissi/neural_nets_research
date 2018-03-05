@@ -5,8 +5,6 @@ import Data.Function
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-import Debug.Trace
-
 data EvaluationError = UnboundVariable String | DivideByZero | NotImplemented | TypeError String
 
 instance Show EvaluationError where

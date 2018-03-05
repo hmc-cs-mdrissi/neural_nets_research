@@ -12,22 +12,30 @@ import Text.Parsec.Error
 import Control.Applicative (liftA2)
 import Data.Aeson
 import GHC.Generics
+import ForLambdaCommon
 
+data ProgLambda = UnitLambda | IfL Cmp ProgLambda ProgLambda | ExprL Expr
+                | LetLambda String ProgLambda ProgLambda | LetRecLambda String String ProgLambda ProgLambda 
+                | App App deriving Generic
 
-data ExprLambda = VarL String | ConstL Integer | PlusL ExprLambda ExprLambda | MinusL ExprLambda ExprLambda deriving (Show, Generic)
-data CmpLambda = EqualL ExprLambda ExprLambda | LeL ExprLambda ExprLambda | GeL ExprLambda ExprLambda deriving (Show, Generic)
-data ProgLambda = UnitLambda | If CmpLambda ProgLambda ProgLambda | ExprL ExprLambda
-                | LetLambda String ProgLambda ProgLambda | LetRecLambda String String ProgLambda ProgLambda deriving (Show, Generic)
+data App = SimpleApp String Expr | ComplexApp App Expr deriving Generic
 
-instance ToJSON ExprLambda where
+instance Show ProgLambda where
+  show UnitLambda = "unit"
+  show (IfL c p1 p2) = "if " ++ show c ++ " then " ++ show p1 ++ " else " ++ show p2
+  show (ExprL e) = show e
+  show (LetLambda s p1 p2) = "let " ++ s ++ " = " ++ show p1 ++ " in " ++ show p2
+  show (LetRecLambda s1 s2 p1 p2) = "letrec " ++ s1 ++ " " ++ s2 ++ " = " ++ show p1 ++ " in " ++ show p2
+  show (App a) = show a
+
+instance Show App where
+  show (SimpleApp s e) = s ++ " " ++ show e
+  show (ComplexApp a e) = "(" ++ show a ++ ") " ++ show e 
+
+instance ToJSON App where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON ExprLambda
-
-instance ToJSON CmpLambda where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON CmpLambda
+instance FromJSON App
 
 instance ToJSON ProgLambda where
     toEncoding = genericToEncoding defaultOptions
@@ -75,16 +83,16 @@ identifier = P.identifier lexer
 parens :: Parser a -> Parser a
 parens = P.parens lexer
 
-exprL, exprL_term, varL, constL :: Parser ExprLambda
-exprL = exprL_term `chainl1` ((plus *> pure PlusL) <|> (minus *> pure MinusL))
+exprL, exprL_term, varL, constL :: Parser Expr
+exprL = exprL_term `chainl1` ((plus *> pure Plus) <|> (minus *> pure Minus))
 exprL_term = varL <|> constL
-varL = VarL <$> identifier
-constL = ConstL <$> P.integer lexer
+varL = Var <$> identifier
+constL = Const <$> P.integer lexer
 
-cmpP :: Parser CmpLambda
-cmpP = try (liftA2 EqualL (exprL <* double_equal) exprL) <|>
-       try (liftA2 LeL (exprL <* le) exprL) <|>
-       liftA2 (GeL) (exprL <* ge) exprL
+cmpP :: Parser Cmp
+cmpP = try (liftA2 Equal (exprL <* double_equal) exprL) <|>
+       try (liftA2 Le (exprL <* le) exprL) <|>
+       liftA2 (Ge) (exprL <* ge) exprL
 
 progP, unitP, ifP, letP, letrecP :: Parser ProgLambda
 progP = unitP <|> ifP <|> letP <|> letrecP <|> ExprL <$> exprL <|> parens progP
@@ -98,7 +106,7 @@ ifP = do
         if_body <- progP
         reserved "else"
         else_body <- progP
-        return $ If cond if_body else_body
+        return $ IfL cond if_body else_body
 
 letP = do
         reserved "let"
