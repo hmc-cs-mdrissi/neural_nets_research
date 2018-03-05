@@ -77,7 +77,8 @@ class CRNN(nn.Module):
 class Sequence_to_Sequence_Model(nn.Module):
     """
       For the decoder this expects something like an lstm cell or a gru cell and not an lstm/gru.
-      If you don't use teacher forcing, batches are forbidden/lead to bad behavior
+      This assumes the encoder spits out something of the form sequence length, batch size,
+      channels.
     """
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size,
                  decoder_cell_state_shape=None, use_lstm=False, use_cuda=True):
@@ -110,8 +111,8 @@ class Sequence_to_Sequence_Model(nn.Module):
         encoded_features = self.encoder(input) # [w, b, c]
         decoder_hidden = encoded_features[-1, :, :]
 
-        target_length, batch_size = target.size()
-        decoder_input = self.embedding(self.SOS_token).transpose(0,1).repeat(1, batch_size, 1)
+        batch_size, target_length = target.size()
+        decoder_input = self.embedding(self.SOS_token).squeeze(0).repeat(batch_size, 1)
         loss = 0
 
         if self.use_lstm:
@@ -124,21 +125,15 @@ class Sequence_to_Sequence_Model(nn.Module):
                 decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden)
 
             log_probs = self.output_log_probs(decoder_output)
-            loss += self.loss_func(log_probs, target[i, :])
+            loss += self.loss_func(log_probs, target[i])
 
             if use_teacher_forcing:
-                decoder_input = self.embedding(target[i, :].unsqueeze(1)).squeeze(1)
+            	next_input = target[i]
             else:
-                _, topi = log_probs.data.topk(1)
-                ni = topi[0, 0]
-
-                if ni == self.EOS_value:
-                    break
-
-                decoder_input = self.embedding(Variable([ni]).unsqueeze(1)).squeeze(1)
-
-                if self.use_cuda:
-                    decoder_input = decoder_input.cuda()
+                _, topi = log_probs.topk(1)
+                next_input = topi[:, 0]
+     
+            decoder_input = self.embedding(next_input.unsqueeze(1)).squeeze(1)
 
         return loss
 
