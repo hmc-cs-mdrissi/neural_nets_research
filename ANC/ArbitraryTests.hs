@@ -66,6 +66,11 @@ arbitrarySizedProgLambda n | n <= 0 = return UnitLambda
 instance Arbitrary ProgLambda where
   arbitrary = sized arbitrarySizedProgLambda
 
+  shrink n@(IfL _ p1 p2) = shrink p1 ++ shrink p2 ++ [n]
+  shrink n@(LetLambda _ p1 p2) = shrink p1 ++ shrink p2 ++ [n]
+  shrink n@(LetRecLambda _ _ p1 p2) = shrink p1 ++ shrink p2 ++ [n]
+  shrink n = [n]
+
 arbitrarySizedApp :: Int -> Gen App
 arbitrarySizedApp n | n <= 0 = SimpleApp <$> arbitraryIdentifier <*> arbitrarySizedExpr (n - 1)
                              | otherwise = frequency [(1, SimpleApp <$> arbitraryIdentifier <*> arbitrarySizedExpr (n - 1))
@@ -74,7 +79,8 @@ arbitrarySizedApp n | n <= 0 = SimpleApp <$> arbitraryIdentifier <*> arbitrarySi
 instance Arbitrary App where
   arbitrary = sized arbitrarySizedApp
 
-
+  shrink n@(ComplexApp a _) = shrink a ++ [n]
+  shrink n = [n]
 
 
 
