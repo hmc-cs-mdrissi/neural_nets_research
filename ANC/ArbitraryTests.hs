@@ -1,9 +1,14 @@
-module ForArbitraryTest where 
+module ArbitraryTests where 
 
 import ForParser
 import LambdaParser
 import ForLambdaCommon
 import Test.QuickCheck
+
+-- 
+-- ArbitraryTests.hs
+-- A set of functions for generating arbitrary For and ProgLambda programs.
+-- 
 
 arbitraryIdentifier :: Gen String
 arbitraryIdentifier = do firstChar <- elements $ ['a' .. 'z']
