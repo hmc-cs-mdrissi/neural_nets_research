@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module SimplyTypedLambdaParser where
 
 import Text.Parsec.Language (emptyDef)
@@ -9,8 +11,8 @@ import Text.Parsec.String (Parser)
 import Text.Parsec.Expr
 import Text.Parsec.Error
 
-import Data.Aeson
-import GHC.Generics
+import Data.Aeson (ToJSON, FromJSON, toEncoding, genericToEncoding, defaultOptions)
+import GHC.Generics (Generic)
 
 import Control.Applicative (some, many, liftA2)
 import Data.String
@@ -41,20 +43,20 @@ instance ToJSON UnaryOp where
 
 instance FromJSON UnaryOp
 
-instance ToJSON UnaryOp where
+instance ToJSON BinaryOp where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON BinaryOp
 
-instance ToJSON UnaryOp where
+instance ToJSON Type where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON Type
 
-instance ToJSON UnaryOp where
+instance ToJSON LambdaExpression where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON LambdaExpression
 
 show_variable_list :: [(String, Type)] -> String
 show_variable_list [] = ""
