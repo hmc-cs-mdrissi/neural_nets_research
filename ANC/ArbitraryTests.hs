@@ -14,7 +14,7 @@ arbitraryIdentifier :: Gen String
 arbitraryIdentifier = do firstChar <- elements $ ['a' .. 'z']
                          return [firstChar]
 
-arbitraryConstant :: Gen Integer
+arbitraryConstant :: Gen Int
 arbitraryConstant = do firstInt <- elements $ [1 .. 10]
                        return firstInt
 
