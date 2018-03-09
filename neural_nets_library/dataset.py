@@ -169,4 +169,11 @@ def tightest_image_crop(img, preserve_aspect_ratio=False):
 def vertical_scale_preserve_aspect_ratio(img, height=32):
     w, h = img.size
 
-    return transforms.Resize((height, int(height/h * w)), interpolation=Image.LANCZOS)(img)
+    return transforms.Resize((height, int(height/h * w)), interpolation=Image.NEAREST)(img)
+
+def binarize_image(threshold, image):
+    erase_places = image < threshold
+    image[erase_places] = 0
+    image[1 - erase_places] = 1
+
+    return image
