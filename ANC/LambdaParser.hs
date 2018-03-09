@@ -9,7 +9,7 @@ import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.String (Parser)
 import Text.Parsec.Error
-import Control.Applicative (liftA2)
+import Control.Applicative (liftA2, some)
 import Data.Aeson
 import GHC.Generics
 import ForLambdaCommon
@@ -20,6 +20,12 @@ data ProgLambda = UnitLambda | IfL Cmp ProgLambda ProgLambda | ExprL Expr
 
 data App = SimpleApp String Expr | ComplexApp App Expr deriving Generic
 
+instance Show App where
+  show (SimpleApp s e) | is_value e = s ++ " " ++ show e
+                       | otherwise = s ++ " (" ++ show e ++ ")"
+  show (ComplexApp a e) | is_value e = show a ++ " " ++ show e
+                        | otherwise = show a ++ " (" ++ show e ++ ")"
+
 instance Show ProgLambda where
   show UnitLambda = "unit"
   show (IfL c p1 p2) = "if " ++ show c ++ " then " ++ show p1 ++ " else " ++ show p2
@@ -27,10 +33,6 @@ instance Show ProgLambda where
   show (LetLambda s p1 p2) = "let " ++ s ++ " = " ++ show p1 ++ " in " ++ show p2
   show (LetRecLambda s1 s2 p1 p2) = "letrec " ++ s1 ++ " " ++ s2 ++ " = " ++ show p1 ++ " in " ++ show p2
   show (App a) = show a
-
-instance Show App where
-  show (SimpleApp s e) = s ++ " " ++ show e
-  show (ComplexApp a e) = "(" ++ show a ++ ") " ++ show e 
 
 instance ToJSON App where
     toEncoding = genericToEncoding defaultOptions
@@ -42,66 +44,23 @@ instance ToJSON ProgLambda where
 
 instance FromJSON ProgLambda
 
-progLambdaDef :: P.LanguageDef ()
-progLambdaDef = emptyDef {P.identStart = letter,
-                          P.identLetter = alphaNum,
-                          P.opStart = P.opLetter progLambdaDef,
-                          P.opLetter = oneOf "+-=;><",
-                          P.reservedOpNames = [">", "<", "==", "=", "+", "-"],
-                          P.reservedNames = ["if", "then", "else", "let", "in", "letrec", "unit"]}
+appP :: Parser App
+appP = do var <- identifier <|> parens identifier
+          (e1:e_rest) <- some expr
+          return $ foldl ComplexApp (SimpleApp var e1) e_rest 
+       <|> do firstapp <- parens appP
+              apps <- some expr
+              return $ foldl ComplexApp firstapp apps
 
-lexer :: P.TokenParser ()
-lexer = P.makeTokenParser progLambdaDef
-
-reserved :: String -> Parser ()
-reserved = P.reserved lexer
-
-reservedOp :: String -> Parser ()
-reservedOp = P.reserved lexer
-
-double_equal :: Parser ()
-double_equal = P.reservedOp lexer "=="
-
-equal :: Parser ()
-equal = P.reservedOp lexer "="
-
-plus :: Parser ()
-plus = P.reservedOp lexer "+"
-
-minus :: Parser ()
-minus = P.reservedOp lexer "-"
-
-le :: Parser ()
-le = P.reservedOp lexer "<"
-
-ge :: Parser ()
-ge = P.reservedOp lexer ">"
-
-identifier :: Parser String
-identifier = P.identifier lexer
-
-parens :: Parser a -> Parser a
-parens = P.parens lexer
-
-exprL, exprL_term, varL, constL :: Parser Expr
-exprL = exprL_term `chainl1` ((plus *> pure Plus) <|> (minus *> pure Minus))
-exprL_term = varL <|> constL
-varL = Var <$> identifier
-constL = Const <$> P.integer lexer
-
-cmpP :: Parser Cmp
-cmpP = try (liftA2 Equal (exprL <* double_equal) exprL) <|>
-       try (liftA2 Le (exprL <* le) exprL) <|>
-       liftA2 (Ge) (exprL <* ge) exprL
 
 progP, unitP, ifP, letP, letrecP :: Parser ProgLambda
-progP = unitP <|> ifP <|> letP <|> letrecP <|> ExprL <$> exprL <|> parens progP
+progP = unitP <|> ifP <|> letP <|> letrecP <|> try (App <$> appP) <|> try (ExprL <$> expr) <|> parens progP
 
 unitP = reserved "unit" *> pure UnitLambda
 
 ifP = do
         reserved "if"
-        cond <- cmpP
+        cond <- cmp
         reserved "then"
         if_body <- progP
         reserved "else"
