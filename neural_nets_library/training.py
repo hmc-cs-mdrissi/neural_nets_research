@@ -276,9 +276,6 @@ def train_model_anc(model,
         for input in dset_loader:
             total_batch_number += 1
             current_batch += 1
-            
-            # wrap them in Variable #  TODO: Add back!
-#             input = Variable(input.cuda())
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -295,7 +292,7 @@ def train_model_anc(model,
                 loss += iteration_loss
             
                 if total_batch_number % batch_size == 0:
-                    loss /= batch_size 
+                    loss /= batch_size
                     loss.backward()
                     clip_grads(model)
                     optimizer.step()
