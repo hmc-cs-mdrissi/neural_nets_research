@@ -23,7 +23,6 @@ import Prelude hiding (writeFile)
 data Config = Config {forFileName :: String,
                       forCount :: Int}
 
-
 defaultConfig :: Config
 defaultConfig = Config {forFileName = "arbitraryForList.json", forCount = 50000}
 
@@ -37,7 +36,7 @@ parseArguments = do args <- getArgs
                     foldM parseArgumentsHelper defaultConfig args
 
 generateArbitraryFor :: Int -> Int -> IO [ProgFor]
-generateArbitraryFor count exprLength = generate $ vectorOf count $ fst <$> (arbitrarySizedProgFor 0 exprLength)
+generateArbitraryFor count exprLength = generate $ vectorOf count $ fst <$> (arbitrarySizedProgFor [2, 1, 1, 1] 0 exprLength)
 
 
 main :: IO ()
