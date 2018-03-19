@@ -18,7 +18,7 @@ data ProgFor = Assign String Expr | If Cmp ProgFor ProgFor | For String Expr Cmp
               | Seq ProgFor ProgFor deriving Generic
 
 showProgFor :: ProgFor -> String
-showProgFor (Assign s e) = s ++ " := " ++ show e
+showProgFor (Assign s e) = s ++ " = " ++ show e
 showProgFor (If c p1 p2) = "if " ++ show c ++ " then " ++ showProgFor p1 ++ " else " ++ showProgFor p2 ++ " endif"
 showProgFor (For s e1 c e2 p1) = "for " ++ s ++ " = " ++ show e1 ++ "; " ++ show c ++ "; " ++ show e2 ++ " do " ++ showProgFor p1 ++ " endfor"
 showProgFor (Seq p1 p2) = showProgFor p1 ++ "; " ++ showProgFor p2
