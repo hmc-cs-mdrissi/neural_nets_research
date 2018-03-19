@@ -1,0 +1,1 @@
+lambda (y: list int). let addmul = lambda (a: int) (b: int). a*b + a in match y with case [] -> [] case n ; m -> cons (addmul n 3) m

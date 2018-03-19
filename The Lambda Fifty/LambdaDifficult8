@@ -1,0 +1,1 @@
+let rec filternum : list int -> int -> list int = lambda (l1 : list int) (i : int). match l1 with case [] -> [] case x ; y -> if x == i then (filternum y i) else cons x (filternum y i) in filternum

@@ -1,0 +1,1 @@
+let rec cut : list int -> int -> list int = lambda (l1 : list int) (i : int). match l1 with case [] -> [] case x ; y -> if i == 0 then cons x y else cut y (i-1) in cut
