@@ -21,26 +21,28 @@ import Prelude hiding (writeFile)
 -- 
 
 data Config = Config {forFileName :: String,
-                      forCount :: Int}
+                      forCount :: Int,
+                      difficulty :: Difficulty}
 
 defaultConfig :: Config
-defaultConfig = Config {forFileName = "arbitraryForList.json", forCount = 50000}
+defaultConfig = Config {forFileName = "arbitraryForList.json", forCount = 50000, difficulty = Easy}
 
 parseArgumentsHelper :: Config -> String -> IO Config
 parseArgumentsHelper cfg opt | "-forFileName=" `isPrefixOf` opt = pure $ cfg {forFileName = drop 13 opt}
                              | "-forCount=" `isPrefixOf` opt = pure $ cfg {forCount = read $ drop 10 opt}
+                             | "-difficulty=" `isPrefixOf` opt = pure $ cfg {difficulty = read $ drop 12 opt}
                              | otherwise = die "You used an option that wasn't present."
 
 parseArguments :: IO Config
 parseArguments = do args <- getArgs
                     foldM parseArgumentsHelper defaultConfig args
 
-generateArbitraryFor :: Int -> Int -> IO [ProgFor]
-generateArbitraryFor count exprLength = generate $ vectorOf count $ fst <$> (arbitrarySizedProgFor [2, 1, 1, 1] 0 exprLength)
+generateArbitraryFor :: Difficulty -> Int -> Int -> IO [ProgFor]
+generateArbitraryFor difficulty count exprLength = generate $ vectorOf count $ fst <$> (arbitrarySizedProgForWithDifficulty difficulty 0 exprLength)
 
 
 main :: IO ()
 main = do cfg <- parseArguments
-          for_progs <- generateArbitraryFor (forCount cfg) 30
-          writeFile (forFileName cfg) $ encode for_progs
+          for_progs <- generateArbitraryFor (difficulty cfg) (forCount cfg) 30
+          writeFile (show (difficulty cfg) ++ "-" ++ (forFileName cfg)) $ encode for_progs
 
