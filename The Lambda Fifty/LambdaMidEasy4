@@ -1,0 +1,1 @@
+lambda (x : int) (y: int). if x == y then x else 0
