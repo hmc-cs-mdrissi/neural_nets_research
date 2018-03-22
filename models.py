@@ -92,9 +92,7 @@ class Sequence_to_Sequence_Model(nn.Module):
         self.SOS_token = Variable(torch.LongTensor([[0]]))
         self.EOS_value = 1
 
-        self.use_cuda = use_cuda
-
-        if self.use_cuda:
+        if use_cuda:
             self.SOS_token = self.SOS_token.cuda()
 
         self.embedding = nn.Embedding(nclass, embedding_size)
@@ -128,12 +126,11 @@ class Sequence_to_Sequence_Model(nn.Module):
             loss += self.loss_func(log_probs, target[i])
 
             if use_teacher_forcing:
-            	next_input = target[i]
+            	next_input = target[i].unsqueeze(1)
             else:
-                _, topi = log_probs.topk(1)
-                next_input = topi[:, 0]
+                _, next_input = log_probs.topk(1)
      
-            decoder_input = self.embedding(next_input.unsqueeze(1)).squeeze(1)
+            decoder_input = self.embedding(next_input).squeeze(1)
 
         return loss
 
@@ -142,7 +139,7 @@ class Sequence_to_Sequence_Model(nn.Module):
     """
     def point_wise_prediction(self, input, maximum_length=20):
       # encoded features
-      encoded_features = self.encoder(input).squeeze(1) # [w, c]
+      encoded_features = self.encoder(input) # [w, b, c]
       decoder_hidden = encoded_features[-1, :]
       decoder_input = self.embedding(self.SOS_token).squeeze(0)
       output_so_far = []
@@ -158,20 +155,19 @@ class Sequence_to_Sequence_Model(nn.Module):
 
           log_probs = self.output_log_probs(decoder_output)
 
-          _, topi = log_probs.data.topk(1)
-          ni = topi[0, 0]
-
-          if ni == self.EOS_value:
-              break
+          _, next_input = log_probs.topk(1)
+          ni = topi[:, 0]
 
           output_so_far.append(ni)
-          decoder_input = self.embedding(Variable([ni]).unsqueeze(1)).squeeze(1)
+          decoder_input = self.embedding(next_input.unsqueeze(1)).squeeze(1)
 
           if self.use_cuda:
               decoder_input = decoder_input.cuda()
 
       return output_so_far
 
+
+    def _extract_predictions(self, input):
 
     def beam_search_prediction(self, input, maximum_length=20):
       pass

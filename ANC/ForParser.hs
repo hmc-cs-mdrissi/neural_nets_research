@@ -2,25 +2,24 @@
 
 module ForParser where
 
-import Text.Parsec.Language (emptyDef)
-import qualified Text.Parsec.Token as P
-import Text.Parsec.Char
-import Text.Parsec.Prim
-import Text.Parsec.Combinator
+import Text.Parsec.Prim ((<|>), parse)
+import Text.Parsec.Combinator (chainl1)
 import Text.Parsec.String (Parser)
-import Text.Parsec.Error
-import Control.Applicative (liftA2)
+import Text.Parsec.Error (ParseError)
 import Data.Aeson
+
+import Control.Applicative (liftA2)
 import GHC.Generics
+
 import ForLambdaCommon
 
 data ProgFor = Assign String Expr | If Cmp ProgFor ProgFor | For String Expr Cmp Expr ProgFor
               | Seq ProgFor ProgFor deriving Generic
 
 showProgFor :: ProgFor -> String
-showProgFor (Assign s e) = s ++ " = " ++ show e
-showProgFor (If c p1 p2) = "if " ++ show c ++ " then " ++ showProgFor p1 ++ " else " ++ showProgFor p2 ++ " endif"
-showProgFor (For s e1 c e2 p1) = "for " ++ s ++ " = " ++ show e1 ++ "; " ++ show c ++ "; " ++ show e2 ++ " do " ++ showProgFor p1 ++ " endfor"
+showProgFor (Assign s e) = s ++ " = " ++ show e ++ "\n"
+showProgFor (If c p1 p2) = "if " ++ show c ++ "\nthen " ++ showProgFor p1 ++ " else " ++ showProgFor p2 ++ "\nendif\n"
+showProgFor (For s e1 c e2 p1) = "for " ++ s ++ " = " ++ show e1 ++ "; " ++ show c ++ "; " ++ show e2 ++ " do \n" ++ showProgFor p1 ++ "\nendfor\n"
 showProgFor (Seq p1 p2) = showProgFor p1 ++ "; " ++ showProgFor p2
 
 instance Show ProgFor where
@@ -31,67 +30,12 @@ instance ToJSON ProgFor where
 
 instance FromJSON ProgFor
 
-progForDef :: P.LanguageDef ()
-progForDef = emptyDef {P.identStart = letter,
-                       P.identLetter = alphaNum,
-                       P.opStart = P.opLetter progForDef,
-                       P.opLetter = oneOf "+-=;><",
-                       P.reservedOpNames = ["=", "-", "==", "+", ">", ";", "<"],
-                       P.reservedNames = ["if", "then", "else", "endif", "for", "do", "endfor"]}
-
-lexer :: P.TokenParser ()
-lexer = P.makeTokenParser progForDef
-
-reserved :: String -> Parser ()
-reserved = P.reserved lexer
-
-reservedOp :: String -> Parser ()
-reservedOp = P.reserved lexer
-
-double_equal :: Parser ()
-double_equal = P.reservedOp lexer "=="
-
-equal :: Parser ()
-equal = P.reservedOp lexer "="
-
-semicolon :: Parser ()
-semicolon = P.reservedOp lexer ";"
-
-plus :: Parser ()
-plus = P.reservedOp lexer "+"
-
-minus :: Parser ()
-minus = P.reservedOp lexer "-"
-
-le :: Parser ()
-le = P.reservedOp lexer "<"
-
-ge :: Parser ()
-ge = P.reservedOp lexer ">"
-
-identifier :: Parser String
-identifier = P.identifier lexer
-
-parens :: Parser a -> Parser a
-parens = P.parens lexer
-
-exprE, exprE_term, varE, constE :: Parser Expr
-exprE = exprE_term `chainl1` ((plus *> pure Plus) <|> (minus *> pure Minus))
-exprE_term = varE <|> constE
-varE = Var <$> identifier
-constE = Const <$> P.integer lexer
-
-cmpP :: Parser Cmp
-cmpP = try (liftA2 Equal (exprE <* double_equal) exprE) <|>
-       try (liftA2 Le (exprE <* le) exprE) <|>
-       liftA2 (Ge) (exprE <* ge) exprE
-
 progP, progP_term, ifP, assignP, forP :: Parser ProgFor
 progP = progP_term `chainl1` (semicolon *> pure Seq)
 
 ifP = do
         reserved "if"
-        cond <- cmpP
+        cond <- cmp
         reserved "then"
         if_body <- progP
         reserved "else"
@@ -99,17 +43,17 @@ ifP = do
         reserved "endif"
         return $ If cond if_body else_body
 
-assignP = liftA2 Assign (identifier <* equal) exprE
+assignP = liftA2 Assign (identifier <* equal) expr
 
 forP = do
         reserved "for"
         var <- identifier
         equal
-        e1 <- exprE
+        e1 <- expr
         semicolon
-        cond <- cmpP
+        cond <- cmp
         semicolon
-        e2 <- exprE
+        e2 <- expr
         reserved "do"
         body <- progP
         reserved "endfor"

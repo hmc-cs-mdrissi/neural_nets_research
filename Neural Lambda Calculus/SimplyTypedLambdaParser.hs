@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module SimplyTypedLambdaParser where
 
 import Text.Parsec.Language (emptyDef)
@@ -9,8 +11,8 @@ import Text.Parsec.String (Parser)
 import Text.Parsec.Expr
 import Text.Parsec.Error
 
-import Data.Aeson
-import GHC.Generics
+import Data.Aeson (ToJSON, FromJSON, toEncoding, genericToEncoding, defaultOptions)
+import GHC.Generics (Generic)
 
 import Control.Applicative (some, many, liftA2)
 import Data.String
@@ -22,16 +24,16 @@ import Data.Functor.Identity
 data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
 
 data LambdaExpression = 
-    Variable String |
-    Abstraction (String, Type) LambdaExpression | 
-    Number Integer | Boolean Bool | Nil |
-    If LambdaExpression LambdaExpression LambdaExpression |
-    Cons LambdaExpression LambdaExpression | 
-    Match LambdaExpression LambdaExpression LambdaExpression |
-    UnaryOper UnaryOp LambdaExpression |
-    BinaryOper LambdaExpression BinaryOp LambdaExpression |
-    Let String LambdaExpression LambdaExpression |
-    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic)
+    Variable String | -- 1
+    Abstraction (String, Type) LambdaExpression | -- 1
+    Number Integer | Boolean Bool | Nil | -- Number : 1, Boolean : 11, Nil : 21
+    If LambdaExpression LambdaExpression LambdaExpression | -- 11
+    Cons LambdaExpression LambdaExpression | -- 21
+    Match LambdaExpression LambdaExpression LambdaExpression | -- 21
+    UnaryOper UnaryOp LambdaExpression | -- 1
+    BinaryOper LambdaExpression BinaryOp LambdaExpression | -- 1 (except no application until 31)
+    Let String LambdaExpression LambdaExpression | -- 31
+    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic) -- 41
 
 data UnaryOp = Neg | Not deriving (Eq, Generic)
 data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
@@ -41,20 +43,20 @@ instance ToJSON UnaryOp where
 
 instance FromJSON UnaryOp
 
-instance ToJSON UnaryOp where
+instance ToJSON BinaryOp where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON BinaryOp
 
-instance ToJSON UnaryOp where
+instance ToJSON Type where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON Type
 
-instance ToJSON UnaryOp where
+instance ToJSON LambdaExpression where
     toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON UnaryOp
+instance FromJSON LambdaExpression
 
 show_variable_list :: [(String, Type)] -> String
 show_variable_list [] = ""
