@@ -99,7 +99,7 @@ showExpr 0 x@(Abstraction _ _) = (\(varlist, inner_body) -> "lambda " ++ show_va
 showExpr 0 (If x y z) = "if " ++ showExpr 0 x ++ " then " ++ showExpr 0 y ++ " else " ++ showExpr 0 z
 showExpr 0 (Let var e e') = "let " ++ var ++ " = " ++ showExpr 0 e ++ " in " ++ showExpr 0 e'
 showExpr 0 (LetRec (var, t) e e') = "let rec " ++ var ++ " : " ++ show t ++ " = " ++ showExpr 0 e ++ " in " ++ showExpr 0 e'
-showExpr 0 (Match ls e1 (Abstraction _ (Abstraction _ e2))) = "case " ++ showExpr 0 ls ++ " with \ncase [] -> " ++ showExpr 0 e1 ++ "\ncase h ; t -> " ++ showExpr 0 e2 
+showExpr 0 (Match ls e1 (Abstraction (h, _) (Abstraction (t, _) e2))) = "case " ++ showExpr 0 ls ++ " with \ncase [] -> " ++ showExpr 0 e1 ++ "\ncase " ++ h ++ " ; " ++ t ++ " -> " ++ showExpr 0 e2 
 showExpr 0 (Match _ _ _) = error "You should not have a match where the second case isn't a double abstraction."
 showExpr 0 a = showExpr 1 a
 
@@ -197,7 +197,7 @@ basicType = (reserved "int" *> pure TInt) <|> (reserved "bool" *> pure TBool)
              <|> (reserved "list" *> reserved "int" *> pure TIntList)
 
 typeP :: Parser Type
-typeP = chainl1 (basicType <|> parens typeP) (reservedOp "->" *> pure TFun) <?> "type"
+typeP = chainr1 (basicType <|> parens typeP) (reservedOp "->" *> pure TFun) <?> "type"
 
 argument :: Parser (String, Type)
 argument = liftA2 (,) (identifier <* reservedOp ":") typeP

@@ -1,0 +1,1 @@
+let rec prod : list int -> int = lambda (l1 : list int). match l1 with case [] -> 1 case x ; y -> x * prod y in prod

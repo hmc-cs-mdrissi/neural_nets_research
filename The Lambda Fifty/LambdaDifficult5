@@ -1,0 +1,1 @@
+let rec inc : list int -> int -> list int = lambda (l1 : list int) (i : int). match l1 with case [] -> [] case x ; y -> cons (x + i) (inc y i) in inc [1 ; 2 ; 3] 1

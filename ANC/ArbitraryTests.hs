@@ -12,7 +12,7 @@ import Test.QuickCheck
 -- A set of functions for generating arbitrary For and ProgLambda programs.
 -- 
 
-data Difficulty = Easy | Medium | Hard | VeryHard
+data Difficulty = Easy | Medium | Hard | VeryHard deriving (Read, Show)
 
 -- 
 -- Generators
