@@ -1,0 +1,1 @@
+lambda (x : int) (y: int). if x == y then (if x + y == 10 then 2 else 1) else 0

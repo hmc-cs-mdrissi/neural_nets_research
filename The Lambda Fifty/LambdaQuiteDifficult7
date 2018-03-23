@@ -1,0 +1,1 @@
+lambda (x : int) (y: int). let z = lambda (a : int) (b : int). a * b + 2 in z (z 2 2) (z x y)
