@@ -1,6 +1,8 @@
 import torch
 from torch.autograd import Variable
 
+from six import string_types
+
 from functools import partial
 import itertools
 
@@ -14,7 +16,7 @@ class Node:
 
 def make_tree(json):
   # First base case - variable name
-  if type(json) is str:
+  if isinstance(json, string_types):
       parentNode = Node("<VAR>")
       childNode = Node(json)
       parentNode.children.append(childNode)
@@ -23,7 +25,7 @@ def make_tree(json):
   # Second base case - variable value
   if type(json) is int:
       return Node(json)
-
+  
   tag = "<" + json["tag"].upper() + ">"
   children = json["contents"]
   parentNode = Node(tag)
@@ -46,18 +48,20 @@ def binarize_tree(tree):
 
   return new_tree
 
-def vectorize(val, num_vars, num_ints, ops):
-    vector = torch.zeros(num_vars + num_ints + len(ops.keys()))
-
+def vectorize(val, num_vars, num_ints, ops, one_hot=True):
     if type(val) is int:
-        vector[val] = 1
+        index = val
     elif val not in ops:
-        vector[int(val[1:]) + num_ints] = 1
+        index = int(val[1:]) - 1 + num_ints
     else:
-        index = ops[val]
-        vector[num_ints + num_vars + index] = 1
+        index = num_ints + num_vars + ops[val]
 
-    return vector
+    if one_hot:
+      vector = torch.zeros(num_vars + num_ints + len(ops.keys()))
+      vector[index] = 1
+      return Variable(vector)
+
+    return index
 
 def map_tree(func, tree):
   new_tree = Node(func(tree.value))
@@ -69,8 +73,8 @@ def print_tree(tree):
     for child in tree.children:
         print_tree(child)
 
-def encode_tree(tree, num_vars, num_ints, ops):
-  return map_tree(lambda node: Variable(vectorize(node, num_vars, num_ints, ops)), tree)
+def encode_tree(tree, num_vars, num_ints, ops, one_hot=True):
+  return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, one_hot=one_hot), tree)
 
 def tree_to_list(tree):
   """
