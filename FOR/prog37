@@ -1,0 +1,8 @@
+a7 = 4;
+for a0 = 3; a1 == 6; a7 do
+    if a3 == 5 then
+	a7 = 5
+    else
+	a3 = a3 + 2
+    endif
+endfor

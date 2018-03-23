@@ -1,0 +1,14 @@
+if a0 == a1 then
+    if a0 == a2 then
+        a1 = a3
+    else 
+        if a4 == a6 then
+            a5 = a6
+    else 
+            a2 = a5
+            endif 
+    endif 
+     
+else 
+    a1 = a0 + a0
+    endif
