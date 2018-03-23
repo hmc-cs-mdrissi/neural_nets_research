@@ -1,0 +1,5 @@
+if a0 == a0 then
+    a5 = a5 + a6 - 4
+else 
+    a1 = 5 - a0
+    endif
