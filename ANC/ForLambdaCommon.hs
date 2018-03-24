@@ -90,6 +90,9 @@ ge = P.reservedOp lexer ">"
 identifier :: Parser String
 identifier = P.identifier lexer
 
+whiteSpace :: Parser ()
+whiteSpace = P.whiteSpace lexer
+
 parens :: Parser a -> Parser a
 parens = P.parens lexer
 

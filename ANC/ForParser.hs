@@ -62,4 +62,4 @@ forP = do
 progP_term = forP <|> ifP <|> assignP <|> parens progP
 
 parseProg :: String -> Either ParseError ProgFor
-parseProg = parse progP ""
+parseProg = parse (whiteSpace *> progP) ""

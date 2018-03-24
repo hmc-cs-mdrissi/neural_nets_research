@@ -88,4 +88,4 @@ letrecP = do
             return $ LetRecLambda var1 var2 value body
 
 parseProg :: String -> Either ParseError ProgLambda
-parseProg = parse progP ""
+parseProg = parse (whiteSpace *> progP) ""
