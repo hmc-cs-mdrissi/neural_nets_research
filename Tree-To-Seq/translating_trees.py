@@ -13,6 +13,9 @@ class Node:
     def __init__(self, value):
         self.value = value
         self.children = []
+    
+    def cuda(self):
+        return map_tree(lambda value: value.cuda(), self) 
 
 def make_tree(json):
   # First base case - variable name
@@ -25,7 +28,7 @@ def make_tree(json):
   # Second base case - variable value
   if type(json) is int:
       return Node(json)
-  
+
   tag = "<" + json["tag"].upper() + ">"
   children = json["contents"]
   parentNode = Node(tag)
