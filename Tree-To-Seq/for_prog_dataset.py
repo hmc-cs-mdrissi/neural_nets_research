@@ -2,7 +2,7 @@ import json
 from torch.utils.data import Dataset
 from translating_trees import *
 
-class For_dataset(Dataset):
+class ForDataset(Dataset):
     def __init__(self, path, num_vars = 10, num_ints = 11, binarize = False):
         for_ops = {
             "<VAR>": 0,
@@ -51,5 +51,3 @@ class For_dataset(Dataset):
 
     def __getitem__(self, index):
         return self.for_data_pairs[index]
-
-d = For_dataset("../ANC/Easy-arbitraryForList.json")
