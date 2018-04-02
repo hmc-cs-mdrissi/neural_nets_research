@@ -133,221 +133,217 @@ def clip_grads(net):
 def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler = exp_lr_scheduler, num_epochs=20,
                 print_every=200, plot_every=100, deep_copy_desired=False, validation_criterion=None):
 
-    since = time.time()
+  since = time.time()
 
-    best_model = model
-    best_loss = float('inf')
-    model.train(True)
-    train_plot_losses = []
-    validation_plot_losses = []
-    running_train_plot_loss = 0.0
-    running_validation_plot_loss = 0.0
-    running_train_print_loss = 0.0
-    running_validation_print_loss = 0.0
-    total_batch_number = 0
-    
-    for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        print('-' * 10)
-        
-        epoch_running_loss = 0.0
-        current_batch = 0
+  best_model = model
+  best_loss = float('inf')
+  model.train(True)
+  train_plot_losses = []
+  validation_plot_losses = []
+  running_train_plot_loss = 0.0
+  running_validation_plot_loss = 0.0
+  running_train_print_loss = 0.0
+  running_validation_print_loss = 0.0
+  total_batch_number = 0
 
-        if lr_scheduler is not None:
-            optimizer = lr_scheduler(optimizer, epoch)
+  for epoch in range(num_epochs):
+      print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+      print('-' * 10)
 
-        # Iterate over data.
-        for inputs, labels in dset_loader:
-            total_batch_number += 1
-            current_batch += 1
-            
-            # wrap them in Variable
-            inputs, labels = Variable(inputs.cuda()), \
-                             Variable(labels.cuda())
+      epoch_running_loss = 0.0
+      current_batch = 0
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+      if lr_scheduler is not None:
+          optimizer = lr_scheduler(optimizer, epoch)
 
-            # forward
-            outputs = model(inputs)
-            loss = training_criterion(outputs, labels)
-            
-            if validation_criterion is not None:
-                validation_loss = validation_criterion(outputs, labels).data[0]
-                running_validation_plot_loss += validation_loss
-                running_validation_print_loss += validation_loss
-                
+      # Iterate over data.
+      for inputs, labels in dset_loader:
+          total_batch_number += 1
+          current_batch += 1
 
-            # backward
-            loss.backward()
-            clip_grads(model)
-            optimizer.step()
+          # wrap them in Variable
+          inputs, labels = Variable(inputs.cuda()), \
+                           Variable(labels.cuda())
 
-            # statistics
-            epoch_running_loss += float(loss)
-            running_train_plot_loss += float(loss)
-            running_train_print_loss += float(loss)
-            
+          # zero the parameter gradients
+          optimizer.zero_grad()
 
-            if total_batch_number % print_every == 0:
-                curr_loss = running_train_print_loss / print_every
-                time_elapsed = time.time() - since
-                if validation_criterion is not None:
-                    curr_validation_loss = running_validation_print_loss / print_every
-                    print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}, Validation Metric: {:.4f}'.format(
-                    epoch, current_batch, curr_loss, curr_validation_loss))
-                else:
-                    print('Epoch Number: {}, Batch Number: {}, Loss: {:.4f}'.format(
-                    epoch, current_batch, curr_loss))
-                print('Time so far is {:.0f}m {:.0f}s'.format(
-                    time_elapsed // 60, time_elapsed % 60))
-                
-                running_train_print_loss = 0.0
-                running_validation_print_loss = 0.0
+          # forward
+          outputs = model(inputs)
+          loss = training_criterion(outputs, labels)
 
-            if total_batch_number % plot_every == 0:
-                train_plot_losses.append(running_train_plot_loss/plot_every)
-                running_train_plot_loss = 0.0
-                if validation_criterion is not None:
-                    validation_plot_losses.append(running_validation_plot_loss/plot_every)
-                    running_validation_plot_loss = 0.0
-            
-        # deep copy the model
-        if epoch_running_loss < best_loss:
-            best_loss = epoch_running_loss/len(dset_loader)
-            if deep_copy_desired:
-                best_model = copy.deepcopy(model)
+          if validation_criterion is not None:
+              validation_loss = validation_criterion(outputs, labels).data[0]
+              running_validation_plot_loss += validation_loss
+              running_validation_print_loss += validation_loss
 
-        print()
 
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
-    print('Best loss: {:4f}'.format(best_loss))
+          # backward
+          loss.backward()
+          clip_grads(model)
+          optimizer.step()
 
-    model.train(False)
+          # statistics
+          epoch_running_loss += float(loss)
+          running_train_plot_loss += float(loss)
+          running_train_print_loss += float(loss)
 
-    return best_model, train_plot_losses, validation_plot_losses
+
+          if total_batch_number % print_every == 0:
+              curr_loss = running_train_print_loss / print_every
+              time_elapsed = time.time() - since
+              if validation_criterion is not None:
+                  curr_validation_loss = running_validation_print_loss / print_every
+                  print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}, Validation Metric: {:.4f}'.format(
+                  epoch, current_batch, curr_loss, curr_validation_loss))
+              else:
+                  print('Epoch Number: {}, Batch Number: {}, Loss: {:.4f}'.format(
+                  epoch, current_batch, curr_loss))
+              print('Time so far is {:.0f}m {:.0f}s'.format(
+                  time_elapsed // 60, time_elapsed % 60))
+
+              running_train_print_loss = 0.0
+              running_validation_print_loss = 0.0
+
+          if total_batch_number % plot_every == 0:
+              train_plot_losses.append(running_train_plot_loss/plot_every)
+              running_train_plot_loss = 0.0
+              if validation_criterion is not None:
+                  validation_plot_losses.append(running_validation_plot_loss/plot_every)
+                  running_validation_plot_loss = 0.0
+
+      # deep copy the model
+      if epoch_running_loss < best_loss:
+          best_loss = epoch_running_loss/len(dset_loader)
+          if deep_copy_desired:
+              best_model = copy.deepcopy(model)
+
+      print()
+
+  time_elapsed = time.time() - since
+  print('Training complete in {:.0f}m {:.0f}s'.format(
+      time_elapsed // 60, time_elapsed % 60))
+  print('Best loss: {:4f}'.format(best_loss))
+
+  model.train(False)
+
+  return best_model, train_plot_losses, validation_plot_losses
 
 
 # TODO: Use a learning rate scheduler the way pytorch has them.
-def train_model_anc(model, 
-                    dset_loader, 
-                    optimizer, 
-                    lr_scheduler = exp_lr_scheduler, 
+def train_model_anc(model,
+                    dset_loader,
+                    optimizer,
+                    lr_scheduler = exp_lr_scheduler,
                     num_epochs=20,
-                    print_every=200, 
-                    plot_every=100, 
-                    validation_criterion=None, 
+                    print_every=200,
+                    plot_every=100,
+                    validation_criterion=None,
                     batch_size=50,
                     deep_copy_desired=False,
                     use_cuda=False):
-    since = time.time()
+  since = time.time()
 
-    best_model = model
-    best_loss = float('inf')
-    model.train(True)
-    train_plot_losses = []
-    validation_plot_losses = []
-    running_train_plot_loss = 0.0
-    running_validation_plot_loss = 0.0
-    running_train_print_loss = 0.0
-    running_validation_print_loss = 0.0
-    total_batch_number = 0
-    
-    # Loss used for batches
-    loss = 0
-    
-    for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        print('-' * 10)
-        
-        epoch_running_loss = 0.0
-        current_batch = 0
+  best_model = model
+  best_loss = float('inf')
+  model.train(True)
+  train_plot_losses = []
+  validation_plot_losses = []
+  running_train_plot_loss = 0.0
+  running_validation_plot_loss = 0.0
+  running_train_print_loss = 0.0
+  running_validation_print_loss = 0.0
+  total_batch_number = 0
 
-        if lr_scheduler is not None:
-            optimizer = lr_scheduler(optimizer, epoch)
+  # Loss used for batches
+  loss = 0
 
-        # Iterate over data.
-        for input, target in dset_loader: 
-            with torch.autograd.profiler.profile() as prof:
-                if use_cuda:
-                    input, target = input.cuda(), target.cuda()
+  for epoch in range(num_epochs):
+    print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+    print('-' * 10)
 
-                total_batch_number += 1
-                current_batch += 1
+    epoch_running_loss = 0.0
+    current_batch = 0
 
-                # zero the parameter gradients
-                optimizer.zero_grad()
-            
-            
+    if lr_scheduler is not None:
+        optimizer = lr_scheduler(optimizer, epoch)
 
-                # forward
-                iteration_loss = model.forward_train(input, target)
+    # Iterate over data.
+    for input, target in dset_loader:
+        if use_cuda:
+            input, target = input.cuda(), target.cuda()
 
-                if validation_criterion is not None:
-                    output = model.forward_prediction(input)
-                    validation_loss = validation_criterion(output, target)
-                    running_validation_plot_loss += validation_loss
-                    running_validation_print_loss += validation_loss
+        total_batch_number += 1
+        current_batch += 1
 
-                loss += iteration_loss
+        # zero the parameter gradients
+        optimizer.zero_grad()
 
-                if total_batch_number % batch_size == 0:
-                    loss /= batch_size
-                    loss.backward()
-                    clip_grads(model)
-                    optimizer.step()
-                    loss = 0
-            
+        # forward
+        iteration_loss = model.forward_train(input, target)
 
-                # statistics
-                epoch_running_loss += float(iteration_loss)
-                running_train_plot_loss += float(iteration_loss)
-                running_train_print_loss += float(iteration_loss)
+        if validation_criterion is not None:
+            output = model.forward_prediction(input)
+            validation_loss = validation_criterion(output, target)
+            running_validation_plot_loss += validation_loss
+            running_validation_print_loss += validation_loss
+
+        loss += iteration_loss
+
+        if total_batch_number % batch_size == 0:
+            loss /= batch_size
+            loss.backward()
+            clip_grads(model)
+            optimizer.step()
+            loss = 0
 
 
-                if total_batch_number % print_every == 0:
-                    curr_loss = running_train_print_loss / print_every
-                    time_elapsed = time.time() - since
-
-                    if validation_criterion is not None:
-                        curr_validation_loss = running_validation_print_loss / print_every
-                        print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
-                        epoch, current_batch, curr_validation_loss))
-                        running_validation_print_loss = 0.0
-
-                    print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
-                    epoch, current_batch, curr_loss))
-                    print('Time so far is {:.0f}m {:.0f}s'.format(
-                        time_elapsed // 60, time_elapsed % 60))
-
-                    running_train_print_loss = 0.0
+        # statistics
+        epoch_running_loss += float(iteration_loss)
+        running_train_plot_loss += float(iteration_loss)
+        running_train_print_loss += float(iteration_loss)
 
 
-                if total_batch_number % plot_every == 0:
-                    train_plot_losses.append(running_train_plot_loss/plot_every)
-                    running_train_plot_loss = 0.0
-                    if validation_criterion is not None:
-                        validation_plot_losses.append(running_validation_plot_loss/plot_every)
-                        running_validation_plot_loss = 0.0
-            print("PROF", prof)
+        if total_batch_number % print_every == 0:
+            curr_loss = running_train_print_loss / print_every
+            time_elapsed = time.time() - since
 
-        # deep copy the model
-        if epoch_running_loss < best_loss:
-            best_loss = epoch_running_loss/len(dset_loader)
-            if deep_copy_desired:
-                best_model = copy.deepcopy(model)
+            if validation_criterion is not None:
+                curr_validation_loss = running_validation_print_loss / print_every
+                print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
+                epoch, current_batch, curr_validation_loss))
+                running_validation_print_loss = 0.0
 
-        print()
+            print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
+            epoch, current_batch, curr_loss))
+            print('Time so far is {:.0f}m {:.0f}s'.format(
+                time_elapsed // 60, time_elapsed % 60))
 
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
-    print('Best loss: {:4f}'.format(best_loss))
+            running_train_print_loss = 0.0
 
-    model.train(False)
-    return best_model, train_plot_losses, validation_plot_losses
+
+        if total_batch_number % plot_every == 0:
+            train_plot_losses.append(running_train_plot_loss/plot_every)
+            running_train_plot_loss = 0.0
+            if validation_criterion is not None:
+                validation_plot_losses.append(running_validation_plot_loss/plot_every)
+                running_validation_plot_loss = 0.0
+
+    # deep copy the model
+    if epoch_running_loss < best_loss:
+        best_loss = epoch_running_loss/len(dset_loader)
+        if deep_copy_desired:
+            best_model = copy.deepcopy(model)
+
+    print()
+
+  time_elapsed = time.time() - since
+  print('Training complete in {:.0f}m {:.0f}s'.format(
+      time_elapsed // 60, time_elapsed % 60))
+  print('Best loss: {:4f}'.format(best_loss))
+
+  model.train(False)
+  return best_model, train_plot_losses, validation_plot_losses
 
 
 
