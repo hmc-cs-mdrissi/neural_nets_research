@@ -11,7 +11,7 @@ import Control.Applicative (liftA2)
 -- A set of functions for generating arbitrary simply typed lambda calculus programs.
 -- 
 
-import Data.Map (Map, toList, member)
+import Data.Map (Map, toList, member, insert)
 import qualified Data.Map as Map
 
 type Context = Map String Type
@@ -31,13 +31,7 @@ arbitraryConstant = do firstInt <- elements $ [0 .. 10]
                        return firstInt
 
 --data LambdaExpression = 
---    Variable String |
---    Abstraction (String, Type) LambdaExpression | 
---    Number Integer | Boolean Bool | Nil |
---    If LambdaExpression LambdaExpression LambdaExpression |
---    Cons LambdaExpression LambdaExpression | 
 --    Match LambdaExpression LambdaExpression LambdaExpression |
---    UnaryOper UnaryOp LambdaExpression |
 --    BinaryOper LambdaExpression BinaryOp LambdaExpression |
 --    Let String LambdaExpression LambdaExpression |
 --    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic)
@@ -55,8 +49,26 @@ arbitraryConstant = do firstInt <- elements $ [0 .. 10]
 -- Type
 
 arbitraryType :: Int -> Gen Type
-arbitraryType n | n <= 0 = frequency [(1, return TInt), (1, return TBool), (1, return TIntList)]
-                | otherwise = TFun <$> smallerType <*> smallerType where smallerType = arbitraryType (n `div` 2)
+arbitraryType n | n <= 1 = frequency [(1, return TInt), (1, return TBool), (1, return TIntList)]
+                | otherwise = frequency [(1, arbitraryType 1), (1, TFun <$> arbitraryType 1 <*> arbitraryType (n - 1))]
+
+arbitraryVariable :: Context -> Gen LambdaExpression
+arbitraryVariable context = Variable <$> freshVariableGivenContext context
+
+arbitraryVariableGivenContext :: Context -> Type -> Gen LambdaExpression
+arbitraryVariableGivenContext context t = Variable <$> getArbitraryIdentifierFromContext context t
+
+arbitraryAbstraction :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryAbstraction context (TFun domain range) n = do keyIdentifier <- freshVariableGivenContext context
+                                                        lc <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier domain context) range (n - 1)
+                                                        return (Abstraction (keyIdentifier, domain) lc)
+arbitraryAbstraction _ _ _ = error $ "You must generate a function type."
+
+arbitraryNumber :: Gen LambdaExpression
+arbitraryNumber = Number <$> arbitraryConstant
+
+arbitraryBoolean :: Gen LambdaExpression
+arbitraryBoolean = Boolean <$> elements [True, False]
 
 arbitraryBinaryOpArithmetic :: Gen BinaryOp
 arbitraryBinaryOpArithmetic = frequency [(1, return Plus), (1, return Minus), (1, return Times), (1, return Divide)]
@@ -64,25 +76,53 @@ arbitraryBinaryOpArithmetic = frequency [(1, return Plus), (1, return Minus), (1
 arbitraryBinaryOpLogical :: Gen BinaryOp
 arbitraryBinaryOpLogical = frequency [(1, return And), (1, return Or)]
 
-keepContext :: Monad m => Context -> m a -> m (a, Context)
-keepContext context ma = do a <- ma
-                            return (a, context)
+arbitraryIf :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryIf context t n = do cond <- arbitrarySizedSimplyTypedLambda context TBool (n `div` 3)
+                             ifcase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
+                             elsecase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
+                             return (If cond ifcase elsecase)
 
-arbitraryVariable :: Context -> Gen (LambdaExpression, Context)
-arbitraryVariable context = keepContext context (Variable <$> freshVariableGivenContext context)
+arbitraryNil ::  Gen LambdaExpression
+arbitraryNil = return Nil
 
-arbitraryNumber :: Context -> Gen (LambdaExpression, Context)
-arbitraryNumber context = keepContext context (Number <$> arbitraryConstant)
+arbitraryCons ::  Context -> Int -> Gen LambdaExpression
+arbitraryCons context n | n <= 1 = do number <- arbitraryNumber
+                                      return (Cons number Nil)
+                        | otherwise = do number <- arbitrarySizedSimplyTypedLambda context TInt (n `div` 2) 
+                                         sublist <- arbitrarySizedSimplyTypedLambda context TIntList (n `div` 2)
+                                         return (Cons number sublist)
 
-arbitraryBoolean :: Context -> Gen (LambdaExpression, Context)
-arbitraryBoolean context = keepContext context (Boolean <$> (elements [True, False])) 
+arbitraryUnaryOper :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryUnaryOper context TInt n = UnaryOper Neg <$> arbitrarySizedSimplyTypedLambda context TInt (n - 1)
+arbitraryUnaryOper context TBool n = UnaryOper Not <$> arbitrarySizedSimplyTypedLambda context TBool (n - 1)
+arbitraryUnaryOper context _ n = error $ "You can't use arbitrary unary op to generate any other types."
 
---arbitraryNumberList :: Int -> Context -> Gen LambdaExpression
---arbitraryNumberList n context = undefined
+arbitraryMatch :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryMatch context t n = do ls <- arbitrarySizedSimplyTypedLambda context TIntList (n `div` 3)
+                                nilcase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
+                                conscase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
+                                return $ Match ls nilcase conscase
 
---arbitraryFunction :: Int -> Context -> Type -> Type -> Gen LambdaExpression
---arbitraryFunction n context type1 type2 = undefined
+arbitraryLet :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryLet context t n = do keyIdentifier <- freshVariableGivenContext context
+                              valueType <- arbitraryType 3
+                              assignee <- arbitrarySizedSimplyTypedLambda context valueType (n `div` 2)
+                              body <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier valueType context) t (n `div` 2)
+                              return $ Let keyIdentifier assignee body
 
---arbitraryLambda :: Int -> Context -> Gen LambdaExpression
---arbitraryLambda n context = undefined
+arbitraryLetRec :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryLetRec context t n = do keyIdentifier <- freshVariableGivenContext context
+                                 domain <- arbitraryType 1
+                                 range <- arbitraryType 1
+                                 let valueType = TFun domain range
+                                 assignee <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier valueType context) valueType (n `div` 2)
+                                 body <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier valueType context) t (n `div` 2)
+                                 return $ LetRec (keyIdentifier, valueType) assignee body
+
+-- 
+-- General Generator
+-- 
+
+arbitrarySizedSimplyTypedLambda :: Context -> Type -> Int -> Gen LambdaExpression
+arbitrarySizedSimplyTypedLambda context t n = undefined
 
