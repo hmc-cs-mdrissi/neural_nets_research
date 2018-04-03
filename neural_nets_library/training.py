@@ -56,6 +56,7 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
         current_batch = 0
         # Iterate over data.
         for inputs, labels in train_loader:
+            start_time = time.time()
             current_batch += 1
 
             # wrap them in Variable
@@ -77,7 +78,7 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
             # statistics
             running_loss += loss.data[0]
             running_corrects += torch.sum(preds == labels.data)
-
+            
             if current_batch % 250 == 0:
                 curr_acc = running_corrects / (current_batch * train_loader.batch_size)
                 curr_loss = running_loss / (current_batch * train_loader.batch_size)
@@ -87,7 +88,7 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
                     epoch, current_batch, curr_loss, curr_acc))
                 print('Time so far is {:.0f}m {:.0f}s'.format(
                     time_elapsed // 60, time_elapsed % 60))
-
+            
 
 
         validation_acc = test_model(model, validation_loader)
@@ -270,65 +271,72 @@ def train_model_anc(model,
 
     # Iterate over data.
     for input, target in dset_loader:
-        if use_cuda:
-            input, target = input.cuda(), target.cuda()
+        start_time = time.time()
+        with torch.autograd.profiler.profile() as prof:
+            if use_cuda:
+                sub_time_start = time.time()
+                input, target = input.cuda(), target.cuda()
+                print("CUDA TIME", time.time() - sub_time_start)
 
-        total_batch_number += 1
-        current_batch += 1
+            total_batch_number += 1
+            current_batch += 1
 
-        # zero the parameter gradients
-        optimizer.zero_grad()
+            # zero the parameter gradients
+            optimizer.zero_grad()
 
-        # forward
-        iteration_loss = model.forward_train(input, target)
-
-        if validation_criterion is not None:
-            output = model.forward_prediction(input)
-            validation_loss = validation_criterion(output, target)
-            running_validation_plot_loss += validation_loss
-            running_validation_print_loss += validation_loss
-
-        loss += iteration_loss
-
-        if total_batch_number % batch_size == 0:
-            loss /= batch_size
-            loss.backward()
-            clip_grads(model)
-            optimizer.step()
-            loss = 0
-
-
-        # statistics
-        epoch_running_loss += float(iteration_loss)
-        running_train_plot_loss += float(iteration_loss)
-        running_train_print_loss += float(iteration_loss)
-
-
-        if total_batch_number % print_every == 0:
-            curr_loss = running_train_print_loss / print_every
-            time_elapsed = time.time() - since
+            # forward
+            iteration_loss = model.forward_train(input, target)
 
             if validation_criterion is not None:
-                curr_validation_loss = running_validation_print_loss / print_every
-                print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
-                epoch, current_batch, curr_validation_loss))
-                running_validation_print_loss = 0.0
+                output = model.forward_prediction(input)
+                validation_loss = validation_criterion(output, target)
+                running_validation_plot_loss += validation_loss
+                running_validation_print_loss += validation_loss
 
-            print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
-            epoch, current_batch, curr_loss))
-            print('Time so far is {:.0f}m {:.0f}s'.format(
-                time_elapsed // 60, time_elapsed % 60))
+            loss += iteration_loss
 
-            running_train_print_loss = 0.0
+            if total_batch_number % batch_size == 0:
+                loss /= batch_size
+                loss.backward()
+                clip_grads(model)
+                optimizer.step()
+                loss = 0
 
 
-        if total_batch_number % plot_every == 0:
-            train_plot_losses.append(running_train_plot_loss/plot_every)
-            running_train_plot_loss = 0.0
-            if validation_criterion is not None:
-                validation_plot_losses.append(running_validation_plot_loss/plot_every)
-                running_validation_plot_loss = 0.0
+            # statistics
+            epoch_running_loss += float(iteration_loss)
+            running_train_plot_loss += float(iteration_loss)
+            running_train_print_loss += float(iteration_loss)
 
+
+            if total_batch_number % print_every == 0:
+                curr_loss = running_train_print_loss / print_every
+                time_elapsed = time.time() - since
+
+                if validation_criterion is not None:
+                    curr_validation_loss = running_validation_print_loss / print_every
+                    print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
+                    epoch, current_batch, curr_validation_loss))
+                    running_validation_print_loss = 0.0
+
+                print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
+                epoch, current_batch, curr_loss))
+                print('Time so far is {:.0f}m {:.0f}s'.format(
+                    time_elapsed // 60, time_elapsed % 60))
+
+                running_train_print_loss = 0.0
+
+
+            if total_batch_number % plot_every == 0:
+                train_plot_losses.append(running_train_plot_loss/plot_every)
+                running_train_plot_loss = 0.0
+                if validation_criterion is not None:
+                    validation_plot_losses.append(running_validation_plot_loss/plot_every)
+                    running_validation_plot_loss = 0.0
+
+
+            print("TIME:", time.time() - start_time)
+        print("PROF", prof)
     # deep copy the model
     if epoch_running_loss < best_loss:
         best_loss = epoch_running_loss/len(dset_loader)

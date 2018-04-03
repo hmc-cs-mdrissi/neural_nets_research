@@ -44,7 +44,9 @@ class ForDataset(Dataset):
 
         for_progs = [encode_tree(prog, num_vars, num_ints, for_ops) for prog in for_progs]
         lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops,  one_hot=False) for prog in lambda_progs]
-        self.for_data_pairs = [(for_prog, Variable(torch.LongTensor(tree_to_list(lambda_prog)))) for for_prog, lambda_prog in zip(for_progs, lambda_progs)]
+        alphabet_size = num_vars + num_ints + len(lambda_ops.keys())
+        
+        self.for_data_pairs = [(for_prog, Variable(torch.LongTensor(tree_to_list(lambda_prog) + [alphabet_size + 1]))) for for_prog, lambda_prog in zip(for_progs, lambda_progs)]
 
     def __len__(self):
         return len(self.for_data_pairs)
