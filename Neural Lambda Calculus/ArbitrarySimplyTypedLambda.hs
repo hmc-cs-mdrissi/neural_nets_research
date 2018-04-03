@@ -119,10 +119,35 @@ arbitraryLetRec context t n = do keyIdentifier <- freshVariableGivenContext cont
                                  body <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier valueType context) t (n `div` 2)
                                  return $ LetRec (keyIdentifier, valueType) assignee body
 
+-- BinaryOper LambdaExpression BinaryOp LambdaExpression 
+-- data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
+-- data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
+arbitraryBinaryOper :: Context -> Type -> Int -> Gen LambdaExpression
+arbitraryBinaryOper context TInt n = do domainType <- arbitraryType 1
+                                        smallerFunction <- arbitrarySizedSimplyTypedLambda context (TFun domainType TInt) (n `div` 2)
+                                        argument <- arbitrarySizedSimplyTypedLambda context domainType (n `div` 2)
+                                        frequency[(4, BinaryOper <$> smallerLambdaExpression <*> arbitraryBinaryOpArithmetic <*> smallerLambdaExpression)
+                                                 ,(1, return $ BinaryOper smallerFunction Application argument)] 
+                                        where smallerLambdaExpression = arbitrarySizedSimplyTypedLambda context TInt (n `div` 2)
+arbitraryBinaryOper context TBool n = do domainType <- arbitraryType 1
+                                         smallerFunction <- arbitrarySizedSimplyTypedLambda context (TFun domainType TBool) (n `div` 2)
+                                         argument <- arbitrarySizedSimplyTypedLambda context domainType (n `div` 2)
+                                         frequency [(1, BinaryOper <$> smallerIntExpression <*> return Equal <*> smallerIntExpression)
+                                                   ,(1, BinaryOper <$> smallerIntExpression <*> return Less <*> smallerIntExpression)
+                                                   ,(2, BinaryOper <$> smallerBoolExpression <*> arbitraryBinaryOpLogical <*> smallerBoolExpression)
+                                                   ,(1, BinaryOper <$> smallerIntList <*> return Equal <*> smallerIntList)
+                                                   ,(1, return $ BinaryOper smallerFunction Application argument)]
+                                         where smallerIntExpression = arbitrarySizedSimplyTypedLambda context TInt (n `div` 2)
+                                               smallerBoolExpression = arbitrarySizedSimplyTypedLambda context TBool (n `div` 2)
+                                               smallerIntList = arbitrarySizedSimplyTypedLambda context TIntList (n `div` 2)
+arbitraryBinaryOper context (TFun domain range) n = undefined
+arbitraryBinaryOper context _ n = error $ "Binary operation not allowed."
+
+
 -- 
 -- General Generator
 -- 
 
 arbitrarySizedSimplyTypedLambda :: Context -> Type -> Int -> Gen LambdaExpression
-arbitrarySizedSimplyTypedLambda context t n = undefined
+arbitrarySizedSimplyTypedLambda context TInt n = undefined
 
