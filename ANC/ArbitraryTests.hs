@@ -90,13 +90,13 @@ arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBound
                                                        return (For variableName initialize comp expr body, upperBound)
 
 arbitrarySizedProgAssign :: Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgAssign upperBound n = if upperBound == 0 then do expr <- arbitrarySizedExpr upperBound (n - 1)
+arbitrarySizedProgAssign upperBound n = if upperBound == 0 then do expr <- arbitrarySizedExpr upperBound 3
                                                                    return (Assign "a1" expr, 1)
                                      else if upperBound == 10 then do variableName <- arbitraryIdentifier upperBound
-                                                                      expr <- arbitrarySizedExpr upperBound (n - 1)
+                                                                      expr <- arbitrarySizedExpr upperBound 3
                                                                       return (Assign variableName expr, 10)
                                      else do reassignedVariableName <- arbitraryIdentifier upperBound
-                                             expr <- arbitrarySizedExpr upperBound (n - 1)
+                                             expr <- arbitrarySizedExpr upperBound 3
                                              frequency [(5, return (Assign reassignedVariableName expr, upperBound) )                   {- Assign to previoiusly declared -}
                                                        ,(1, return (Assign ("a" ++ show (upperBound + 1)) expr, upperBound + 1) )]      {- Possibly declare new variable  -}
 
