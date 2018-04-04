@@ -30,24 +30,6 @@ arbitraryConstant :: Gen Integer
 arbitraryConstant = do firstInt <- elements $ [0 .. 10]
                        return firstInt
 
---data LambdaExpression = 
---    Match LambdaExpression LambdaExpression LambdaExpression |
---    BinaryOper LambdaExpression BinaryOp LambdaExpression |
---    Let String LambdaExpression LambdaExpression |
---    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic)
-
--- data UnaryOp = Neg | Not deriving (Eq, Generic)
--- data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
-
--- TFake is a type for evaluation purposes only when types are not examined.
--- data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
-
-
--- List of fully handled cases:
--- Number
--- Boolean (0.5)
--- Type
-
 arbitraryType :: Int -> Gen Type
 arbitraryType n | n <= 1 = frequency [(1, return TInt), (1, return TBool), (1, return TIntList)]
                 | otherwise = frequency [(1, arbitraryType 1), (1, TFun <$> arbitraryType 1 <*> arbitraryType (n - 1))]
@@ -92,6 +74,9 @@ arbitraryCons context n | n <= 1 = do number <- arbitraryNumber
                                          sublist <- arbitrarySizedSimplyTypedLambda context TIntList (n `div` 2)
                                          return (Cons number sublist)
 
+arbitraryFunction :: Gen Type
+arbitraryFunction = TFun <$> (arbitraryType 1) <*> (arbitraryType 1)
+
 arbitraryUnaryOper :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryUnaryOper context TInt n = UnaryOper Neg <$> arbitrarySizedSimplyTypedLambda context TInt (n - 1)
 arbitraryUnaryOper context TBool n = UnaryOper Not <$> arbitrarySizedSimplyTypedLambda context TBool (n - 1)
@@ -119,9 +104,7 @@ arbitraryLetRec context t n = do keyIdentifier <- freshVariableGivenContext cont
                                  body <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier valueType context) t (n `div` 2)
                                  return $ LetRec (keyIdentifier, valueType) assignee body
 
--- BinaryOper LambdaExpression BinaryOp LambdaExpression 
--- data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
--- data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
+-- Note, we do not generate function types through binary operations
 arbitraryBinaryOper :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryBinaryOper context TInt n = do domainType <- arbitraryType 1
                                         smallerFunction <- arbitrarySizedSimplyTypedLambda context (TFun domainType TInt) (n `div` 2)
@@ -140,14 +123,54 @@ arbitraryBinaryOper context TBool n = do domainType <- arbitraryType 1
                                          where smallerIntExpression = arbitrarySizedSimplyTypedLambda context TInt (n `div` 2)
                                                smallerBoolExpression = arbitrarySizedSimplyTypedLambda context TBool (n `div` 2)
                                                smallerIntList = arbitrarySizedSimplyTypedLambda context TIntList (n `div` 2)
-arbitraryBinaryOper context (TFun domain range) n = undefined
 arbitraryBinaryOper context _ n = error $ "Binary operation not allowed."
 
+--data Type = TInt | TBool | TIntList | TFun Type Type | TFake deriving (Eq, Generic)
+
+--data LambdaExpression = 
+--    Variable String | -- 1
+--    Abstraction (String, Type) LambdaExpression | -- 1
+--    Number Integer | Boolean Bool | Nil | -- Number : 1, Boolean : 11, Nil : 21
+--    If LambdaExpression LambdaExpression LambdaExpression | -- 11
+--    Cons LambdaExpression LambdaExpression | -- 21
+--    Match LambdaExpression LambdaExpression LambdaExpression | -- 21
+--    UnaryOper UnaryOp LambdaExpression | -- 1
+--    BinaryOper LambdaExpression BinaryOp LambdaExpression | -- 1 (except no application until 31)
+--    Let String LambdaExpression LambdaExpression | -- 31
+--    LetRec (String, Type) LambdaExpression LambdaExpression deriving (Eq, Generic) -- 41
+
+--data UnaryOp = Neg | Not deriving (Eq, Generic)
+--data BinaryOp = Plus | Minus | Times | Divide | And | Or | Equal | Less | Application deriving (Eq, Generic)
+
+testContext :: Context
+testContext = Map.fromList [("myInt0", TInt), ("myInt1", TInt), ("myBool0", TBool), ("myBool1", TBool), ("myIntList", TIntList)]
 
 -- 
 -- General Generator
 -- 
 
 arbitrarySizedSimplyTypedLambda :: Context -> Type -> Int -> Gen LambdaExpression
-arbitrarySizedSimplyTypedLambda context TInt n = undefined
-
+arbitrarySizedSimplyTypedLambda context TInt n | n <= 1 = arbitraryNumber
+                                               | otherwise = frequency [(1, arbitraryNumber)
+                                                                       ,(1, arbitraryIf context TInt n)
+                                                                       --,(1, arbitraryMatch context TInt n)
+                                                                       ,(1, arbitraryUnaryOper context TInt n)
+                                                                       ,(1, arbitraryBinaryOper context TInt n)
+                                                                       ,(1, arbitraryLet context TInt n)
+                                                                       ,(1, arbitraryLetRec context TInt n)]
+arbitrarySizedSimplyTypedLambda context TBool n | n <= 1 = arbitraryBoolean 
+                                                | otherwise = frequency [(1, arbitraryIf context TBool n)
+                                                                        --,(1, arbitraryMatch context TBool n)
+                                                                        ,(1, arbitraryUnaryOper context TBool n)
+                                                                        ,(1, arbitraryBinaryOper context TBool n)
+                                                                        ,(1, arbitraryLet context TBool n)
+                                                                        ,(1, arbitraryLetRec context TBool n)]
+arbitrarySizedSimplyTypedLambda context TIntList n | n <= 1 = arbitraryNil
+                                                   | otherwise = frequency [(1, arbitraryIf context TIntList n)
+                                                                           --,(1, arbitraryMatch context TIntList n)
+                                                                           ,(2, arbitraryCons context n)
+                                                                           ,(1, arbitraryBinaryOper context TIntList n)
+                                                                           ,(1, arbitraryLet context TIntList n)
+                                                                           ,(1, arbitraryLetRec context TIntList n)]
+arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = frequency [(1, arbitraryAbstraction context functionType n)]
+arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
