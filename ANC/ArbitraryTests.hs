@@ -12,7 +12,7 @@ import Test.QuickCheck
 -- A set of functions for generating arbitrary For and ProgLambda programs.
 -- 
 
-data Difficulty = Easy | Medium | Hard | VeryHard deriving (Read, Show)
+data Difficulty = Debug | Easy | Medium | Hard | VeryHard deriving (Read, Show)
 
 -- 
 -- Generators
@@ -28,6 +28,9 @@ arbitraryIdentifier upperBound = do identifier <- elements $ map (combineStringW
 arbitraryConstant :: Gen Int
 arbitraryConstant = do firstInt <- elements $ [0 .. 10]
                        return firstInt 
+
+arbitraryConstantExpression :: Gen Expr
+arbitraryConstantExpression = Const <$> arbitraryConstant
 
 arbitrarySizedExpr :: Int -> Int -> Gen Expr
 arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == 0 
@@ -114,6 +117,8 @@ arbitrarySizedProgFor frequencies@[freqAssign, freqIf, freqFor, freqSeq] upperBo
 arbitrarySizedProgFor _ upperBound n = error "Only four frequencies should be provided."
 
 arbitrarySizedProgForWithDifficulty :: Difficulty -> Int -> Int -> Gen (ProgFor, Int)
+arbitrarySizedProgForWithDifficulty Debug _ _ = do constant <- arbitraryConstantExpression
+                                                   frequency [(1, return (Assign "a1" constant, 1))]
 arbitrarySizedProgForWithDifficulty Easy upperBound n = arbitrarySizedProgFor [1, 0, 0, 0] upperBound n
 arbitrarySizedProgForWithDifficulty Medium upperBound n = arbitrarySizedProgFor [1, 1, 0, 0] upperBound n
 arbitrarySizedProgForWithDifficulty Hard upperBound n = arbitrarySizedProgFor [2, 1, 1, 0] upperBound n
