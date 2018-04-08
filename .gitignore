@@ -2,3 +2,4 @@
 .ipynb*
 ANC/adaptive-neural-compilation*
 .DS_Store
+*.swp

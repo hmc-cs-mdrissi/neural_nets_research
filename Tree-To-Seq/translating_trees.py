@@ -13,45 +13,45 @@ class Node:
     def __init__(self, value):
         self.value = value
         self.children = []
-    
+
     def cuda(self):
-        return map_tree(lambda value: value.cuda(), self) 
+        return map_tree(lambda value: value.cuda(), self)
 
 def make_tree(json):
-  # First base case - variable name
-  if isinstance(json, string_types):
-      parentNode = Node("<VAR>")
-      childNode = Node(json)
-      parentNode.children.append(childNode)
-      return parentNode
+    # First base case - variable name
+    if isinstance(json, string_types):
+        parentNode = Node("<VAR>")
+        childNode = Node(json)
+        parentNode.children.append(childNode)
+        return parentNode
 
-  # Second base case - variable value
-  if type(json) is int:
-      return Node(json)
+    # Second base case - variable value
+    if type(json) is int:
+        return Node(json)
 
-  tag = "<" + json["tag"].upper() + ">"
-  children = json["contents"]
-  parentNode = Node(tag)
+    tag = "<" + json["tag"].upper() + ">"
+    children = json["contents"]
+    parentNode = Node(tag)
 
-  if type(children) is list:
-    parentNode.children.extend(map(make_tree, children))
-  else:
-    parentNode.children.append(make_tree(children))
+    if type(children) is list:
+        parentNode.children.extend(map(make_tree, children))
+    else:
+        parentNode.children.append(make_tree(children))
 
-  return parentNode
+    return parentNode
 
 def binarize_tree(tree):
-  new_tree = Node(tree.value)
-  curr_node = new_tree
+    new_tree = Node(tree.value)
+    curr_node = new_tree
 
-  for child in tree.children:
-    new_node = binarize_tree(child)
-    curr_node.children.append(new_node)
-    curr_node = new_node
+    for child in tree.children:
+        new_node = binarize_tree(child)
+        curr_node.children.append(new_node)
+        curr_node = new_node
 
-  return new_tree
+    return new_tree
 
-def vectorize(val, num_vars, num_ints, ops, one_hot=True):
+def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if type(val) is int:
         index = val
     elif val not in ops:
@@ -60,31 +60,51 @@ def vectorize(val, num_vars, num_ints, ops, one_hot=True):
         index = num_ints + num_vars + ops[val]
 
     if one_hot:
-      vector = torch.zeros(num_vars + num_ints + len(ops.keys()))
-      vector[index] = 1
-      return Variable(vector)
+        eos_bonus = 1 if eos_token else 0
+        return make_one_hot(num_vars + num_ints + len(ops.keys()) + eos_bonus, index)
 
     return index
 
+def make_one_hot(len, index):
+    vector = torch.zeros(len)
+    vector[index] = 1
+    return Variable(vector)
+
+def un_one_hot(vector):
+    return int(vector.data.nonzero())
+
 def map_tree(func, tree):
-  new_tree = Node(func(tree.value))
-  new_tree.children.extend(map(partial(map_tree, func), tree.children))
-  return new_tree
+    new_tree = Node(func(tree.value))
+    new_tree.children.extend(map(partial(map_tree, func), tree.children))
+    return new_tree
 
 def print_tree(tree):
     print(tree.value)
     for child in tree.children:
         print_tree(child)
 
-def encode_tree(tree, num_vars, num_ints, ops, one_hot=True):
-  return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, one_hot=one_hot), tree)
+def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
+    return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, one_hot=one_hot), tree)
+
+def decode_tokens(seq, num_vars, num_ints, ops):
+    reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))
+
+    def index_to_token(index):
+        if index < num_ints:
+            return index
+        elif index < num_ints + num_vars:
+            return 'a' + str(index - num_ints)
+        else:
+            return reverse_ops[index - num_ints - num_vars]
+
+    return list(map(index_to_token, seq))
 
 def tree_to_list(tree):
   """
-        Concatenate a tree of vectors into a matrix using a pre-order traversal.
+        Concatenate a tree into a list using a pre-order traversal.
 
-        :param node: a tree of vectors, each of the same size.
-        :return a list of vectors of the tree
+        :param tree: a tree.
+        :return a list of values of the tree
   """
   return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
 
