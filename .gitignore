@@ -3,3 +3,5 @@
 ANC/adaptive-neural-compilation*
 .DS_Store
 *.swp
+*.hi
+*.o
