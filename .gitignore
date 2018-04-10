@@ -1,4 +1,7 @@
 */__pycache__
 .ipynb*
 ANC/adaptive-neural-compilation*
-
+.DS_Store
+*.swp
+*.hi
+*.o

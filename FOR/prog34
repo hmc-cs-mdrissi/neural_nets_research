@@ -1,8 +1,0 @@
-a4 = 4;
-for a0 = 0; a4 == 7; a4 do
-    if a2 == a0 then
-	a4 = 8
-    else
-	a2 = a2 - 1
-    endif
-endfor

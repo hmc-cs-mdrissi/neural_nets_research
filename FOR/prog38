@@ -1,3 +1,0 @@
-for a0 = 0; a9 == 7; a4 do
-a9 = a0 + 4
-endfor

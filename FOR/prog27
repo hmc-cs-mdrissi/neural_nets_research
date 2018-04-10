@@ -1,6 +1,0 @@
-if 8 == 9 then
-    a1 = 8
-else 
-    a1 = 5;
-    a2 = 4 + a5
-    endif
