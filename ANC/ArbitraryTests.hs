@@ -38,12 +38,12 @@ arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == 0
                                            else frequency [(1, Var <$> arbitraryIdentifier upperBound), (1, Const <$> arbitraryConstant)]
                                 | otherwise = if upperBound == 0 
                                               then frequency [(1, Const <$> arbitraryConstant)
-                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound (n `div` 2) <*> arbitrarySizedExpr upperBound (n `div` 2)) 
-                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound (n `div` 2) <*> arbitrarySizedExpr upperBound (n `div` 2))] 
+                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
+                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))] 
                                               else frequency [(1, Var <$> arbitraryIdentifier upperBound)
                                                              ,(1, Const <$> arbitraryConstant)
-                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound (n `div` 2) <*> arbitrarySizedExpr upperBound (n `div` 2)) 
-                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound (n `div` 2) <*> arbitrarySizedExpr upperBound (n `div` 2))] 
+                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
+                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))] 
 
 instance Arbitrary Expr where
     arbitrary = sized (arbitrarySizedExpr 10)
@@ -56,7 +56,7 @@ arbitrarySizedCmp :: Int -> Int -> Gen Cmp
 arbitrarySizedCmp upperBound n = frequency [(1, Equal <$> smallerArbitrary <*> smallerArbitrary)
                                            ,(1, Le <$> smallerArbitrary <*> smallerArbitrary)
                                            ,(1, Ge <$> smallerArbitrary <*> smallerArbitrary)]
-                                 where smallerArbitrary = arbitrarySizedExpr upperBound (n `div` 2) 
+                                 where smallerArbitrary = arbitrarySizedExpr upperBound ((n `div` 3) - 1)
 
 instance Arbitrary Cmp where
   arbitrary = sized (arbitrarySizedCmp 10)
@@ -70,15 +70,15 @@ instance Arbitrary Cmp where
 -- If statements may be able to declare new variables for use outside blocks
 -- Here, we do not allow variables defined within the If to be used outside the block
 arbitrarySizedProgForIf :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForIf frequencies upperBound n = do comp <- arbitrarySizedCmp upperBound (n `div` 3)
-                                                      (if_body, _) <- arbitrarySizedProgFor frequencies upperBound (n `div` 3)
-                                                      (else_body, _) <- arbitrarySizedProgFor frequencies upperBound (n `div` 3)
+arbitrarySizedProgForIf frequencies upperBound n = do comp <- arbitrarySizedCmp upperBound ((n `div` 3) - 1)
+                                                      (if_body, _) <- arbitrarySizedProgFor frequencies upperBound ((n `div` 3) - 2)
+                                                      (else_body, _) <- arbitrarySizedProgFor frequencies upperBound ((n `div` 3) - 2)
                                                       return (If comp if_body else_body, upperBound)
 
 -- Seq statements may be able to declare new variables for use in next block
 arbitrarySizedProgForSeq :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
 arbitrarySizedProgForSeq frequencies upperBound n = do (oneHalfArbitrarySizedProgFor1, firstBlockUpperBound) <- arbitrarySizedProgFor frequencies upperBound (n `div` 2)
-                                                       (oneHalfArbitrarySizedProgFor2, secondBlockUpperBound) <- arbitrarySizedProgFor frequencies firstBlockUpperBound (n `div` 2) 
+                                                       (oneHalfArbitrarySizedProgFor2, secondBlockUpperBound) <- arbitrarySizedProgFor frequencies firstBlockUpperBound ((n `div` 2) - 1)
                                                        let arbitrarySeq = Seq oneHalfArbitrarySizedProgFor1 oneHalfArbitrarySizedProgFor2
                                                        return (arbitrarySeq, secondBlockUpperBound)
 
@@ -86,10 +86,10 @@ arbitrarySizedProgForSeq frequencies upperBound n = do (oneHalfArbitrarySizedPro
 -- Here, we do not allow variables defined within the For to be used outside the block
 arbitrarySizedProgForFor :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
 arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBoundLoop) <- (if upperBound == 0 then return ("a1", 1) else if upperBound == 10 then flip (,) 10 <$> arbitraryIdentifier upperBound else frequency [(4,  return ("a" ++ show (upperBound + 1), upperBound + 1)), (1, (,) <$> arbitraryIdentifier upperBound <*> return upperBound)])
-                                                       initialize <- arbitrarySizedExpr upperBound (n `div` 4)
+                                                       initialize <- arbitrarySizedExpr upperBound ((n `div` 4) - 1)
                                                        comp <- arbitrarySizedCmp upperBoundLoop (n `div` 4)
                                                        expr <- arbitrarySizedExpr upperBoundLoop (n `div` 4)
-                                                       (body, _) <- arbitrarySizedProgFor frequencies upperBoundLoop (n `div` 4)
+                                                       (body, _) <- arbitrarySizedProgFor frequencies upperBoundLoop ((n `div` 4) - 1)
                                                        return (For variableName initialize comp expr body, upperBound)
 
 arbitrarySizedProgAssign :: Int -> Int -> Gen (ProgFor, Int)

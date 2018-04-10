@@ -20,6 +20,8 @@ import Prelude hiding (writeFile)
 -- in a file.
 -- 
 
+-- Typical term lengths: Easy = 10, Medium = 15, Hard = 20, VeryHard = 25
+
 data Config = Config {forFileName :: String,
                       forCount :: Int,
                       difficulty :: Difficulty,
