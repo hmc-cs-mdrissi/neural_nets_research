@@ -5,3 +5,4 @@ ANC/adaptive-neural-compilation*
 *.swp
 *.hi
 *.o
+*.pth

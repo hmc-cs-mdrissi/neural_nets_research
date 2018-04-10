@@ -101,7 +101,7 @@ def decode_tokens(seq, num_vars, num_ints, ops):
         if index < num_ints:
             return index
         elif index < num_ints + num_vars:
-            return 'a' + str(index - num_ints)
+            return 'a' + str(index - num_ints + 1)
         else:
             return reverse_ops[index - num_ints - num_vars]
 
@@ -125,7 +125,7 @@ def translate_from_for(tree):
             return t1
         else:
             new_tree = Node('<LET>')
-            new_tree.children.extend(['blank', t1, t2])
+            new_tree.children.extend(['a11', t1, t2])
             return new_tree
     elif tree.value == '<IF>':
         cmp = tree.children[0]
@@ -142,20 +142,22 @@ def translate_from_for(tree):
         body = translate_from_for(tree.children[4])
 
         tb = Node('<LET>')
-        tb.children.append(Node('blank'))
+        tb.children.append(Node('a11'))
         tb.children.append(body)
+        
         increment = Node('<APP>')
-        increment.children.extend([Node('func'), inc])
+        increment.children.extend([Node('a12'), inc])
         tb.children.append(increment)
 
         funcbody = Node('<IF>')
         funcbody.children.extend([cmp, tb, Node('<UNIT>')])
-
+        
         translate = Node('<LETREC>')
-        translate.children.extend([Node('func'), var, funcbody])
+        translate.children.extend([Node('a12'), var, funcbody])
+                
         initialize = Node('<APP>')
-        initialize.children.extend([Node('func'), init])
-        translate.append(initialize)
+        initialize.children.extend([Node('a12'), init])
+        translate.children.append(initialize)
 
         return translate
     elif tree.value == '<ASSIGN>':
