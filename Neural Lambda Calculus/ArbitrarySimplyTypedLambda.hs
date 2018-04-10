@@ -91,12 +91,12 @@ arbitraryUnaryOper context _ n = error $ "You can't use arbitrary unary op to ge
 arbitraryMatch :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryMatch context t n | n <= 6 = do baseList <- arbitrarySizedSimplyTypedLambda context TIntList 1
                                          baseNil <- arbitrarySizedSimplyTypedLambda context t 1
-                                         baseCons <- arbitrarySizedSimplyTypedLambda context t 1
-                                         return $ Match baseList baseNil baseCons
+                                         baseCons <- arbitrarySizedSimplyTypedLambda (insert "t" TIntList (insert "h" TInt context)) t 1
+                                         return $ Match baseList baseNil (Abstraction ("h", TInt) (Abstraction ("t", TIntList) baseCons))
                            | otherwise = do ls <- arbitrarySizedSimplyTypedLambda context TIntList (n `div` 3)
                                             nilcase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
-                                            conscase <- arbitrarySizedSimplyTypedLambda context t (n `div` 3)
-                                            return $ Match ls nilcase conscase
+                                            conscase <- arbitrarySizedSimplyTypedLambda (insert "t" TIntList (insert "h" TInt context)) t (n `div` 3)
+                                            return $ Match ls nilcase (Abstraction ("h", TInt) (Abstraction ("t", TIntList) conscase))
 
 arbitraryLet :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryLet context t n = do keyIdentifier <- freshVariableGivenContext context
@@ -175,21 +175,21 @@ arbitrarySizedSimplyTypedLambda :: Context -> Type -> Int -> Gen LambdaExpressio
 arbitrarySizedSimplyTypedLambda context TInt n | n <= 1 = arbitraryNumber
                                                | otherwise = frequency [(1, arbitraryNumber)
                                                                        ,(1, arbitraryIf context TInt n)
-                                                                       --,(1, arbitraryMatch context TInt n)
+                                                                       ,(1, arbitraryMatch context TInt n)
                                                                        ,(1, arbitraryUnaryOper context TInt n)
                                                                        ,(1, arbitraryBinaryOper context TInt n)
                                                                        ,(1, arbitraryLet context TInt n)
                                                                        ,(1, arbitraryLetRec context TInt n)]
 arbitrarySizedSimplyTypedLambda context TBool n | n <= 1 = arbitraryBoolean 
                                                 | otherwise = frequency [(1, arbitraryIf context TBool n)
-                                                                        --,(1, arbitraryMatch context TBool n)
+                                                                        ,(1, arbitraryMatch context TBool n)
                                                                         ,(1, arbitraryUnaryOper context TBool n)
                                                                         ,(1, arbitraryBinaryOper context TBool n)
                                                                         ,(1, arbitraryLet context TBool n)
                                                                         ,(1, arbitraryLetRec context TBool n)]
 arbitrarySizedSimplyTypedLambda context TIntList n | n <= 1 = arbitraryNil
                                                    | otherwise = frequency [(1, arbitraryIf context TIntList n)
-                                                                           --,(1, arbitraryMatch context TIntList n)
+                                                                           ,(1, arbitraryMatch context TIntList n)
                                                                            ,(2, arbitraryCons context n)
                                                                            ,(1, arbitraryLet context TIntList n)
                                                                            ,(1, arbitraryLetRec context TIntList n)]
