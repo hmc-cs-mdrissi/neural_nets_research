@@ -17,12 +17,15 @@ class Node:
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
 
-def make_tree(json):
+def make_tree(json, long_base_case=True):
     # First base case - variable name
     if isinstance(json, string_types):
-        parentNode = Node("<VAR>")
-        childNode = Node(json)
-        parentNode.children.append(childNode)
+        if long_base_case:
+            parentNode = Node("<VAR>")
+            childNode = Node(json)
+            parentNode.children.append(childNode)
+        else:
+            parentNode = Node(json)
         return parentNode
 
     # Second base case - variable value
@@ -31,6 +34,11 @@ def make_tree(json):
 
     tag = "<" + json["tag"].upper() + ">"
     children = json["contents"]
+    
+    if not long_base_case:
+        if tag == '<CONST>':
+            return Node(children)
+        
     parentNode = Node(tag)
 
     if type(children) is list:
@@ -93,7 +101,7 @@ def decode_tokens(seq, num_vars, num_ints, ops):
         if index < num_ints:
             return index
         elif index < num_ints + num_vars:
-            return 'a' + str(index - num_ints)
+            return 'a' + str(index - num_ints + 1)
         else:
             return reverse_ops[index - num_ints - num_vars]
 
@@ -110,44 +118,46 @@ def tree_to_list(tree):
 
 def translate_from_for(tree):
     if tree.value == '<SEQ>':
-        t1 = self.translate_from_for(tree.children[0])
-        t2 = self.translate_from_for(tree.children[1])
+        t1 = translate_from_for(tree.children[0])
+        t2 = translate_from_for(tree.children[1])
         if t1.value == '<LET>' and t1.children[-1].value == '<UNIT>':
             t1.children[-1] = t2
             return t1
         else:
             new_tree = Node('<LET>')
-            new_tree.children.extend(['blank', t1, t2])
+            new_tree.children.extend(['a11', t1, t2])
             return new_tree
     elif tree.value == '<IF>':
-        cmp = ls.children[0]
-        t1 = self.translate_from_for(tree.children[1])
-        t2 = self.translate_from_for(tree.children[2])
+        cmp = tree.children[0]
+        t1 = translate_from_for(tree.children[1])
+        t2 = translate_from_for(tree.children[2])
         new_tree = Node('<IF>')
         new_tree.children.extend([cmp, t1, t2])
         return new_tree
     elif tree.value == '<FOR>':
         var = tree.children[0]
-        init = self.translate_from_for(tree.children[1])
-        cmp = self.translate_from_for(tree.children[2])
-        inc = self.translate_from_for(tree.children[3])
-        body = self.translate_from_for(tree.children[4])
+        init = translate_from_for(tree.children[1])
+        cmp = translate_from_for(tree.children[2])
+        inc = translate_from_for(tree.children[3])
+        body = translate_from_for(tree.children[4])
 
         tb = Node('<LET>')
-        tb.children.append(Node('blank'))
+        tb.children.append(Node('a11'))
         tb.children.append(body)
+        
         increment = Node('<APP>')
-        increment.children.extend([Node('func'), inc])
+        increment.children.extend([Node('a12'), inc])
         tb.children.append(increment)
 
         funcbody = Node('<IF>')
         funcbody.children.extend([cmp, tb, Node('<UNIT>')])
-
+        
         translate = Node('<LETREC>')
-        translate.children.extend([Node('func'), var, funcbody])
+        translate.children.extend([Node('a12'), var, funcbody])
+                
         initialize = Node('<APP>')
-        initialize.children.extend([Node('func'), init])
-        translate.append(initialize)
+        initialize.children.extend([Node('a12'), init])
+        translate.children.append(initialize)
 
         return translate
     elif tree.value == '<ASSIGN>':
