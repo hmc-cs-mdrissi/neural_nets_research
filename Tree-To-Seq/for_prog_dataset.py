@@ -4,7 +4,8 @@ from translating_trees import *
 
 class ForDataset(Dataset):
     def __init__(self, path, num_vars = 10, num_ints = 11, binarize = False, 
-                 input_eos_token=True, input_as_seq=False, use_embedding=False):
+                 input_eos_token=True, input_as_seq=False, use_embedding=False,
+                 long_base_case=True):
         for_ops = {
             "<VAR>": 0,
             "<CONST>": 1,
@@ -36,7 +37,7 @@ class ForDataset(Dataset):
 
         progsjson = json.load(open(path))
 
-        for_progs = [make_tree(prog) for prog in progsjson]
+        for_progs = [make_tree(prog, long_base_case=long_base_case) for prog in progsjson]
         lambda_progs = [translate_from_for(for_prog) for for_prog in for_progs]
 
         if binarize:
