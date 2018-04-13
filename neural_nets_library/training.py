@@ -7,6 +7,7 @@ import time
 import torch
 from torch.autograd import Variable
 import torch.utils.data as data
+import torch.optim as optim
 
 def split_dataset(dset, batch_size=128, thread_count=4):
     """
@@ -33,7 +34,7 @@ def split_dataset(dset, batch_size=128, thread_count=4):
     return loader_dset_train, loader_dset_test, loader_dset_validation
 
 def train_model_with_validation(model, train_loader, validation_loader, criterion,
-                                optimizer, lr_scheduler, num_epochs=20):
+                                optimizer, lr_scheduler=None, num_epochs=20):
     """
     Trains a model while printing updates on loss and accuracy. Once training is complete,
     it is tested on the validation data set.
@@ -48,7 +49,8 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
-        optimizer = lr_scheduler(optimizer, epoch)
+        if lr_scheduler is not None:
+            lr_scheduler.step(epoch)
 
         running_loss = 0.0
         running_corrects = 0
@@ -110,29 +112,16 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
 
     return best_model
 
-def exp_lr_scheduler(optimizer, epoch, init_lr=0.005, lr_decay_epoch=7):
-    """
-    Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs.
-    """
-    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
-
-    if epoch % lr_decay_epoch == 0:
-        print('LR is set to {}'.format(lr))
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-    return optimizer
-
 def clip_grads(net):
-    """Clip the gradients to -10 to 10."""
+    """Clip the gradients to -5 to 5."""
     for p in net.parameters():
         if p.grad is not None:
             p.grad.data.clamp_(-5, 5)
 
-# TODO: Use a learning rate scheduler the way pytorch has them.
-def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler = exp_lr_scheduler, num_epochs=20,
-                print_every=200, plot_every=100, deep_copy_desired=False, validation_criterion=None):
+def train_model(model, dset_loader, training_criterion, optimizer, 
+                lr_scheduler=None, num_epochs=20,
+                print_every=200, plot_every=100, deep_copy_desired=False, validation_criterion=None,
+                plateau_lr=False):
 
     since = time.time()
 
@@ -154,8 +143,8 @@ def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler 
         epoch_running_loss = 0.0
         current_batch = 0
 
-        if lr_scheduler is not None:
-            optimizer = lr_scheduler(optimizer, epoch)
+        if lr_scheduler is not None and not plateau_lr:
+            lr_scheduler.step(epoch)
 
         # Iterate over data.
         for inputs, labels in dset_loader:
@@ -178,7 +167,8 @@ def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler 
                 running_validation_plot_loss += validation_loss
                 running_validation_print_loss += validation_loss
 
-
+            if plateau_lr:
+                lr_scheduler.step(float(loss))
             # backward
             loss.backward()
             clip_grads(model)
@@ -193,15 +183,16 @@ def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler 
             if total_batch_number % print_every == 0:
                 curr_loss = running_train_print_loss / print_every
                 time_elapsed = time.time() - since
-            if validation_criterion is not None:
-                curr_validation_loss = running_validation_print_loss / print_every
-                print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}, Validation Metric: {:.4f}'.format(
-                epoch, current_batch, curr_loss, curr_validation_loss))
-            else:
-                print('Epoch Number: {}, Batch Number: {}, Loss: {:.4f}'.format(
-                epoch, current_batch, curr_loss))
-                print('Time so far is {:.0f}m {:.0f}s'.format(
-                time_elapsed // 60, time_elapsed % 60))
+                
+                if validation_criterion is not None:
+                    curr_validation_loss = running_validation_print_loss / print_every
+                    print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}, Validation Metric: {:.4f}'.format(
+                    epoch, current_batch, curr_loss, curr_validation_loss))
+                else:
+                    print('Epoch Number: {}, Batch Number: {}, Loss: {:.4f}'.format(
+                    epoch, current_batch, curr_loss))
+                    print('Time so far is {:.0f}m {:.0f}s'.format(
+                    time_elapsed // 60, time_elapsed % 60))
 
                 running_train_print_loss = 0.0
                 running_validation_print_loss = 0.0
@@ -229,19 +220,18 @@ def train_model(model, dset_loader, training_criterion, optimizer, lr_scheduler 
 
     return best_model, train_plot_losses, validation_plot_losses
 
-
-# TODO: Use a learning rate scheduler the way pytorch has them.
 def train_model_anc(model,
                     dset_loader,
                     optimizer,
-                    lr_scheduler = exp_lr_scheduler,
+                    lr_scheduler=None,
                     num_epochs=20,
                     print_every=200,
                     plot_every=100,
                     validation_criterion=None,
                     batch_size=50,
                     deep_copy_desired=False,
-                    use_cuda=False):
+                    use_cuda=False,
+                    plateau_lr=False):
     since = time.time()
 
     best_model = model
@@ -265,8 +255,8 @@ def train_model_anc(model,
         epoch_running_loss = 0.0
         current_batch = 0
 
-        if lr_scheduler is not None:
-            optimizer = lr_scheduler(optimizer, epoch)
+        if lr_scheduler is not None and not plateau_lr:
+            lr_scheduler.step(epoch)
 
         # Iterate over data.
         for input, target in dset_loader:
@@ -275,9 +265,6 @@ def train_model_anc(model,
 
             total_batch_number += 1
             current_batch += 1
-
-            # zero the parameter gradients
-            optimizer.zero_grad()
 
             # forward
             iteration_loss = model.forward_train(input, target)
@@ -295,8 +282,14 @@ def train_model_anc(model,
                 loss.backward()
                 clip_grads(model)
                 optimizer.step()
+                
+                if plateau_lr:
+                    lr_scheduler.step(float(loss))
+                
                 loss = 0
-
+                
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
             # statistics
             epoch_running_loss += float(iteration_loss)
