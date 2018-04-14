@@ -37,7 +37,7 @@ parseArguments = do args <- getArgs
                     foldM parseArgumentsHelper defaultConfig args
 
 generateArbitraryLC :: Difficulty -> Int -> Int -> IO [LambdaExpression]
-generateArbitraryLC difficulty count exprLength = generate $ vectorOf count $ (arbitrarySizedSimplyTypedLambdaWithDifficulty difficulty Map.empty exprLength)
+generateArbitraryLC difficulty count exprLength = generate $ vectorOf count $ (arbitrarySizedSimplyTypedLambdaWithDifficulty difficulty)
 
 
 main :: IO ()

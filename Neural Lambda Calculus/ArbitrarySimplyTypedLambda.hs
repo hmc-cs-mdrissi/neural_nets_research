@@ -219,11 +219,17 @@ arbitrarySizedSimplyTypedLambda context TIntList n | n <= 1 = arbitraryNil
 arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = frequency [(1, arbitraryAbstraction context functionType n)]
 arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
 
+generateLambdaExpressionWithTermLength :: Context -> Int -> Gen LambdaExpression
+generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context TInt n)
+                                                             ,(0, arbitrarySizedSimplyTypedLambda context TBool n)
+                                                             ,(0, arbitrarySizedSimplyTypedLambda context TIntList n)]
+
 -- TODO: Currently does not generate top-level abstractions
-arbitrarySizedSimplyTypedLambdaWithDifficulty :: Difficulty -> Context -> Int -> Gen LambdaExpression
-arbitrarySizedSimplyTypedLambdaWithDifficulty _ context n = frequency [(1, arbitrarySizedSimplyTypedLambda context TInt n)
-                                                                      ,(1, arbitrarySizedSimplyTypedLambda context TBool n)
-                                                                      ,(1, arbitrarySizedSimplyTypedLambda context TIntList n)]
+arbitrarySizedSimplyTypedLambdaWithDifficulty :: Difficulty -> Gen LambdaExpression
+arbitrarySizedSimplyTypedLambdaWithDifficulty Easy = generateLambdaExpressionWithTermLength Map.empty 5
+arbitrarySizedSimplyTypedLambdaWithDifficulty Medium = generateLambdaExpressionWithTermLength Map.empty 8
+arbitrarySizedSimplyTypedLambdaWithDifficulty Hard = generateLambdaExpressionWithTermLength Map.empty 10
+arbitrarySizedSimplyTypedLambdaWithDifficulty VeryHard = generateLambdaExpressionWithTermLength Map.empty 15
 
 
 
