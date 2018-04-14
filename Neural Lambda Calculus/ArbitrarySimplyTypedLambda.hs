@@ -14,6 +14,15 @@ import Control.Applicative (liftA2)
 import Data.Map (Map, toList, member, insert)
 import qualified Data.Map as Map
 
+-- 
+-- Difficulty
+-- 
+data Difficulty = Debug | Easy | Medium | Hard | VeryHard deriving (Read, Show)
+
+-- 
+-- Context Query, Modify, Generate
+-- 
+
 type Context = Map String Type
 
 isTypeVariablePair :: Type -> (Type, b) -> Bool
@@ -26,6 +35,17 @@ freshVariableGivenContext context = return $ freshVariableAux 1 context
 getArbitraryIdentifierFromContext :: Context -> Type -> Gen String
 getArbitraryIdentifierFromContext context typ = elements $ map fst $ filter ((==typ) . snd) $ (toList context)
 
+isIdentifierTypeInContext :: Context -> Type -> Bool
+isIdentifierTypeInContext context typ = let filteredIdentifiers = filter ((==typ) . snd) $ (toList context) in
+                                            if (null filteredIdentifiers) then False else True
+
+arbitraryVariableGivenContext :: Context -> Type -> Gen LambdaExpression
+arbitraryVariableGivenContext context t = Variable <$> getArbitraryIdentifierFromContext context t
+
+-- 
+-- Grammar Generation
+-- 
+
 arbitraryConstant :: Gen Integer
 arbitraryConstant = do firstInt <- elements $ [0 .. 10]
                        return firstInt
@@ -34,23 +54,23 @@ arbitraryType :: Int -> Gen Type
 arbitraryType n | n <= 1 = frequency [(1, return TInt), (1, return TBool), (1, return TIntList)]
                 | otherwise = frequency [(1, arbitraryType 1), (1, TFun <$> arbitraryType 1 <*> arbitraryType (n - 1))]
 
-arbitraryVariable :: Context -> Gen LambdaExpression
-arbitraryVariable context = Variable <$> freshVariableGivenContext context
-
-arbitraryVariableGivenContext :: Context -> Type -> Gen LambdaExpression
-arbitraryVariableGivenContext context t = Variable <$> getArbitraryIdentifierFromContext context t
-
 arbitraryAbstraction :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryAbstraction context (TFun domain range) n = do keyIdentifier <- freshVariableGivenContext context
                                                         lc <- arbitrarySizedSimplyTypedLambda (insert keyIdentifier domain context) range (n - 2)
                                                         return (Abstraction (keyIdentifier, domain) lc)
 arbitraryAbstraction _ _ _ = error $ "You must generate a function type."
 
-arbitraryNumber :: Gen LambdaExpression
-arbitraryNumber = Number <$> arbitraryConstant
+arbitraryInt :: Context -> Gen LambdaExpression
+arbitraryInt context = if isIdentifierTypeInContext context TInt 
+                       then frequency [(3, Variable <$> getArbitraryIdentifierFromContext context TInt)
+                                      ,(1, Number <$> arbitraryConstant)]
+                       else Number <$> arbitraryConstant
 
-arbitraryBoolean :: Gen LambdaExpression
-arbitraryBoolean = Boolean <$> elements [True, False]
+arbitraryBoolean :: Context -> Gen LambdaExpression
+arbitraryBoolean context = if isIdentifierTypeInContext context TBool
+                           then frequency [(3, Variable <$> getArbitraryIdentifierFromContext context TBool)
+                                          ,(1, Boolean <$> elements [True, False])]
+                           else Boolean <$> elements [True, False]
 
 arbitraryBinaryOpArithmetic :: Gen BinaryOp
 arbitraryBinaryOpArithmetic = frequency [(1, return Plus), (1, return Minus), (1, return Times), (1, return Divide)]
@@ -72,7 +92,7 @@ arbitraryNil ::  Gen LambdaExpression
 arbitraryNil = return Nil
 
 arbitraryCons ::  Context -> Int -> Gen LambdaExpression
-arbitraryCons context n | n <= 3 = do number <- arbitraryNumber
+arbitraryCons context n | n <= 3 = do number <- arbitraryInt context
                                       return (Cons number Nil)
                         | otherwise = do number <- arbitrarySizedSimplyTypedLambda context TInt (n `div` 2) 
                                          sublist <- arbitrarySizedSimplyTypedLambda context TIntList (n `div` 2)
@@ -89,7 +109,7 @@ arbitraryUnaryOper context TBool n | n <= 2 = UnaryOper Not <$> arbitrarySizedSi
 arbitraryUnaryOper context _ n = error $ "You can't use arbitrary unary op to generate any other types."
 
 arbitraryMatch :: Context -> Type -> Int -> Gen LambdaExpression
-arbitraryMatch context t n | n <= 6 = do baseList <- arbitrarySizedSimplyTypedLambda context TIntList 1
+arbitraryMatch context t n | n <= 6 = do baseList <- arbitrarySizedSimplyTypedLambda context TIntList 3
                                          baseNil <- arbitrarySizedSimplyTypedLambda context t 1
                                          baseCons <- arbitrarySizedSimplyTypedLambda (insert "t" TIntList (insert "h" TInt context)) t 1
                                          return $ Match baseList baseNil (Abstraction ("h", TInt) (Abstraction ("t", TIntList) baseCons))
@@ -172,26 +192,48 @@ testContext = Map.fromList [("myInt0", TInt), ("myInt1", TInt), ("myBool0", TBoo
 -- 
 
 arbitrarySizedSimplyTypedLambda :: Context -> Type -> Int -> Gen LambdaExpression
-arbitrarySizedSimplyTypedLambda context TInt n | n <= 1 = arbitraryNumber
-                                               | otherwise = frequency [(1, arbitraryNumber)
+-- add pulling from context to each to the types below
+arbitrarySizedSimplyTypedLambda context TInt n | n <= 1 = arbitraryInt context
+                                               | otherwise = frequency [(1, arbitraryInt context)
                                                                        ,(1, arbitraryIf context TInt n)
                                                                        ,(1, arbitraryMatch context TInt n)
                                                                        ,(1, arbitraryUnaryOper context TInt n)
                                                                        ,(1, arbitraryBinaryOper context TInt n)
                                                                        ,(1, arbitraryLet context TInt n)
                                                                        ,(1, arbitraryLetRec context TInt n)]
-arbitrarySizedSimplyTypedLambda context TBool n | n <= 1 = arbitraryBoolean 
-                                                | otherwise = frequency [(1, arbitraryIf context TBool n)
+arbitrarySizedSimplyTypedLambda context TBool n | n <= 1 = arbitraryBoolean context
+                                                | otherwise = frequency [(1, arbitraryBoolean context)
+                                                                        ,(1, arbitraryIf context TBool n)
                                                                         ,(1, arbitraryMatch context TBool n)
                                                                         ,(1, arbitraryUnaryOper context TBool n)
                                                                         ,(1, arbitraryBinaryOper context TBool n)
                                                                         ,(1, arbitraryLet context TBool n)
                                                                         ,(1, arbitraryLetRec context TBool n)]
 arbitrarySizedSimplyTypedLambda context TIntList n | n <= 1 = arbitraryNil
-                                                   | otherwise = frequency [(1, arbitraryIf context TIntList n)
+                                                   | otherwise = frequency [(1, arbitraryNil)
+                                                                           ,(1, arbitraryIf context TIntList n)
                                                                            ,(1, arbitraryMatch context TIntList n)
                                                                            ,(2, arbitraryCons context n)
                                                                            ,(1, arbitraryLet context TIntList n)
                                                                            ,(1, arbitraryLetRec context TIntList n)]
 arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = frequency [(1, arbitraryAbstraction context functionType n)]
 arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
+
+generateLambdaExpressionWithTermLength :: Context -> Int -> Gen LambdaExpression
+generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context TInt n)
+                                                             ,(0, arbitrarySizedSimplyTypedLambda context TBool n)
+                                                             ,(0, arbitrarySizedSimplyTypedLambda context TIntList n)]
+
+-- TODO: Currently does not generate top-level abstractions
+arbitrarySizedSimplyTypedLambdaWithDifficulty :: Difficulty -> Gen LambdaExpression
+arbitrarySizedSimplyTypedLambdaWithDifficulty Easy = generateLambdaExpressionWithTermLength Map.empty 5
+arbitrarySizedSimplyTypedLambdaWithDifficulty Medium = generateLambdaExpressionWithTermLength Map.empty 8
+arbitrarySizedSimplyTypedLambdaWithDifficulty Hard = generateLambdaExpressionWithTermLength Map.empty 10
+arbitrarySizedSimplyTypedLambdaWithDifficulty VeryHard = generateLambdaExpressionWithTermLength Map.empty 15
+
+
+
+
+
+
+
