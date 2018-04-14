@@ -283,6 +283,9 @@ def train_model_anc(model,
                 clip_grads(model)
                 optimizer.step()
                 
+                print("ALLLLLL THE GRADIENTS!!!!")
+                print([x.grad for x in list(model.parameters())])
+                
                 if plateau_lr:
                     lr_scheduler.step(float(loss))
                 
