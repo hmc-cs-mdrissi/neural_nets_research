@@ -15,6 +15,11 @@ import Data.Map (Map, toList, member, insert)
 import qualified Data.Map as Map
 
 -- 
+-- Difficulty
+-- 
+data Difficulty = Debug | Easy | Medium | Hard | VeryHard deriving (Read, Show)
+
+-- 
 -- Context Query, Modify, Generate
 -- 
 
@@ -213,3 +218,16 @@ arbitrarySizedSimplyTypedLambda context TIntList n | n <= 1 = arbitraryNil
                                                                            ,(1, arbitraryLetRec context TIntList n)]
 arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = frequency [(1, arbitraryAbstraction context functionType n)]
 arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
+
+-- TODO: Currently does not generate top-level abstractions
+arbitrarySizedSimplyTypedLambdaWithDifficulty :: Difficulty -> Context -> Int -> Gen LambdaExpression
+arbitrarySizedSimplyTypedLambdaWithDifficulty _ context n = frequency [(1, arbitrarySizedSimplyTypedLambda context TInt n)
+                                                                      ,(1, arbitrarySizedSimplyTypedLambda context TBool n)
+                                                                      ,(1, arbitrarySizedSimplyTypedLambda context TIntList n)]
+
+
+
+
+
+
+
