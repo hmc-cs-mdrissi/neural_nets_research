@@ -125,7 +125,7 @@ def translate_from_for(tree):
             return t1
         else:
             new_tree = Node('<LET>')
-            new_tree.children.extend(['a11', t1, t2])
+            new_tree.children.extend([Node('a11'), t1, t2])
             return new_tree
     elif tree.value == '<IF>':
         cmp = tree.children[0]
