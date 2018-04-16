@@ -6,3 +6,4 @@ ANC/adaptive-neural-compilation*
 *.hi
 *.o
 *.pth
+*.pyc
