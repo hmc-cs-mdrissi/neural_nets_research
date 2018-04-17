@@ -105,7 +105,7 @@ arbitraryUnaryOper :: Context -> Type -> Int -> Gen LambdaExpression
 arbitraryUnaryOper context TInt n | n <= 2 = UnaryOper Neg <$> arbitrarySizedSimplyTypedLambda context TInt 1
                                   | otherwise = UnaryOper Neg <$> arbitrarySizedSimplyTypedLambda context TInt (n - 1)
 arbitraryUnaryOper context TBool n | n <= 2 = UnaryOper Not <$> arbitrarySizedSimplyTypedLambda context TBool 1
-                                   | otherwise = UnaryOper Neg <$> arbitrarySizedSimplyTypedLambda context TBool (n - 1)
+                                   | otherwise = UnaryOper Not <$> arbitrarySizedSimplyTypedLambda context TBool (n - 1)
 arbitraryUnaryOper context _ n = error $ "You can't use arbitrary unary op to generate any other types."
 
 arbitraryMatch :: Context -> Type -> Int -> Gen LambdaExpression
@@ -220,10 +220,10 @@ arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = fre
 arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
 
 generateLambdaExpressionWithTermLength :: Context -> Int -> Gen LambdaExpression
-generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context (TFun TInt TInt) n)
-                                                             ,(0, arbitrarySizedSimplyTypedLambda context TInt n)
-                                                             ,(0, arbitrarySizedSimplyTypedLambda context TBool n)
-                                                             ,(0, arbitrarySizedSimplyTypedLambda context TIntList n)]
+generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context (TFun TInt TInt) n)]
+                                                             --,(0, arbitrarySizedSimplyTypedLambda context TInt n)
+                                                             --,(0, arbitrarySizedSimplyTypedLambda context TBool n)
+                                                             --,(0, arbitrarySizedSimplyTypedLambda context TIntList n)]
 
 -- TODO: Currently does not generate top-level abstractions
 arbitrarySizedSimplyTypedLambdaWithDifficulty :: Difficulty -> Gen LambdaExpression
