@@ -1,8 +1,11 @@
+module GenerateArbitrarySimplyTypedLambda where
+
 import Test.QuickCheck
-import Data.Aeson
+import Data.Aeson hiding (Number)
 
 import ArbitrarySimplyTypedLambda
 import SimplyTypedLambdaParser
+import SimplyTypedLambdaInterp
 
 import System.Environment
 import System.Exit
@@ -39,9 +42,29 @@ parseArguments = do args <- getArgs
 generateArbitraryLC :: Difficulty -> Int -> Int -> IO [LambdaExpression]
 generateArbitraryLC difficulty count exprLength = generate $ vectorOf count $ (arbitrarySizedSimplyTypedLambdaWithDifficulty difficulty)
 
+makeApplication :: LambdaExpression -> Integer -> (Integer, Integer)
+makeApplication lc_prog input = case evalCBV $ (BinaryOper lc_prog Application (Number input)) of
+                                     Left err -> error (show err)
+                                     Right expr -> let (Number output) = expr in (input, output)
+
+makeInputOutputTuples :: LambdaExpression -> [(Integer, Integer)]
+makeInputOutputTuples lc_prog = map (makeApplication lc_prog) [0 .. 10]
+
+appendInterpreterOutput :: LambdaExpression -> (LambdaExpression, [(Integer, Integer)])
+appendInterpreterOutput lc_prog = (lc_prog, makeInputOutputTuples lc_prog)
+
+interpretAllProgs :: [LambdaExpression] -> [(LambdaExpression, [(Integer, Integer)])]
+interpretAllProgs lc_progs = map appendInterpreterOutput lc_progs
+
+showLCProg :: LambdaExpression -> IO ()
+showLCProg lc = let pairLC = appendInterpreterOutput lc in
+                    let lambdaExpression = fst pairLC in
+                    let outputList = snd pairLC in
+                    putStrLn ("PROGRAM: " ++ (show lambdaExpression) ++ ("\nOUTPUT: ") ++ (show outputList))
 
 main :: IO ()
 main = do cfg <- parseArguments
           lc_progs <- generateArbitraryLC (difficulty cfg) (lcCount cfg) (termLength cfg)
-          writeFile (show (difficulty cfg) ++ "-" ++ (lcFileName cfg)) $ encode lc_progs
+          --mapM_ showLCProg lc_progs
+          writeFile (show (difficulty cfg) ++ "-" ++ (lcFileName cfg)) $ encode (interpretAllProgs lc_progs)
 
