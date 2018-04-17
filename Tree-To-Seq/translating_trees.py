@@ -17,7 +17,7 @@ class Node:
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
 
-def make_tree(json, long_base_case=True):
+def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # First base case - variable name
     if isinstance(json, string_types):
         if long_base_case:
