@@ -29,7 +29,7 @@ isTypeVariablePair :: Type -> (Type, b) -> Bool
 isTypeVariablePair typ (typ', b) = if typ == typ' then True else False
 
 freshVariableGivenContext :: Context -> Gen String
-freshVariableGivenContext context = return $ freshVariableAux 1 context
+freshVariableGivenContext context = return $ freshVariableAux 0 context
                                     where freshVariableAux n context = if ("a" ++ show n) `member` context then freshVariableAux (n + 1) context else "a" ++ show n
 
 getArbitraryIdentifierFromContext :: Context -> Type -> Gen String
@@ -73,7 +73,7 @@ arbitraryBoolean context = if isIdentifierTypeInContext context TBool
                            else Boolean <$> elements [True, False]
 
 arbitraryBinaryOpArithmetic :: Gen BinaryOp
-arbitraryBinaryOpArithmetic = frequency [(1, return Plus), (1, return Minus), (1, return Times), (1, return Divide)]
+arbitraryBinaryOpArithmetic = frequency [(1, return Plus), (1, return Minus), (1, return Times), (0, return Divide)]
 
 arbitraryBinaryOpLogical :: Gen BinaryOp
 arbitraryBinaryOpLogical = frequency [(1, return And), (1, return Or)]
@@ -220,7 +220,8 @@ arbitrarySizedSimplyTypedLambda context functionType@(TFun domain range) n = fre
 arbitrarySizedSimplyTypedLambda context t n = error $ "Arbitrary lc of type " ++ (show t) ++ " not supported."
 
 generateLambdaExpressionWithTermLength :: Context -> Int -> Gen LambdaExpression
-generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context TInt n)
+generateLambdaExpressionWithTermLength context n = frequency [(1, arbitrarySizedSimplyTypedLambda context (TFun TInt TInt) n)
+                                                             ,(0, arbitrarySizedSimplyTypedLambda context TInt n)
                                                              ,(0, arbitrarySizedSimplyTypedLambda context TBool n)
                                                              ,(0, arbitrarySizedSimplyTypedLambda context TIntList n)]
 
