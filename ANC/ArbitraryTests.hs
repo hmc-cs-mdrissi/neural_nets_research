@@ -22,7 +22,7 @@ combineStringWithNumber :: String -> Int -> String
 combineStringWithNumber s i = s ++ show i
 
 arbitraryIdentifier :: Int -> Gen String
-arbitraryIdentifier upperBound = do identifier <- elements $ map (combineStringWithNumber "a") [1 .. upperBound]
+arbitraryIdentifier upperBound = do identifier <- elements $ map (combineStringWithNumber "a") [0 .. upperBound]
                                     return identifier
                                             
 arbitraryConstant :: Gen Int
@@ -33,10 +33,10 @@ arbitraryConstantExpression :: Gen Expr
 arbitraryConstantExpression = Const <$> arbitraryConstant
 
 arbitrarySizedExpr :: Int -> Int -> Gen Expr
-arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == 0 
+arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == -1 
                                            then Const <$> arbitraryConstant
                                            else frequency [(1, Var <$> arbitraryIdentifier upperBound), (1, Const <$> arbitraryConstant)]
-                                | otherwise = if upperBound == 0 
+                                | otherwise = if upperBound == -1 
                                               then frequency [(1, Const <$> arbitraryConstant)
                                                              ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
                                                              ,(1, Minus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))] 
@@ -85,7 +85,7 @@ arbitrarySizedProgForSeq frequencies upperBound n = do (oneHalfArbitrarySizedPro
 -- For statments may be able to declare new variables for use in outside blocks
 -- Here, we do not allow variables defined within the For to be used outside the block
 arbitrarySizedProgForFor :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBoundLoop) <- (if upperBound == 0 then return ("a1", 1) else if upperBound == 10 then flip (,) 10 <$> arbitraryIdentifier upperBound else frequency [(4,  return ("a" ++ show (upperBound + 1), upperBound + 1)), (1, (,) <$> arbitraryIdentifier upperBound <*> return upperBound)])
+arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBoundLoop) <- (if upperBound == -1 then return ("a0", 0) else if upperBound == 10 then flip (,) 10 <$> arbitraryIdentifier upperBound else frequency [(4,  return ("a" ++ show (upperBound + 1), upperBound + 1)), (1, (,) <$> arbitraryIdentifier upperBound <*> return upperBound)])
                                                        initialize <- arbitrarySizedExpr upperBound ((n `div` 4) - 1)
                                                        comp <- arbitrarySizedCmp upperBoundLoop (n `div` 4)
                                                        expr <- arbitrarySizedExpr upperBoundLoop (n `div` 4)
@@ -93,8 +93,8 @@ arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBound
                                                        return (For variableName initialize comp expr body, upperBound)
 
 arbitrarySizedProgAssign :: Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgAssign upperBound n = if upperBound == 0 then do expr <- arbitrarySizedExpr upperBound 3
-                                                                   return (Assign "a1" expr, 1)
+arbitrarySizedProgAssign upperBound n = if upperBound == -1 then do expr <- arbitrarySizedExpr upperBound 3
+                                                                    return (Assign "a0" expr, 0)
                                      else if upperBound == 10 then do variableName <- arbitraryIdentifier upperBound
                                                                       expr <- arbitrarySizedExpr upperBound 3
                                                                       return (Assign variableName expr, 10)
@@ -125,7 +125,7 @@ arbitrarySizedProgForWithDifficulty Hard upperBound n = arbitrarySizedProgFor [2
 arbitrarySizedProgForWithDifficulty VeryHard upperBound n = arbitrarySizedProgFor [2, 1, 1, 1] upperBound n
 
 instance Arbitrary ProgFor where
-  arbitrary = fst <$> sized (arbitrarySizedProgFor [1, 1, 1, 1] 0)
+  arbitrary = fst <$> sized (arbitrarySizedProgFor [1, 1, 1, 1] (-1))
 
   shrink n@(If c1 p1 p2) = shrink p1 ++ shrink p2 ++ [n]
   shrink n@(For _ e1 c1 e2 p1) = shrink p1 ++ [n]
