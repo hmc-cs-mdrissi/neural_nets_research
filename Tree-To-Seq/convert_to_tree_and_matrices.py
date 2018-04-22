@@ -64,6 +64,8 @@ class TreeANCDataset(Dataset):
         self.input_eos_token = input_eos_token
         self.binarize = binarize
         self.is_lambda_calculus = is_lambda_calculus
+        self.use_embedding = use_embedding
+        self.input_as_seq = input_as_seq
 
         progsjson = json.load(open(path))
         self.progs = [self.convert_to_quadruple(prog_input_output) for prog_input_output in progsjson]
@@ -72,10 +74,29 @@ class TreeANCDataset(Dataset):
         #the prog_tree code is a placeholder depending on how different make_tree for the two
         #end up being and what we call them
         prog_tree = make_tree(prog_input_output[0], is_lambda_calculus=self.is_lambda_calculus)
+        
         if self.binarize:
             prog_tree = binarize_tree(prog_tree)
-        prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=self.input_eos_token)
-
+        
+        token_size = self.num_vars + self.num_ints + len(self.tokens.keys())
+        
+        if self.use_embedding:
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, one_hot=False)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree) + [token_size]))
+                else:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree)))
+            else:
+                prog_tree = map_tree(lambda val: Variable(torch.LongTensor([val])), prog_tree)
+        else:
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=input_eos_token)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = torch.stack(tree_to_list(prog_tree) + [make_one_hot(token_size+1, token_size)])
+                else:
+                    prog_tree = torch.stack(tree_to_list(prog_tree))
+        
         input_matrices = []
         output_matrices = []
         masks = []

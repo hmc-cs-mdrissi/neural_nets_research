@@ -18,12 +18,12 @@ class Node:
         return map_tree(lambda value: value.cuda(), self)
 
 def make_var_name(var_name):
-  if var_name == 'h':
-    return '<HEAD>'
-  elif var_name == 't':
-    return '<TAIL>'
-  else:
-    return var_name
+    if var_name == 'h':
+        return '<HEAD>'
+    elif var_name == 't':
+        return '<TAIL>'
+    else:
+        return var_name
 
 def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # First base case - variable name
@@ -42,24 +42,24 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
 
     # Third base case for head of abstraction.
     if type(json) is list:
-      var_type = "<" + json[1]["tag"].upper() + ">"
-      var_name = make_var_name(json[0])
+        var_type = "<" + json[1]["tag"].upper() + ">"
+        var_name = make_var_name(json[0])
 
-      parentNode = Node("<ARGUMENT>")
-      parentNode.children.extend([Node(var_type), Node(var_name)])
-      return parentNode
+        parentNode = Node("<ARGUMENT>")
+        parentNode.children.extend([Node(var_type), Node(var_name)])
+        return parentNode
 
     # Fourth base case for booleans.
     if type(json) is bool:
-      bool_str = "<" + str(json).upper() + ">"
-      return Node(bool_str)
+        bool_str = "<" + str(json).upper() + ">"
+        return Node(bool_str)
 
     tag = "<" + json["tag"].upper() + ">"
     parentNode = Node(tag)
 
     # Fifth base for nil.
     if tag == '<NIL>':
-      return parentNode
+        return parentNode
 
     children = json["contents"]
     
@@ -69,18 +69,18 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
 
     # Special case for unary operators.
     if tag == '<UNARYOPER>':
-      unary_op = "<" + children[0].upper() + ">"
-      unary_operand = make_tree(children[1], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
-      parentNode.children.extend([Node(unary_op), unary_operand])
-      return parentNode
+        unary_op = "<" + children[0].upper() + ">"
+        unary_operand = make_tree(children[1], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        parentNode.children.extend([Node(unary_op), unary_operand])
+        return parentNode
 
     # Special case for binary operators.
     if tag == '<BINARYOPER>':
-      binary_op = "<" + children[1].upper() + ">"
-      binary_operand1 = make_tree(children[0], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
-      binary_operand2 = make_tree(children[2], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
-      parentNode.children.extend([binary_operand1, Node(binary_op), binary_operand2])
-      return parentNode
+        binary_op = "<" + children[1].upper() + ">"
+        binary_operand1 = make_tree(children[0], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        binary_operand2 = make_tree(children[2], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        parentNode.children.extend([binary_operand1, Node(binary_op), binary_operand2])
+        return parentNode
 
     if type(children) is list:
         parentNode.children.extend(map(lambda child: make_tree(child, long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus), children))
