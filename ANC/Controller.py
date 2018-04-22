@@ -25,6 +25,7 @@ class Controller(nn.Module):
                  halting_weight = .2, 
                  confidence_weight = .2, 
                  efficiency_weight = .4,
+                 optimize = False,
                  t_max = 75):
         """
         Initialize a bunch of constants and pass in matrices defining a program.
@@ -40,6 +41,7 @@ class Controller(nn.Module):
         :param halting_weight: Weight given to the halting component of the loss function
         :param confidence_weight: Weight given to the confidence component of the loss function
         :param efficiency_weight: Weight given to the efficiency component of the loss function
+        :param optimize: Whether the ANC should optimize or not
         :param t_max: Maximum number of iterations of the program
         
         """
@@ -63,16 +65,27 @@ class Controller(nn.Module):
         self.stop_threshold = stop_threshold
         self.multiplier = multiplier
 
-        # Initialize parameters.  These are the things that are going to be optimized. 
-        self.first_arg = nn.Parameter(multiplier * first_arg)
-        self.second_arg = nn.Parameter(multiplier * second_arg)
-        self.output = nn.Parameter(multiplier * output)
-        self.instruction = nn.Parameter(multiplier * instruction) 
-        self.registers = nn.Parameter(multiplier * initial_registers)
+        self.optimize = optimize
+        if optimize:
+            # Initialize parameters.  These are the things that are going to be optimized. 
+            self.first_arg = nn.Parameter(multiplier * first_arg)
+            self.second_arg = nn.Parameter(multiplier * second_arg)
+            self.output = nn.Parameter(multiplier * output)
+            self.instruction = nn.Parameter(multiplier * instruction) 
+            self.registers = nn.Parameter(multiplier * initial_registers)
+            IR = torch.zeros(M)
+            IR[0] = 1
+            self.IR = nn.Parameter(multiplier * IR)
+        else:
+            self.first_arg = multiplier * first_arg
+            self.second_arg = multiplier * second_arg
+            self.output = multiplier * output
+            self.instruction = multiplier * instruction
+            self.registers = multiplier * initial_registers
+            IR = torch.zeros(M)
+            IR[0] = 1
+            self.IR = Variable(multiplier * IR)
         
-        IR = torch.zeros(M)
-        IR[0] = 1
-        self.IR = nn.Parameter(multiplier * IR)
                 
         # Machine initialization
         self.machine = Machine(M, R)
@@ -104,11 +117,11 @@ class Controller(nn.Module):
         output_memory = output[0]
         output_mask = output[1]
         
-        #TODO: Uncomment when gradcheck removed
         self.memory = Variable(initial_memory)
         self.output_memory = Variable(output_memory)
         self.output_mask = Variable(output_mask)
         self.stop_probability = Variable(torch.zeros(1))
+            
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
