@@ -8,7 +8,7 @@ import json
 class TreeANCDataset(Dataset):
     def __init__(self, path, is_lambda_calculus, num_vars = 10, num_ints = 11, binarize = False, 
                  input_eos_token=True, input_as_seq=False, use_embedding=False,
-                 long_base_case=True):
+                 long_base_case=True, cuda=True):
         if is_lambda_calculus:
             self.tokens = {
                 "<VARIABLE>": 0,
@@ -66,6 +66,7 @@ class TreeANCDataset(Dataset):
         self.is_lambda_calculus = is_lambda_calculus
         self.use_embedding = use_embedding
         self.input_as_seq = input_as_seq
+        self.cuda = cuda
 
         progsjson = json.load(open(path))
         self.progs = [self.convert_to_quadruple(prog_input_output) for prog_input_output in progsjson]
@@ -97,6 +98,9 @@ class TreeANCDataset(Dataset):
                 else:
                     prog_tree = torch.stack(tree_to_list(prog_tree))
         
+        if self.cuda:
+            prog_tree = prog_tree.cuda()
+        
         input_matrices = []
         output_matrices = []
         masks = []
@@ -113,11 +117,14 @@ class TreeANCDataset(Dataset):
             mask = torch.zeros(10, 10)
             mask[0] = 1
 
+            if self.cuda:
+                input_matrix, output_matrix, mask = input_matrix.cuda(), output_matrix.cuda(), mask.cuda()
+                
             input_matrices.append(input_matrix)
             output_matrices.append(output_matrix)
             masks.append(mask)
 
-        return prog_tree, input_matrices, output_matrices, masks
+        return prog_tree, (input_matrices, output_matrices, masks)
 
     def __len__(self):
         return len(self.progs)
