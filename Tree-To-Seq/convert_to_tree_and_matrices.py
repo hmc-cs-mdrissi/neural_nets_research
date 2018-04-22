@@ -78,12 +78,24 @@ class TreeANCDataset(Dataset):
         if self.binarize:
             prog_tree = binarize_tree(prog_tree)
         
-        prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=self.input_eos_token)
         token_size = self.num_vars + self.num_ints + len(self.tokens.keys())
         
         if self.use_embedding:
-            
-        
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, one_hot=False)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree) + [token_size]))
+                else:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree)))
+            else:
+                prog_tree = map_tree(lambda val: Variable(torch.LongTensor([val])), prog_tree)
+        else:
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=input_eos_token)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = torch.stack(tree_to_list(prog_tree) + [make_one_hot(token_size+1, token_size)])
+                else:
+                    prog_tree = torch.stack(tree_to_list(prog_tree))
         
         input_matrices = []
         output_matrices = []
