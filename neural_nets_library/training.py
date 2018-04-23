@@ -114,7 +114,10 @@ def train_model_with_validation(model, train_loader, validation_loader, criterio
 
 def clip_grads(net):
     """Clip the gradients to -5 to 5."""
-    for p in net.parameters():
+    for name, p in net.named_parameters():
+        print(name)
+        print(p.grad)
+        
         if p.grad is not None:
             p.grad.data.clamp_(-5, 5)
 
@@ -283,9 +286,6 @@ def train_model_anc(model,
                 clip_grads(model)
                 optimizer.step()
                 
-#                 print("ALLLLLL THE GRADIENTS!!!!")
-#                 print([x.grad for x in list(model.parameters())])
-                
                 if plateau_lr:
                     lr_scheduler.step(float(loss))
                 
@@ -293,6 +293,7 @@ def train_model_anc(model,
                 
                 # zero the parameter gradients
                 optimizer.zero_grad()
+                return None
 
             # statistics
             epoch_running_loss += float(iteration_loss)
@@ -350,6 +351,7 @@ def train_model_tree_to_anc(model,
                     plot_every=100,
                     batch_size=50,
                     deep_copy_desired=False,
+                    cuda=True,
                     plateau_lr=False):
     since = time.time()
 
@@ -381,6 +383,10 @@ def train_model_tree_to_anc(model,
 
             # forward
             controller = model(input)
+            
+            if cuda:
+                controller = controller.cuda()
+            
             iteration_loss = model.compute_loss(controller, target)
             loss += iteration_loss
             
@@ -397,6 +403,7 @@ def train_model_tree_to_anc(model,
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
+#                 return None
 
             # statistics
             epoch_running_loss += float(iteration_loss)

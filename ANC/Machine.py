@@ -43,7 +43,7 @@ class Machine(nn.Module):
         self.N = len(self.ops)
         
         # Create a 4D matrix composed of the output matrices of each of the ops
-        self.outputs = Variable(torch.zeros(self.N, self.M, self.M, self.M))
+        self.register_buffer('outputs', torch.zeros(self.N, self.M, self.M, self.M))
         
         for i in range(self.N):
             op = self.ops[i]
@@ -84,7 +84,7 @@ class Machine(nn.Module):
         arg2_long = arg2.view(1, 1, -1, 1)
         instr = e.view(-1, 1, 1, 1)
         read_vec =  e[self.read_index] * torch.matmul(arg1, memory)
-        out_vec = (self.outputs * arg1_long * arg2_long * instr).sum(0).sum(0).sum(0) + read_vec      
+        out_vec = (Variable(self.outputs) * arg1_long * arg2_long * instr).sum(0).sum(0).sum(0) + read_vec      
         out_vec = out_vec.squeeze(0)
     
         # Update our memory, registers, instruction register, and stopping probability

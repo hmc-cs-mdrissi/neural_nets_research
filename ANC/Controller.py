@@ -19,7 +19,7 @@ class Controller(nn.Module):
                  output = None, 
                  instruction = None, 
                  initial_registers = None, 
-                 stop_threshold = 1, 
+                 stop_threshold = 0.9, 
                  multiplier = 5,
                  correctness_weight = .2, 
                  halting_weight = .2, 
@@ -84,9 +84,10 @@ class Controller(nn.Module):
             self.registers = multiplier * initial_registers
             IR = torch.zeros(M)
             IR[0] = 1
-            self.IR = Variable(multiplier * IR)
+            self.register_buffer('IR', multiplier * IR)
         
-                
+        self.register_buffer('initial_stop_probability', torch.zeros(1))
+        
         # Machine initialization
         self.machine = Machine(M, R)
         self.softmax = nn.Softmax(0)
@@ -120,13 +121,19 @@ class Controller(nn.Module):
         self.memory = Variable(initial_memory)
         self.output_memory = Variable(output_memory)
         self.output_mask = Variable(output_mask)
-        self.stop_probability = Variable(torch.zeros(1))
+        self.stop_probability = Variable(self.initial_stop_probability)
             
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
         registers = nn.Softmax(1)(self.registers)
-        IR = self.softmax(self.IR)
+        
+        if not self.optimize:
+            IR = Variable(self.IR)
+        else:
+            IR = self.IR
+            
+        IR = self.softmax(IR)
         
         # loss initialization
         self.confidence = 0

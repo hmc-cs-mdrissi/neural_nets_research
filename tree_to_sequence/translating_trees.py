@@ -104,7 +104,7 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if type(val) is int:
         index = val
     elif val not in ops:
-        index = int(val[1:]) - 1 + num_ints
+        index = int(val[1:]) + num_ints
     else:
         index = num_ints + num_vars + ops[val]
 
@@ -142,7 +142,7 @@ def decode_tokens(seq, num_vars, num_ints, ops):
         if index < num_ints:
             return index
         elif index < num_ints + num_vars:
-            return 'a' + str(index - num_ints + 1)
+            return 'a' + str(index - num_ints)
         else:
             return reverse_ops[index - num_ints - num_vars]
 
