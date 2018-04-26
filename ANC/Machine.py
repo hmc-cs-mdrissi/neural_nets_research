@@ -129,7 +129,7 @@ class Machine(nn.Module):
         """
         Update the memory
         
-        :param e: Distribution over the current instruction (M)
+        :param e: Distribution over the current instruction (N)
         :param mem_orig: Current memory matrix (MxM)
         :param arg1: Distribution over the first argument value (M)
         :param arg2: Distribution over the second argument value (M)

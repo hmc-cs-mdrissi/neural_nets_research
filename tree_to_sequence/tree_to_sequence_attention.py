@@ -1,46 +1,31 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-import torch.optim as optim
-import torch.utils.data as data
 
-import numpy as np
-import random
-import matplotlib.pyplot as plt
+from tree_to_sequence.tree_to_sequence import TreeToSequence
 
-from neural_nets_library import training, visualize
-from ANC import Controller
-
-import json
-from translating_trees import *
-from for_prog_dataset import ForDataset
-from functools import partial
-from tree_lstm import *
-from seq_encoder import *
-from tree_to_seq_model import *
-
-class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
+class TreeToSequenceAttention(TreeToSequence):
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size,
                  alignment_size=50, align_type=1):
-        super(Tree_to_Sequence_Attention_Model, self).__init__(encoder, decoder, hidden_size, nclass, embedding_size)
-        
+        super(TreeToSequenceAttention, self).__init__(encoder, decoder, hidden_size, nclass, embedding_size)
+
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         self.tanh = nn.Tanh()
-        
+
         if align_type == 0:
             self.attention_hidden = nn.Linear(hidden_size, alignment_size)
             self.attention_context = nn.Linear(hidden_size, alignment_size, bias=False)
             self.attention_alignment_vector = nn.Linear(alignment_size, 1)
         elif align_type == 1:
             self.attention_hidden = nn.Linear(hidden_size, hidden_size)
-            
+
         self.align_type = align_type
         self.register_buffer('et', torch.zeros(1, hidden_size))
-        
+
     """
-        input: The output of the encoder for the tree should have be a triple. The first 
-               part of the triple should be the annotations and have dimensions, 
-               number_of_nodes x hidden_size. The second triple of the pair should be the hidden 
+        input: The output of the encoder for the tree should have be a triple. The first
+               part of the triple should be the annotations and have dimensions,
+               number_of_nodes x hidden_size. The second triple of the pair should be the hidden
                representations of the root and should have dimensions, num_layers x hidden_size.
                The third part should correspond to the cell states of the root and should
                have dimensions, num_layers x hidden_size.
@@ -53,7 +38,7 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-        
+
         decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
         decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
 
@@ -68,7 +53,7 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
             decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
             decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1]
-            
+
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
@@ -82,7 +67,7 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
                 _, next_input = log_odds.topk(1)
 
             word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
-        return loss        
+        return loss
 
     """
         This is just an alias for point_wise_prediction, so that training code that assumes the presence
@@ -90,29 +75,29 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
     """
     def forward_prediction(self, input, maximum_length=150):
         return self.point_wise_prediction(input, maximum_length)
-    
+
     def point_wise_prediction(self, input, maximum_length=150):
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-        
+
         # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-        
+
         decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
         decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
         SOS_token = Variable(self.SOS_token)
-        
+
         word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
         et = Variable(self.et)
         output_so_far = []
-        
+
         for i in range(maximum_length):
             decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
             decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1]
-            
+
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
@@ -121,10 +106,10 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
             _, next_input = log_odds.topk(1)
 
             output_so_far.append(int(next_input))
-            
+
             if int(next_input) == self.EOS_value:
                 break
-                
+
             word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
 
         return output_so_far
@@ -136,14 +121,14 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-        
+
         decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
         decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
         SOS_token = Variable(self.SOS_token)
-        
+
         word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
         et = Variable(self.et)
-        
+
         decoder_input = torch.cat((word_input, et), dim=1)
         word_inputs = []
 
@@ -161,7 +146,7 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
                 decoder_input, decoder_hiddens, decoder_cell_states = word_inputs[i][3]
                 decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
                 decoder_hidden = decoder_hiddens[-1]
-            
+
                 attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
                 attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
                 context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
@@ -178,7 +163,7 @@ class Tree_to_Sequence_Attention_Model(Tree_to_Sequence_Model):
                                         for k in range(beam_width))
             word_inputs = sorted(new_word_inputs, key=lambda word_input: word_input[0])[-beam_width:]
         return word_inputs[-1][1]
-    
+
     def attention_logits(self, attention_hidden_values, decoder_hidden):
         if self.align_type == 0:
             return self.attention_alignment_vector(self.tanh(self.attention_context(decoder_hidden) + attention_hidden_values))

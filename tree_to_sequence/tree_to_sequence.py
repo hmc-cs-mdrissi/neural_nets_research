@@ -1,35 +1,18 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-import torch.optim as optim
-import torch.utils.data as data
 
-import numpy as np
-import random
-import matplotlib.pyplot as plt
-
-from neural_nets_library import training, visualize
-from ANC import Controller
-
-import json
-from translating_trees import *
-from for_prog_dataset import ForDataset
-from functools import partial
-from tree_lstm import *
-from seq_encoder import *
-from tree_encoder import *
-
-class Tree_to_Sequence_Model(nn.Module):
+class TreeToSequence(nn.Module):
     """
       For the decoder this expects something like an lstm cell or a gru cell and not an lstm/gru.
       Batch size is not supported at all. More precisely the encoder expects an input that does not
       appear in batches and most also output non-batched tensors.
     """
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size):
-        super(Tree_to_Sequence_Model, self).__init__()
+        super(TreeToSequence, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
-        
+
         # nclass + 2 to include end of sequence and trash
         self.output_log_odds = nn.Linear(hidden_size, nclass+2)
         self.softmax = nn.Softmax(dim=0)
@@ -58,7 +41,7 @@ class Tree_to_Sequence_Model(nn.Module):
         decoder_hiddens, decoder_cell_states = self.encoder(input) # num_layers x hidden_size
         decoder_hiddens = decoder_hiddens.unsqueeze(1)
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
-                                                            
+
         target_length, = target.size()
         SOS_token = Variable(self.SOS_token)
         decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
@@ -77,7 +60,7 @@ class Tree_to_Sequence_Model(nn.Module):
                 _, next_input = log_odds.topk(1)
 
             decoder_input = self.embedding(next_input).squeeze(1) # 1 x embedding_size
-                
+
         return loss
 
     """
@@ -86,12 +69,12 @@ class Tree_to_Sequence_Model(nn.Module):
     """
     def forward_prediction(self, input, maximum_length=20):
         return self.point_wise_prediction(input, maximum_length)
-    
+
     def point_wise_prediction(self, input, maximum_length=20):
         decoder_hiddens, decoder_cell_states = self.encoder(input)
         decoder_hiddens = decoder_hiddens.unsqueeze(1)
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
-        
+
         SOS_token = Variable(self.SOS_token)
         decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
         output_so_far = []
@@ -103,10 +86,10 @@ class Tree_to_Sequence_Model(nn.Module):
 
             _, next_input = log_odds.topk(1)
             output_so_far.append(int(next_input))
-            
+
             if int(next_input) == self.EOS_value:
                 break
-                
+
             decoder_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
 
         return output_so_far
@@ -115,7 +98,7 @@ class Tree_to_Sequence_Model(nn.Module):
         decoder_hiddens, decoder_cell_states = self.encoder(input)
         decoder_hiddens = decoder_hiddens.unsqueeze(1)
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
-        
+
         SOS_token = Variable(self.SOS_token)
         decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
         word_inputs = []
@@ -143,6 +126,6 @@ class Tree_to_Sequence_Model(nn.Module):
                 new_word_inputs.extend((word_inputs[i][0] + float(log_value[k]), word_inputs[i][1] + [int(next_input[k])],
                                         int(next_input[k]) != self.EOS_value, [decoder_input[k], decoder_hiddens, decoder_cell_states])
                                         for k in range(beam_width))
-                    
+
             word_inputs = sorted(new_word_inputs, key=lambda word_input: word_input[0])[-beam_width:]
         return word_inputs[-1][1]

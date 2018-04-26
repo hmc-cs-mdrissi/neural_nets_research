@@ -28,13 +28,7 @@ def make_var_name(var_name):
 def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # First base case - variable name
     if isinstance(json, string_types):
-        if long_base_case and not is_lambda_calculus:
-            parentNode = Node("<VAR>")
-            childNode = Node(json)
-            parentNode.children.append(childNode)
-        else:
-            parentNode = Node(make_var_name(json))
-        return parentNode
+        return Node(make_var_name(json))
 
     # Second base case - variable value
     if type(json) is int:
@@ -64,8 +58,22 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     children = json["contents"]
     
     if not long_base_case:
-        if tag == '<CONST>' or tag == '<NUMBER>' or tag == '<VARIABLE>':
+        if tag == '<CONST>' or tag == '<NUMBER>' or tag == '<VARIABLE>' or tag == '<VAR>':
             return Node(children)
+    
+    # Special case for assignment.
+    if tag == '<ASSIGN>':
+        var_name = children[0]
+        expr = make_tree(children[1], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        
+        if long_base_case:
+            var = Node('<VAR>')
+            var.children.append(Node(var_name))
+        else:
+            var = Node(var_name)
+        
+        parentNode.children.extend([var, expr])
+        return parentNode
 
     # Special case for unary operators.
     if tag == '<UNARYOPER>':
@@ -102,7 +110,7 @@ def binarize_tree(tree):
 
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if type(val) is int:
-        index = val
+        index = val % num_ints
     elif val not in ops:
         index = int(val[1:]) + num_ints
     else:
@@ -146,7 +154,7 @@ def decode_tokens(seq, num_vars, num_ints, ops):
         else:
             return reverse_ops[index - num_ints - num_vars]
 
-    return list(map(index_to_token, seq))
+    return list(map(lambda val: index_to_token(int(val)), seq))
 
 def tree_to_list(tree):
   """

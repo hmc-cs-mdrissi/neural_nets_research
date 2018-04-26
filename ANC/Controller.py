@@ -5,7 +5,6 @@ import numpy as np
 
 from .Machine import Machine
 
-
 class Controller(nn.Module):
     """
     Contains the two learnable parts of the model in four independent, fully connected layers.
@@ -26,6 +25,7 @@ class Controller(nn.Module):
                  confidence_weight = .2, 
                  efficiency_weight = .4,
                  optimize = False,
+                 mix_probabilities=False,
                  t_max = 75):
         """
         Initialize a bunch of constants and pass in matrices defining a program.
@@ -64,6 +64,7 @@ class Controller(nn.Module):
         self.t_max = t_max
         self.stop_threshold = stop_threshold
         self.multiplier = multiplier
+        self.mix_probabilities = mix_probabilities
 
         self.optimize = optimize
         if optimize:
@@ -90,8 +91,8 @@ class Controller(nn.Module):
         
         # Machine initialization
         self.machine = Machine(M, R)
-        self.softmax = nn.Softmax(0)
-    
+        self.softmax0 = nn.Softmax(0)
+        self.softmax1 = nn.Softmax(1)
     
     def forward(self, input, forward_train):
         if forward_train:
@@ -126,14 +127,20 @@ class Controller(nn.Module):
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
-        registers = nn.Softmax(1)(self.registers)
+        registers = self.softmax1(self.registers)
         
         if not self.optimize:
             IR = Variable(self.IR)
         else:
             IR = self.IR
             
-        IR = self.softmax(IR)
+        IR = self.softmax0(IR)
+        
+        if self.mix_probabilities:
+            first_arg = self.softmax1(self.first_arg)
+            second_arg = self.softmax1(self.second_arg)
+            output = self.softmax1(self.output)
+            instruction = self.softmax1(self.instruction)
         
         # loss initialization
         self.confidence = 0
@@ -145,11 +152,16 @@ class Controller(nn.Module):
         
         # Run the program, one timestep at a time, until the program terminates or whe time out
         while t < self.t_max and float(self.stop_probability) < self.stop_threshold: 
-            
-            a = self.softmax(torch.matmul(self.first_arg, IR))
-            b = self.softmax(torch.matmul(self.second_arg, IR))
-            o = self.softmax(torch.matmul(self.output, IR))
-            e = self.softmax(torch.matmul(self.instruction, IR))
+            if self.mix_probabilities:
+                a = torch.matmul(self.first_arg, IR)
+                b = torch.matmul(self.second_arg, IR)
+                o = torch.matmul(self.output, IR)
+                e = torch.matmul(self.instruction, IR)
+            else:
+                a = self.softmax0(torch.matmul(self.first_arg, IR))
+                b = self.softmax0(torch.matmul(self.second_arg, IR))
+                o = self.softmax0(torch.matmul(self.output, IR))
+                e = self.softmax0(torch.matmul(self.instruction, IR))
                         
             # Update memory, registers, and IR after machine operation
             self.old_stop_probability = self.stop_probability
@@ -177,18 +189,35 @@ class Controller(nn.Module):
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
-        registers = nn.Softmax(1)(self.registers)
-        IR = self.softmax(self.IR)
+        registers = self.softmax1(self.registers)
+        
+        if not self.optimize:
+            IR = Variable(self.IR)
+        else:
+            IR = self.IR
+        
+        IR = self.softmax0(IR)
+        
+        if self.mix_probabilities:
+            first_arg = self.softmax1(self.first_arg)
+            second_arg = self.softmax1(self.second_arg)
+            output = self.softmax1(self.output)
+            instruction = self.softmax1(self.instruction)
         
         t = 0 
         
         # Run the program, one timestep at a time, until the program terminates or whe time out
         while t < self.t_max and float(self.stop_probability) < self.stop_threshold: 
-            
-            a = self.softmax(torch.matmul(self.first_arg, IR))
-            b = self.softmax(torch.matmul(self.second_arg, IR))
-            o = self.softmax(torch.matmul(self.output, IR))
-            e = self.softmax(torch.matmul(self.instruction, IR))
+            if self.mix_probabilities:
+                a = torch.matmul(self.first_arg, IR)
+                b = torch.matmul(self.second_arg, IR)
+                o = torch.matmul(self.output, IR)
+                e = torch.matmul(self.instruction, IR)
+            else:
+                a = self.softmax0(torch.matmul(self.first_arg, IR))
+                b = self.softmax0(torch.matmul(self.second_arg, IR))
+                o = self.softmax0(torch.matmul(self.output, IR))
+                e = self.softmax0(torch.matmul(self.instruction, IR))
                         
             # Update memory, registers, and IR after machine operation
             self.old_stop_probability = self.stop_probability
