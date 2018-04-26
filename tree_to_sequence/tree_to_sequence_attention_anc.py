@@ -8,7 +8,7 @@ from tree_to_sequence.tree_to_sequence_attention import TreeToSequenceAttention
 class TreeToSequenceAttentionANC(TreeToSequenceAttention):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, M, R,
                  N=11, alignment_size=50, align_type=1, correctness_weight=1,
-                 halting_weight=1, confidence_weight=2, efficiency_weight=0, t_max=7):
+                 halting_weight=1, confidence_weight=2, efficiency_weight=0, t_max=7, mix_probabilities = False):
         # The 1 is for nclasses which is not used in this model.
         super(TreeToSequenceAttentionANC, self).__init__(encoder, decoder, hidden_size, 1, embedding_size,
                                                          alignment_size=alignment_size, align_type=align_type)
@@ -25,6 +25,7 @@ class TreeToSequenceAttentionANC(TreeToSequenceAttention):
 
         self.initial_word_input = nn.Parameter(torch.Tensor(1, N + 3*R))
         self.output_log_odds = nn.Linear(hidden_size, N + 3*R)
+        self.mix_probabilities = mix_probabilities
 
 
     """
@@ -87,7 +88,8 @@ class TreeToSequenceAttentionANC(TreeToSequenceAttention):
         controller = Controller(first_arg=first_arg, second_arg=second_arg, output=output,
                                 instruction=instruction, initial_registers=Variable(self.initial_registers),
                                 multiplier=1, correctness_weight=self.correctness_weight, halting_weight=self.halting_weight,
-                                confidence_weight=self.confidence_weight, efficiency_weight=self.efficiency_weight, t_max=self.t_max)
+                                confidence_weight=self.confidence_weight, efficiency_weight=self.efficiency_weight, 
+                                mix_probabilities = self.mix_probabilities, t_max=self.t_max)
 
         if controller_params.is_cuda:
             controller = controller.cuda()
