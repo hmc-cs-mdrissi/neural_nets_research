@@ -36,14 +36,13 @@ class Controller(nn.Module):
         :param instruction: Matrix with the instruction for each timestep stored in the columns (NxM)
         :param initial_registers: Matrix where each row is a distribution over the value in one register (RxM)
         :param stop_threshold: The stop probability threshold at which the controller should stop running
-        :param multiplier: The factor our one-hot vectors are be multiplied by before they're softmaxed to add blur
+        :param multiplier: The factor our vectors are be multiplied by before they're softmaxed to add blur
         :param correctness_weight: Weight given to the correctness component of the loss function
         :param halting_weight: Weight given to the halting component of the loss function
         :param confidence_weight: Weight given to the confidence component of the loss function
         :param efficiency_weight: Weight given to the efficiency component of the loss function
         :param optimize: Whether the ANC should optimize or not
         :param t_max: Maximum number of iterations of the program
-        
         """
         super(Controller, self).__init__()
         
