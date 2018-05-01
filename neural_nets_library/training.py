@@ -121,7 +121,7 @@ def clip_grads(net):
 def train_model(model, dset_loader, training_criterion, optimizer, 
                 lr_scheduler=None, num_epochs=20,
                 print_every=200, plot_every=100, deep_copy_desired=False, validation_criterion=None,
-                plateau_lr=False):
+                plateau_lr=False, use_cuda=True):
 
     since = time.time()
 
@@ -152,8 +152,11 @@ def train_model(model, dset_loader, training_criterion, optimizer,
             current_batch += 1
 
             # wrap them in Variable
-            inputs, labels = Variable(inputs.cuda()), \
-                           Variable(labels.cuda())
+            if use_cuda:
+                inputs, labels = Variable(inputs.cuda()), \
+                               Variable(labels.cuda())
+            else:
+                inputs, labels = Variable(inputs), Variable(labels)
 
             # zero the parameter gradients
             optimizer.zero_grad()
