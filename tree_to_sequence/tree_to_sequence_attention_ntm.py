@@ -1,17 +1,20 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import torch.nn.functional as F
 
-from neural_turing_machine import NTM
+#from neural_turing_machine.ntm import NTM
+from tree_to_sequence.tree_to_sequence_attention import TreeToSequenceAttention
 from tree_to_sequence.tree_to_sequence import TreeToSequence
 
-class TreeToSequenceAttentionNTM(TreeToSequence):
-    def __init__(self, encoder, decoder, ntm, hidden_size, nclass, embedding_size,
+class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
+    def __init__(self, encoder, decoder, ntm, hidden_size, embedding_size,
                  alignment_size=50, align_type=1):
-        super(TreeToSequenceAttention, self).__init__(encoder, decoder, hidden_size, nclass, embedding_size)
+        super(TreeToSequenceAttention, self).__init__(encoder, decoder, hidden_size, 1, embedding_size)
 
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         self.tanh = nn.Tanh()
+        # Initialize ntm with batch_size 1, output size 1, 1 read 1 write head
         self.ntm = ntm
         if align_type == 0:
             self.attention_hidden = nn.Linear(hidden_size, alignment_size)
@@ -32,40 +35,13 @@ class TreeToSequenceAttentionNTM(TreeToSequence):
                have dimensions, num_layers x hidden_size.
         target: The target should have dimensions, seq_len, and should be a LongTensor.
     """
-    def forward_train(self, input, max_len, target):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-        # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
-        if self.align_type <= 1:
-            attention_hidden_values = self.attention_hidden(annotations)
-        else:
-            attention_hidden_values = annotations
+    def forward_train(self, prog_inputs, targets):
+        tree = prog_inputs[0]
+        loss = 0.0
+        for input, output in zip(prog_inputs[1], targets):
+            prediction = self.forward_prediction((tree,input))[0][0]
+            loss += (prediction - output)**2
 
-        decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
-        decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
-        SOS_token = Variable(self.SOS_token)
-
-        word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
-        et = Variable(self.et)
-        loss = 0
-
-        for i in range(max_len):
-            decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
-            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
-            decoder_hidden = decoder_hiddens[-1]
-
-            attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
-            attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
-            context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-            et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
-            log_odds = self.output_log_odds(et)
-
-
-            _, next_input = log_odds.topk(1)
-
-            word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
-            current_val = ntm.forward_step(word_input)
-#  Feed in ntm output, input, attention in each, input is 0 for all but k - 1
-        loss += self.loss_func(current_val, target)
         return loss
 
 
@@ -74,46 +50,40 @@ class TreeToSequenceAttentionNTM(TreeToSequence):
         This is just an alias for point_wise_prediction, so that training code that assumes the presence
         of a forward_train and forward_prediction works.
     """
-    def forward_prediction(self, input, maximum_length=150):
-        return self.point_wise_prediction(input, maximum_length)
+    def forward_prediction(self, prog_input):
+        return self.point_wise_prediction(prog_input)
 
-    def point_wise_prediction(self, input, maximum_length=150):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-
+    def point_wise_prediction(self, prog_input):
+        tree_input = prog_input[0]
+        input_val = prog_input[1]
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(tree_input)
         # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
 
-        decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
-        decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
+        decoder_hiddens = decoder_hiddens.unsqueeze(1)  # num_layers x 1 x hidden_size
+        decoder_cell_states = decoder_cell_states.unsqueeze(1)  # num_layers x 1 x hidden_size
         SOS_token = Variable(self.SOS_token)
 
-        word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
+        current_val = SOS_token  # 1 x embedding_size
         et = Variable(self.et)
-        output_so_far = []
+        loss = 0
 
-        for i in range(maximum_length):
-            decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
+        for i in range(len(input_val)):
+            decoder_input = torch.cat((input_val[i].unsqueeze(0),
+                                       current_val.type(torch.FloatTensor), et), dim=1)  # 1 x 2 + hidden_size
             decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1]
 
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
-            attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
-            context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
+            attention_probs = self.softmax(attention_logits)  # number_of_nodes x 1
+            context_vec = (attention_probs * annotations).sum(0).unsqueeze(0)  # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
-            log_odds = self.output_log_odds(et)
-            _, next_input = log_odds.topk(1)
-
-            output_so_far.append(int(next_input))
-
-            if int(next_input) == self.EOS_value:
-                break
-
-            word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
-
-        return output_so_far
+            current_val = self.ntm.forward_step(et)
+            #  Feed in ntm output, input, attention in each, input is 0 for all but k - 1
+        return current_val
 
     def beam_search_prediction(self, input, maximum_length=20, beam_width=5):
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
@@ -170,3 +140,6 @@ class TreeToSequenceAttentionNTM(TreeToSequence):
             return self.attention_alignment_vector(self.tanh(self.attention_context(decoder_hidden) + attention_hidden_values))
         else:
             return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1)
+
+
+

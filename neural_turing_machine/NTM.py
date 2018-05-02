@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from rw_heads import NTM_Read_Head, NTM_Write_Head
-from ntm_memory import NTM_Memory
+from neural_turing_machine.rw_heads import NTM_Read_Head, NTM_Write_Head
+from neural_turing_machine.ntm_memory import NTM_Memory
 
 
 
