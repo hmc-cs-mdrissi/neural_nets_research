@@ -206,7 +206,7 @@ class TreeANCDataset(Dataset):
 
 
 class TreeNTMDataset(Dataset):
-    def __init__(self, path, is_lambda_calculus, thinking_time, num_vars = 10, num_ints = 11, binarize = False,
+    def __init__(self, path, is_lambda_calculus, thinking_time, repeats=2, num_vars = 10, num_ints = 11, binarize = False,
                  input_eos_token=True, input_as_seq=False, use_embedding=False,
                  long_base_case=True, cuda=True):
         if is_lambda_calculus:
@@ -269,9 +269,9 @@ class TreeNTMDataset(Dataset):
         self.cuda = cuda
 
         progsjson = json.load(open(path))
-        self.progs = [self.convert_to_triple(prog_input_output, thinking_time) for prog_input_output in progsjson]
+        self.progs = [self.convert_to_triple(prog_input_output, thinking_time, repeats) for prog_input_output in progsjson]
 
-    def convert_to_triple(self, prog_input_output, thinking_time):
+    def convert_to_triple(self, prog_input_output, thinking_time, repeats):
         #the prog_tree code is a placeholder depending on how different make_tree for the two
         #end up being and what we call them
         prog_tree = make_tree(prog_input_output[0], is_lambda_calculus=self.is_lambda_calculus)
@@ -298,7 +298,7 @@ class TreeNTMDataset(Dataset):
         if self.cuda:
             prog_tree = prog_tree.cuda()
 
-        inputs_outputs = torch.FloatTensor(prog_input_output[1][:])
+        inputs_outputs = torch.FloatTensor(prog_input_output[1][:]*repeats)
         inputs = inputs_outputs[:,0].unsqueeze(1)
         outputs = inputs_outputs[:,1]
         inputs = torch.cat((inputs, torch.zeros((inputs.size(0), thinking_time))), 1) 

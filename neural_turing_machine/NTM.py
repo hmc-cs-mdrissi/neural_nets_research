@@ -52,11 +52,13 @@ class NTM(nn.Module):
         nn.init.xavier_uniform(self.outputGate.weight)
         nn.init.normal(self.outputGate.bias, std=0.01)
 
+    def reset_reads(self, initial_input):
+        self.prev_reads = [initial_input]
+
     def forward_step(self, controller_output):
         self.initialize_state()
         outputs = []
 
-        self.prev_reads = []
 
         for head in self.heads:
             if head.is_read_head():

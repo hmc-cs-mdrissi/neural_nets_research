@@ -70,8 +70,9 @@ class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
         current_val = SOS_token  # 1 x embedding_size
         et = Variable(self.et)
         loss = 0
-
+        self.ntm.reset_reads(input_val)
         for i in range(len(input_val)):
+
             decoder_input = torch.cat((input_val[i].unsqueeze(0),
                                        current_val.type(torch.FloatTensor), et), dim=1)  # 1 x 2 + hidden_size
             decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
