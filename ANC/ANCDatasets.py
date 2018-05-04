@@ -217,7 +217,7 @@ class DummyDataset(data.Dataset):
         """
         return self.input_list[i], self.output_list[i]
 
-class IncTaskDataset(data.Dataset):
+class IncrementTaskDataset(data.Dataset):
     def __init__(self, M, list_len, num_examples):
         """
         Generate a dataset for the list task by randomly choosing two numbers in the allowed range

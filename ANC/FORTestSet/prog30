@@ -1,10 +1,10 @@
-if a8 == 4 then
-    if a9 == 3 then
-        a3 = 2 + a0 + a1
-    else 
-        a2 = 3 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9
-    endif 
-else 
-    a1 = a9;
-    a9 = a1 - 4
+if a3 == 4 then
+    if a4 == 3 then
+        a3 = 2 + a1 + a1
+    else
+        a2 = 3 + a1 + a2 + a3 + a4
+    endif
+else
+    a2 = a1;
+    a4 = a1 - 4
     endif

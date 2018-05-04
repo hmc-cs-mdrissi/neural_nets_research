@@ -17,11 +17,11 @@ import qualified Data.Map as Map
 import Control.Monad
 import Prelude hiding (writeFile)
 
--- 
+--
 -- GenerateArbitraryTests.hs
 -- A set of functions for generating a set of programs and storing their JSON encodings
 -- in a file.
--- 
+--
 
 -- Typical term lengths: Easy = 5, Medium = 8, Hard = 10, VeryHard = 15
 
@@ -48,13 +48,13 @@ makeContext :: Int -> Context
 makeContext initialValue = Map.fromList [("a0", initialValue)]
 
 getA0ValueFromContext :: Context -> Int
-getA0ValueFromContext context = case (Map.lookup "a0" context) of 
+getA0ValueFromContext context = case (Map.lookup "a0" context) of
                                     Just newValue -> newValue
                                     _ -> error "Error: Lookup from new context failed."
 
 makeApplication :: ProgFor -> Int -> (Int, Int)
-makeApplication for_prog input = let currentContext = makeContext input in 
-                                     case (eval currentContext for_prog) of 
+makeApplication for_prog input = let currentContext = makeContext input in
+                                     case (eval currentContext for_prog) of
                                         Just newContext -> (input, (getA0ValueFromContext newContext))
                                         _ -> error "Error: For program evaluation failed."
 
@@ -79,6 +79,5 @@ showForProg for_prog = let pairLC = appendInterpreterOutput for_prog in
 main :: IO ()
 main = do cfg <- parseArguments
           for_progs <- generateArbitraryFor (difficulty cfg) (forCount cfg) (termLength cfg)
-          --mapM_ showForProg for_progs 
           writeFile (show (difficulty cfg) ++ "-" ++ (forFileName cfg)) $ encode (interpretAllProgs for_progs)
 
