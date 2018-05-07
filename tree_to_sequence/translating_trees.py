@@ -16,6 +16,9 @@ class Node:
 
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
+    
+    def size(self):
+        return 1 + sum([child.size() for child in self.children])
 
 def make_var_name(var_name):
     if var_name == 'h':
