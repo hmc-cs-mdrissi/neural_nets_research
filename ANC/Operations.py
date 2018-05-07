@@ -22,9 +22,7 @@ class Operation(nn.Module):
             for j in range(M):
                 val = self.compute(i, j)
                 self.outputs[i][j][val] = 1
-                
-        self.outputs = Variable(self.outputs)
-    
+                    
     def compute(self, x, y):
         """ 
         Perform the binary operation.  The arguments may or may not be used.

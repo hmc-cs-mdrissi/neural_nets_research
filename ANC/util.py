@@ -1,5 +1,6 @@
 import torch
 import random
+import torch.nn as nn
 
 def one_hotify(vec, number_of_classes, dimension):
     """
@@ -33,19 +34,18 @@ def anc_validation_criterion(output, label):
     return 1 - torch.equal(output_indices, target_indices)
 
 
-
-def getBest(vec):
+def getBest(vec, cutoff):
     maxVal, index = torch.max(vec, 0)
-    if maxVal.data[0] > cutoff:
-        return index.data[0]
+    if float(maxVal[0]) > cutoff:
+        return int(index[0])
 
-def bestRegister(vec):
-    index = getBest(vec)
+def bestRegister(vec, cutoff):
+    index = getBest(nn.Softmax(0)(vec), cutoff)
     if index is not None:
         return "R" + str(1 + index)
     return "??"
     
-def bestInstruction(vec):
+def bestInstruction(vec, cutoff):
     ops = [ 
         "STOP",
         "ZERO",
@@ -59,51 +59,46 @@ def bestInstruction(vec):
         "WRITE",
         "JEZ"
     ]
-    index = getBest(vec)
+    index = getBest(nn.Softmax(0)(vec), cutoff)
     if index is not None:
         return ops[index]
     return "??"
 
-
-def printProgram():   
+def printProgram(controller, cutoff):   
     
-    print("IR = " + str(getBest(controller.IR)))
+    print("IR = " + str(getBest(controller.IR, cutoff)))
     
     # Print registers
-    for i in range(R):
-        print("R" + str(i + 1) + " = " + str(getBest(controller.registers[i,:])))
+    for i in range(controller.R):
+        print("R" + str(i + 1) + " = " + str(getBest(nn.Softmax(0)(controller.registers[i,:]), cutoff)))
 
     print()
 
     # Print the actual program
-    for i in range (M):
-        print(bestRegister(controller.output[:, i]) + " = " + 
-              bestInstruction(controller.instruction[:, i]) + "(" +
-              bestRegister(controller.first_arg[:, i]) + ", " +
-              bestRegister(controller.second_arg[:, i]) + ")")
+    for i in range(controller.M):
+        print(bestRegister(controller.output[:, i], cutoff) + " = " + 
+              bestInstruction(controller.instruction[:, i], cutoff) + "(" +
+              bestRegister(controller.first_arg[:, i], cutoff) + ", " +
+              bestRegister(controller.second_arg[:, i], cutoff) + ")")
 
-
-
-
-    
-def compareOutput():
+def compareOutput(controller, cutoff, orig_register):
     # compare our output to theirs
     # we get one point for every matching number
     match_count = 0
     softmax = nn.Softmax(0)
     for i in range(R):
-        if getBest(nn.Softmax(1)(controller.registers)[i,:]) == orig_register[i]:
+        if getBest(softmax(controller.registers[i,:]), cutoff) == orig_register[i]:
             match_count += 1
     for i in range (M):
-        if getBest(softmax(controller.output)[:, i]) == orig_output[i]:
+        if getBest(softmax(controller.output)[:, i], cutoff) == orig_output[i]:
             match_count += 1
-        if getBest(softmax(controller.instruction)[:, i]) == orig_instruction[i]:
+        if getBest(softmax(controller.instruction)[:, i], cutoff) == orig_instruction[i]:
             match_count += 1
-        if getBest(softmax(controller.first_arg)[:, i]) == orig_first[i]:
+        if getBest(softmax(controller.first_arg)[:, i], cutoff) == orig_first[i]:
             match_count += 1
-        if getBest(softmax(controller.second_arg)[:, i]) == orig_second[i]:
+        if getBest(softmax(controller.second_arg)[:, i], cutoff) == orig_second[i]:
             match_count += 1
-    if getBest(softmax(controller.IR)) == orig_ir:
+    if getBest(softmax(controller.IR), cutoff) == orig_ir:
         match_count += 1
     
     percent_orig = match_count / (len(orig_register) + len(orig_output) + 
