@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from .util import one_hotify
 from .util import anc_validation_criterion
 from .DummyDataset import DummyDataset
+from .IncTaskDataset import IncTaskDataset
 from .Controller import Controller
 from ..neural_nets_library import training
 
@@ -25,12 +26,12 @@ from ..neural_nets_library import training
 # target = torch.IntTensor([4,3,5,3,4,5,5,5]) # Length M, should be RxM
 # instruction = torch.IntTensor([8,8,10,5,2,10,9,0]) # Length M, should be NxM
 
-# Increment task
-# init_registers = torch.IntTensor([6,0,0,0,0,0,0])
-# first_arg = torch.IntTensor([5,1,1,5,5,4,6])
-# second_arg = torch.IntTensor([6,0,6,3,6,2,6])
-# target = torch.IntTensor([1,6,3,6,5,6,6])
-# instruction = torch.IntTensor([8,10,2,9,2,10,0])
+#Increment task
+init_registers = torch.IntTensor([6,0,0,0,0,0,0])
+first_arg = torch.IntTensor([5,1,1,5,5,4,6])
+second_arg = torch.IntTensor([6,0,6,3,6,2,6])
+target = torch.IntTensor([1,6,3,6,5,6,6])
+instruction = torch.IntTensor([8,10,2,9,2,10,0])
 
 # init_registers = torch.IntTensor([0,0,6,0,0,0]) ### Note that the paper has an Instruction Register on top
 # first_arg = torch.IntTensor([0,1,1,0,0,4,0]) ##
@@ -52,12 +53,12 @@ from ..neural_nets_library import training
 # instruction = torch.IntTensor([8,2,8,9,0])
 
 
-# Dummy Task
-init_registers = torch.IntTensor([1])
-first_arg = torch.IntTensor([0, 0])
-second_arg = torch.IntTensor([0, 0])
-target = torch.IntTensor([0, 0])
-instruction = torch.IntTensor([1, 0])
+# # Dummy Task
+# init_registers = torch.IntTensor([1])
+# first_arg = torch.IntTensor([0, 0])
+# second_arg = torch.IntTensor([0, 0])
+# target = torch.IntTensor([0, 0])
+# instruction = torch.IntTensor([1, 0])
 
 # # Dummy task - 0.5 stop prob
 # init_registers = torch.IntTensor([0, 0])
@@ -98,14 +99,14 @@ instruction = one_hotify(instruction, N, 1)
 # print("SA", second_arg)
 # print("INST", instruction)
     
-num_examples = 100 #7200
+num_examples = 500#7200
 
 # M = 8 # Don't change this (as long as we're using the add-task)
 # dataset = AddTaskDataset(M, num_examples)
 # dataset = TrivialAddTaskDataset(M, num_examples)
 
-# M = 7 # Don't change this (as long as we're using the inc-task)
-# dataset = IncTaskDataset(M, 5, num_examples)
+M = 7 # Don't change this (as long as we're using the inc-task)
+dataset = IncTaskDataset(M, 5, num_examples)
 
 # M = 5
 # dataset = AccessTaskDataset(M, num_examples)
@@ -113,8 +114,8 @@ num_examples = 100 #7200
 # M = 5
 # dataset = TrivialAccessTaskDataset(M, num_examples)
 
-M = 2
-dataset = DummyDataset(M, num_examples)
+# M = 2
+# dataset = DummyDataset(M, num_examples)
 
 
 data_loader = data.DataLoader(dataset, batch_size = 1) # Don't change this batch size.  You have been warned.
@@ -131,6 +132,7 @@ controller = Controller(first_arg = first_arg,
                         halting_weight = 5, 
                         efficiency_weight = 0.01, 
                         confidence_weight = 0.1, 
+                        optimize = True,
                         t_max = 50) 
 
 # Learning rate is a tunable hyperparameter. The paper used 1 or 0.1.
@@ -155,7 +157,9 @@ plt.plot([x * plot_every for x in range(len(train_plot_losses))], train_plot_los
 plt.title("Training Loss")
 plt.show()
 
-plt.plot(range(len(controller.times)), controller.times)
+averages = [sum(controller.times[i * 10:i * 10 + 10])/10.0 for i in range(int(len(controller.times) / 10))]
+plt.plot(range(len(averages)), averages)
+# plt.plot(range(len(controller.times)), controller.times)
 plt.title("Timesteps")
 plt.show()
 

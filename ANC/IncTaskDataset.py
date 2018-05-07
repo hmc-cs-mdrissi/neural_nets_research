@@ -1,3 +1,6 @@
+import torch.utils.data as data
+import torch
+
 class IncTaskDataset(data.Dataset):
     def __init__(self, M, list_len, num_examples):
         """
