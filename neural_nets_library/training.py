@@ -540,6 +540,7 @@ def train_model_tree_to_tree(model,
                     print_every=200,
                     plot_every=100,
                     batch_size=50,
+                    validation_criterion=None,
                     deep_copy_desired=False,
                     use_cuda=True,
                     plateau_lr=False):
@@ -549,8 +550,11 @@ def train_model_tree_to_tree(model,
     best_loss = float('inf')
     model.train(True)
     train_plot_losses = []
+    validation_plot_losses = []
     running_train_plot_loss = 0.0
     running_train_print_loss = 0.0
+    running_validation_plot_loss = 0.0
+    running_validation_print_loss = 0.0
     total_batch_number = 0
 
     # Loss used for batches
@@ -571,7 +575,7 @@ def train_model_tree_to_tree(model,
             total_batch_number += 1
             current_batch += 1
 
-            iteration_loss = model.forward_train(target_tree,input_tree)
+            iteration_loss = model.forward_train(input_tree, target_tree)
             loss += iteration_loss
             
             if total_batch_number % batch_size == 0:
@@ -588,6 +592,12 @@ def train_model_tree_to_tree(model,
                 # zero the parameter gradients
                 optimizer.zero_grad()
 
+            if validation_criterion is not None:
+                output = model.forward_prediction(input_tree, target_tree)
+                validation_loss = validation_criterion(output, target_tree)
+                running_validation_plot_loss += validation_loss
+                running_validation_print_loss += validation_loss
+                
             # statistics
             epoch_running_loss += float(iteration_loss)
             running_train_plot_loss += float(iteration_loss)
@@ -602,19 +612,26 @@ def train_model_tree_to_tree(model,
                 print('Time so far is {:.0f}m {:.0f}s'.format(
                     time_elapsed // 60, time_elapsed % 60))
                 print('Example diff:')
-                example_outs = []
-                for i in range(len(target)):
-                    example_outs.append(model.forward_prediction((tree,input[i])).data[0][0])
-                print('Example Outs: ', example_outs)
-                print('Expected Outs: ', target)
+                model.print_example(input_tree, target_tree)
                 running_train_print_loss = 0.0
+                
+                if validation_criterion is not None:
+                    curr_validation_loss = running_validation_print_loss / print_every
+                    print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
+                    epoch, current_batch, curr_validation_loss))
+                    running_validation_print_loss = 0.0
 
+                
             if total_batch_number % plot_every == 0:
                 train_plot_losses.append(running_train_plot_loss / plot_every)
                 running_train_plot_loss = 0.0
+                if validation_criterion is not None:
+                    validation_plot_losses.append(running_validation_plot_loss/plot_every)
+                    running_validation_plot_loss = 0.0
+
 
         # deep copy the model
-        if epoch_running_loss < best_loss:
+        if epoch_running_loss < best_loss / len(dset_loader):
             best_loss = epoch_running_loss / len(dset_loader)
             if deep_copy_desired:
                 best_model = copy.deepcopy(model)
@@ -627,7 +644,7 @@ def train_model_tree_to_tree(model,
     print('Best loss: {:4f}'.format(best_loss))
 
     model.train(False)
-    return best_model, train_plot_losses
+    return best_model, train_plot_losses, validation_plot_losses
 
 
 def test_model(model, dset_loader):

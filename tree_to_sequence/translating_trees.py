@@ -1,5 +1,6 @@
 import torch
 from torch.autograd import Variable
+import pptree
 
 from six import string_types
 
@@ -139,9 +140,30 @@ def map_tree(func, tree):
     return new_tree
 
 def print_tree(tree):
-    print(tree.value)
+    print(get_val(tree.value))
     for child in tree.children:
         print_tree(child)
+        
+def get_val(value):
+    if type(value) is torch.autograd.variable.Variable:
+        return value.data[0]
+    else:
+        return value
+    
+def pretty_print_attention(tree, attention_indices, write_index):
+    pass
+        
+def pretty_print_tree(tree):
+    root_node = pptree.Node(str(get_val(tree.value)))
+    for child in tree.children:
+        make_pretty_tree(child, root_node)
+    pptree.print_tree(root_node)
+        
+def make_pretty_tree(node, parent):
+    new_node = pptree.Node(str(get_val(node.value)), parent)
+    for child in node.children:
+        make_pretty_tree(child, new_node)
+        
 
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, one_hot=one_hot), tree)
@@ -168,6 +190,39 @@ def tree_to_list(tree):
   """
   return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
 
+# Non-binarized
+def get_for_grammar():
+    expr = [0, 1, 2, 3] # (var, const, plus, minus)
+    cmp = [4, 5, 6] # (==, <, >)
+    single = [7, 8, 10] # (Assign, If, For)
+    for_grammar = {
+        0: [-1], # Var aaaaaaaa
+        1: [-2], # Const -> value
+        2: [expr, expr], # Plus -> (expr), (expr)
+        3: [expr, expr], # Minus -> (expr), (expr)
+        4: [expr, expr], # Equals -> (expr), (expr)
+        5: [expr, expr], # <= -> (expr), (expr)
+        6: [expr, expr], # >= -> (expr), (expr)
+        7: [[0], expr], # Assign -> (var), (expr)
+        8: [cmp, single + [9], []], # If -> (cmp) (statement) (statement)
+        9: [],
+        10: [],
+    }
+    
+    for_ops = {
+    "Var": 0,
+    "Const": 1,
+    "Plus": 2,
+    "Minus": 3,
+    "EqualFor": 4,
+    "LeFor": 5,
+    "GeFor": 6,
+    "Assign": 7,
+    "If": 8,
+    "Seq": 9,
+    "For": 10
+}
+    
 def translate_from_for(tree):
     if tree.value == '<SEQ>':
         t1 = translate_from_for(tree.children[0])
@@ -219,3 +274,5 @@ def translate_from_for(tree):
         return new_tree
     else:
         return tree
+ 
+

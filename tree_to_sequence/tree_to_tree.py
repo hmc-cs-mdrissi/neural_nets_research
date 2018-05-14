@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from tree_to_sequence.translating_trees import Node
+from tree_to_sequence.translating_trees import print_tree
+from tree_to_sequence.translating_trees import pretty_print_tree
+
 
 class TreeToTree(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size,
@@ -10,42 +13,31 @@ class TreeToTree(nn.Module):
         
         self.encoder = encoder
         self.decoder = decoder
+        self.i = 0
 
     def forward_train(self, input_tree, target_tree):
-        print("TRAIN!")
         loss = 0.0
-        prediction = self.forward_prediction(input_tree)
-        matches = self.count_matches(prediction, target_tree)
-        loss = matches * 1.0 / target_tree.size()
 
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
+        loss = self.decoder.forward_train(decoder_hiddens, decoder_cell_states, target_tree, annotations)
         return loss
-
-    """
-        This is just an alias for point_wise_prediction, so that training code that assumes the presence
-        of a forward_train and forward_prediction works.
-    """
-    def forward_prediction(self, prog_input):
-        return self.point_wise_prediction(prog_input)
-
-    def point_wise_prediction(self, tree_input):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(tree_input)
-        tree = self.decoder(decoder_hiddens, decoder_cell_states, annotations)
-        best_tree = self.extract_best(tree)
-
+        
+    def forward_prediction(self, input_tree, target_tree):
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
+        tree = self.decoder.forward_prediction(decoder_hiddens, decoder_cell_states, annotations)
         return tree
+    
+    def print_example(self, input_tree, target_tree):
+        print("DESIRED")
+        pretty_print_tree(target_tree)
+        print("WE GOT!")
+        pretty_print_tree(self.forward_prediction(input_tree, target_tree))
+
 
     def extract_best(self, tree): 
         tree.value = tree.value[2]
         for child in tree.children:
             self.extract_best(child)
-    
-    def count_matches(self, prediction, target):
-        matches = 0
-        if int(prediction.value) == int(target.value):
-            matches += 1
-        for i in range(min(len(target.children), len(prediction.children))):
-            matches += self.count_matches(prediction.children[i], target.children[i])
-        return matches
          
         
 

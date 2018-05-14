@@ -17,6 +17,7 @@ class TreeEncoder(nn.Module):
         self.use_embedding = use_embedding
 
         if use_embedding:
+            print("EMBEDDING INPUT SIZE", input_size)
             self.embedding = nn.Embedding(input_size, embedding_size)
             self.lstm_list.append(TreeLSTM(embedding_size, hidden_size, valid_num_children))
         else:
