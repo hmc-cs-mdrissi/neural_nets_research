@@ -150,8 +150,63 @@ def get_val(value):
     else:
         return value
     
-def pretty_print_attention(tree, attention_indices, write_index):
-    pass
+def t2s_pretty_print_attention(attention_probs, input_tree, target_seq, threshold=0.1):
+    attention_list = extract_attention(attention_probs, threshold)
+    
+    # Pretty print each node of the tree
+    print("===================== STARTING ATTENTION PRINT =================")
+    for i in range(target_seq.size()[0]):
+        print("<<<<<<<<")
+        pretty_print_seq(target_seq, i)
+        pretty_print_attention_tree(attention_list[i], input_tree, None, None, 0)
+        print(">>>>>>>>")
+    print("===================== ENDING ATTENTION PRINT =================")
+    
+def pretty_print_seq(target_seq, write_index):
+    s = ""
+    for i in range(target_seq.size()[0]):
+        if i == write_index:
+            s = s + " *" + str(int(target_seq[i].data)) + "*"
+        else:
+            s = s + " " + str(int(target_seq[i].data))
+    print(s)
+    
+def pretty_print_attention(attention_probs, target_tree, threshold=0.1):
+    attention_list = extract_attention(attention_probs, threshold)
+    
+    # Pretty print each node of the tree
+    print("===================== STARTING ATTENTION PRINT =================")
+    for i in range(target_tree.size()):
+        pretty_print_attention_tree(attention_list[i], target_tree, None, i, 0)
+    print("===================== ENDING ATTENTION PRINT =================")
+
+def extract_attention(attention_probs, threshold):
+    attention_list = []
+    for prob in attention_probs:
+        important_indices = []
+        for i in range(len(prob)):
+            if float(prob[i]) > threshold:
+                important_indices.append(i)
+        attention_list.append(important_indices)
+    return attention_list
+
+
+def pretty_print_attention_tree(attention_list, target_tree, parent, write_index, curr_index):
+    root_val = str(get_val(target_tree.value))
+    if curr_index == write_index:
+        root_val = "*" + root_val + "*"
+    if curr_index in attention_list:
+        root_val = "(" + root_val + ")"
+    if parent is None:
+        root_node = pptree.Node(root_val, parent)
+    else:
+        root_node = pptree.Node(root_val, parent)
+    curr_index += 1
+    for child in target_tree.children[::]:
+        curr_index = pretty_print_attention_tree(attention_list, child, root_node, write_index, curr_index)
+    if parent is None:
+        pptree.print_tree(root_node)
+    return curr_index
         
 def pretty_print_tree(tree):
     root_node = pptree.Node(str(get_val(tree.value)))

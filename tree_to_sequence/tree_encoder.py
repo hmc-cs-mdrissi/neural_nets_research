@@ -10,14 +10,16 @@ class TreeEncoder(nn.Module):
     Produces a sequence encoding of the tree
     """
     def __init__(self, input_size, hidden_size, num_layers, valid_num_children,
-                 attention=True, use_embedding=True, embedding_size=256):
+                 attention=True, use_embedding=True, embedding_size=256, dropout=False):
         super(TreeEncoder, self).__init__()
 
         self.lstm_list = nn.ModuleList()
         self.use_embedding = use_embedding
+        self.dropout = False
+        if dropout:
+            self.dropout = nn.Dropout(p=dropout)
 
         if use_embedding:
-            print("EMBEDDING INPUT SIZE", input_size)
             self.embedding = nn.Embedding(input_size, embedding_size)
             self.lstm_list.append(TreeLSTM(embedding_size, hidden_size, valid_num_children))
         else:
@@ -40,6 +42,9 @@ class TreeEncoder(nn.Module):
         """
         if self.use_embedding:
             tree = map_tree(lambda node: self.embedding(node).squeeze(0), tree)
+            
+        if self.dropout:
+            tree = map_tree(lambda node: self.dropout(node), tree)
 
         hiddens = []
         cell_states = []

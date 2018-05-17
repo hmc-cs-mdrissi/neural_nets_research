@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 from tree_to_sequence.translating_trees import Node
+from tree_to_sequence.translating_trees import pretty_print_attention
 
 class TreeDecoder(nn.Module):
     """
@@ -34,25 +35,24 @@ class TreeDecoder(nn.Module):
         self.align_type = align_type
         self.register_buffer('et', torch.zeros(1, hidden_size))
         self.EOS_value = nclass
-        print("NCLASS", nclass)
-        self.i = 0
+        self.i = 0 # Used to let us print sample output at regular intervals
         
         self.loss_func = nn.CrossEntropyLoss()
+        
 
     def forward_train(self, rootH, rootC, target, annotations, teacher_forcing=True):
-        # Create stack of unexpanded nodes
+        # Create stack of unexpanded nodes #TODO: get rid of depth in this tuple if we end up not using it.
         unexpanded = [(rootH, rootC, target, 1)]
         
-        # Compute e_t
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
             
         loss = 0
-        if self.i % 200 == 0:
-            print("START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
+        all_attention_probs = []
+        
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
@@ -60,19 +60,15 @@ class TreeDecoder(nn.Module):
 
             attention_logits = self.attention_logits(attention_hidden_values, nodeH)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
+            all_attention_probs.append(attention_probs) #TODO - take out!
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-            et = self.tanh(self.attention_presoftmax(torch.cat((nodeH, context_vec), dim=1)))
+            et = self.tanh(self.attention_presoftmax(torch.cat((nodeH, context_vec), dim=1))) # 1 x hidden_size
             log_odds = self.softmax1(self.output_log_odds(et))
-            if self.i % 200 == 0:
-#                 print("LOG ODDS", targetNode.value, log_odds)
-                print("ATTENTION PROBS", attention_probs)
-#                 print("CONTEXT VEC", context_vec)
-
             
             node_loss = self.loss_func(log_odds, targetNode.value)
             if (int(targetNode.value) == self.EOS_value):
                 node_loss = node_loss / 5.0
-            loss += node_loss * depth
+            loss += node_loss# * depth
                 
             if int(targetNode.value) == self.EOS_value:
                 continue
@@ -81,13 +77,15 @@ class TreeDecoder(nn.Module):
                 next_input = targetNode.value
             else:
                 _, next_input = log_odds.topk(1)
+            
             decoder_input = torch.cat((self.embedding(next_input), et), 1)
             
-            for i, child in enumerate(targetNode.children):
+            for i, child in enumerate(targetNode.children[::-1]):
                 childH, childC = self.lstm_list[i](decoder_input, (nodeH, nodeC))
                 unexpanded.append((childH, childC, child, depth + 1))
+# Uncomment if you want to see where the attention is focusing as each node is generated
 #         if self.i % 200 == 0:
-#             print("END <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+#             pretty_print_attention(all_attention_probs, target)
         self.i += 1          
         return loss
     
@@ -101,7 +99,7 @@ class TreeDecoder(nn.Module):
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
-            attention_hidden_values = annotations
+            attenteion_hidden_values = annotations
         
         num_nodes = 0
         
@@ -113,8 +111,7 @@ class TreeDecoder(nn.Module):
             attention_logits = self.attention_logits(attention_hidden_values, nodeH)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-            et = self.tanh(self.attention_presoftmax(torch.cat((nodeH, context_vec), dim=1))) # 1 x hidden_size
-
+            #et = self.tanh(self.attention_presoftmax(torch.cat((nodeH, context_vec), dim=1))) # 1 x hidden_size
             log_odds = self.softmax1(self.output_log_odds(et))
             _, next_input = log_odds.topk(1)
             curr_root.value = int(next_input)

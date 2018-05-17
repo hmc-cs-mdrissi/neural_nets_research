@@ -45,8 +45,8 @@ class ForLambdaDataset(Dataset):
         lambda_progs = [translate_from_for(for_prog) for for_prog in for_progs]
 
         if binarize:
-            for_progs = [binarize_tree(prog) for prog in for_progs][:10]
-            lambda_progs = [binarize_tree(prog) for prog in lambda_progs][:10]
+            for_progs = [binarize_tree(prog) for prog in for_progs]
+            lambda_progs = [binarize_tree(prog) for prog in lambda_progs]
 
         for_size = num_vars + num_ints + len(for_ops.keys())
         lambda_size = num_vars + num_ints + len(lambda_ops.keys())
