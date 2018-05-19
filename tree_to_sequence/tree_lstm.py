@@ -36,13 +36,6 @@ class TreeCell(nn.Module):
 
         self.tanh = nn.Tanh()
         self.sigmoid = nn.Sigmoid()
-        
-    def end(self):
-        for g in self.gates_value:
-            print("END VALUE LINEAR", g.weight)
-        for c in self.gates_children:
-            for l in c:
-                print("END CHILD LINEAR", l.weight)
 
     def forward(self, input, hidden_states, cell_states):
         """
@@ -102,10 +95,6 @@ class TreeLSTM(nn.Module):
 
         for size in self.valid_num_children:
             self.lstm_list.append(TreeCell(input_size, hidden_size, size))
-            
-    def end(self):
-        for lstm in self.lstm_list:
-            lstm.end()
 
     def forward(self, node):
         """

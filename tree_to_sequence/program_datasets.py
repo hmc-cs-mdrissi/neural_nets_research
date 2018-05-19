@@ -8,7 +8,7 @@ import json
 
 class ForLambdaDataset(Dataset):
     def __init__(self, path, num_vars = 10, num_ints = 11, binarize = False,
-                 input_eos_token=True, input_as_seq=False, use_embedding=False,
+                 eos_tokens=True, input_as_seq=False, output_as_seq=True, use_embedding=False,
                  long_base_case=True):
         for_ops = {
             "<VAR>": 0,
@@ -36,39 +36,55 @@ class ForLambdaDataset(Dataset):
             "<LET>": 8,
             "<UNIT>": 9,
             "<LETREC>": 10,
-            "<APP>": 11
+            "<APP>": 11,
+            "<BLANK>": 12,
+            "<FUNC>": 13 #TODO if this works, copy to other datasets
         }
-
+        
         progsjson = json.load(open(path))
+        
+        input_token_count = num_vars + num_ints + len(for_ops.keys())
+        output_token_count = num_vars + num_ints + len(lambda_ops.keys())                                                    
 
         for_progs = [make_tree(prog, long_base_case=long_base_case) for prog in progsjson]
         lambda_progs = [translate_from_for(for_prog) for for_prog in for_progs]
 
         if binarize:
-            for_progs = [binarize_tree(prog) for prog in for_progs]
-            lambda_progs = [binarize_tree(prog) for prog in lambda_progs]
+            for_progs = [binarize_tree(prog, add_eos=input_token_count if eos_tokens else False) for prog in for_progs]
+            lambda_progs = [binarize_tree(prog, add_eos=output_token_count if eos_tokens else False) for prog in lambda_progs]
 
         for_size = num_vars + num_ints + len(for_ops.keys())
         lambda_size = num_vars + num_ints + len(lambda_ops.keys())
-
+        
+        if eos_tokens and not binarize and not input_as_seq:
+            _ = [add_eos(prog, output_token_count, make_variable=False) for prog in lambda_progs]
+        
         if use_embedding:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, one_hot=False) for prog in for_progs]
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens, one_hot=False) for prog in for_progs]
             if input_as_seq:
-                if input_eos_token:
+                if eos_tokens:
                     for_progs = [Variable(torch.LongTensor(tree_to_list(prog) + [for_size])) for prog in for_progs]
                 else:
                     for_progs = [Variable(torch.LongTensor(tree_to_list(prog))) for prog in for_progs]
             else:
                 for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in for_progs]
         else:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=input_eos_token) for prog in for_progs]
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens) for prog in for_progs]
             if input_as_seq:
-                if input_eos_token:
+                if eos_tokens:
                     for_progs = [torch.stack(tree_to_list(prog) + [make_one_hot(for_size+1, for_size)]) for prog in for_progs]
                 else:
                     for_progs =  [torch.stack(tree_to_list(prog)) for prog in for_progs]
+        
+        if output_as_seq:                              
+            lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
+        else:
+            if eos_tokens and not binarize:
+                _ = [add_eos(prog, output_token_count, make_variable=False) for prog in lambda_progs]
 
-        lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
+            lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens, one_hot=False) for prog in lambda_progs]
+                                                                   
+            lambda_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in lambda_progs]
 
         self.for_data_pairs = list(zip(for_progs, lambda_progs))
 
@@ -78,77 +94,6 @@ class ForLambdaDataset(Dataset):
     def __getitem__(self, index):
         return self.for_data_pairs[index]
     
-class ForLambdaTreeDataset(Dataset):
-    def __init__(self, path, num_vars = 10, num_ints = 11, binarize = False,
-                 input_eos_token=True, input_as_seq=False, use_embedding=False,
-                 long_base_case=True):
-        for_ops = {
-            "<VAR>": 0,
-            "<CONST>": 1,
-            "<PLUS>": 2,
-            "<MINUS>": 3,
-            "<EQUAL>": 4,
-            "<LE>": 5,
-            "<GE>": 6,
-            "<ASSIGN>": 7,
-            "<IF>": 8,
-            "<SEQ>": 9,
-            "<FOR>": 10
-        }
-
-        lambda_ops = {
-            "<VAR>": 0,
-            "<CONST>": 1,
-            "<PLUS>": 2,
-            "<MINUS>": 3,
-            "<EQUAL>": 4,
-            "<LE>": 5,
-            "<GE>": 6,
-            "<IF>": 7,
-            "<LET>": 8,
-            "<UNIT>": 9,
-            "<LETREC>": 10,
-            "<APP>": 11
-        }
-
-        progsjson = json.load(open(path))
-
-        for_progs = [make_tree(prog, long_base_case=long_base_case) for prog in progsjson]
-        lambda_progs = [make_tree(prog, long_base_case=long_base_case, is_lambda_calculus=True) for prog in progsjson]
-
-        if binarize:
-            for_progs = [binarize_tree(prog) for prog in for_progs][:10]
-            lambda_progs = [binarize_tree(prog) for prog in lambda_progs][:10]
-
-        for_size = num_vars + num_ints + len(for_ops.keys())
-        lambda_size = num_vars + num_ints + len(lambda_ops.keys())
-
-        if use_embedding:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, one_hot=False) for prog in for_progs]
-            if input_as_seq:
-                if input_eos_token:
-                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog) + [for_size])) for prog in for_progs]
-                else:
-                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog))) for prog in for_progs]
-            else:
-                for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in for_progs]
-        else:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=input_eos_token) for prog in for_progs]
-            if input_as_seq:
-                if input_eos_token:
-                    for_progs = [torch.stack(tree_to_list(prog) + [make_one_hot(for_size+1, for_size)]) for prog in for_progs]
-                else:
-                    for_progs =  [torch.stack(tree_to_list(prog)) for prog in for_progs]
-
-        lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
-
-        self.for_data_pairs = list(zip(for_progs, lambda_progs))
-
-    def __len__(self):
-        return len(self.for_data_pairs)
-
-    def __getitem__(self, index):
-        return self.for_data_pairs[index]
 
 class TreeANCDataset(Dataset):
     def __init__(self, path, is_lambda_calculus, num_vars = 10, num_ints = 11, binarize = False,
@@ -447,27 +392,16 @@ class IdentityTreeToTreeDataset(Dataset):
 
         progsjson = json.load(open(path))
         self.progs = [self.convert_to_pair(prog_input_output) for prog_input_output in progsjson]
-
-    # Only legit if you binarize.  TODO: deal with case where you don't
-    def add_eos(self, tree, eos):
-        for child in tree.children:
-            self.add_eos(child, eos)
-        if len(tree.children) < 2:
-            tree.children.append(Node(Variable(torch.LongTensor([eos]))))
-            if len(tree.children) == 1:
-                tree.children.append(Node(Variable(torch.LongTensor([eos]))))
-            
-    
     def convert_to_pair(self, prog_input_output):
+        input_token_count = self.num_vars + self.num_ints + len(self.tokens.keys())
         prog_tree = make_tree(prog_input_output[0], is_lambda_calculus=self.is_lambda_calculus)
         if self.binarize:
-            prog_tree = binarize_tree(prog_tree)
-
+            prog_tree = binarize_tree(prog_tree, add_eos=input_token_count)
         if self.use_embedding:
             prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, one_hot=False)
             prog_tree = map_tree(lambda val: Variable(torch.LongTensor([val])), prog_tree)
             if self.eos_tokens:
-                self.add_eos(prog_tree, self.num_vars + self.num_ints + len(self.tokens.keys()))
+                add_eos(prog_tree, input_token_count)
         else:
             prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=False)
                   

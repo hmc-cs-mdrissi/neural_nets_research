@@ -593,7 +593,7 @@ def train_model_tree_to_tree(model,
                 optimizer.zero_grad()
 
             if validation_criterion is not None:
-                output = model.forward_prediction(input_tree, target_tree)
+                output = model.forward_prediction(input_tree)
                 validation_loss = validation_criterion(output, target_tree)
                 running_validation_plot_loss += validation_loss
                 running_validation_print_loss += validation_loss
