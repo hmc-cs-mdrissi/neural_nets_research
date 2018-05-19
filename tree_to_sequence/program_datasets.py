@@ -1,7 +1,7 @@
 import torch
 from torch.autograd import Variable
 from torch.utils.data import Dataset
-from translating_trees import *
+from tree_to_sequence.translating_trees import *
 
 import json
 
@@ -198,6 +198,112 @@ class TreeANCDataset(Dataset):
 
         return prog_tree, (input_matrices, output_matrices, masks)
 
+    def __len__(self):
+        return len(self.progs)
+
+    def __getitem__(self, index):
+        return self.progs[index]
+
+
+class TreeNTMDataset(Dataset):
+    def __init__(self, path, is_lambda_calculus, thinking_time, repeats=2, num_vars = 10, num_ints = 11, binarize = False,
+                 input_eos_token=True, input_as_seq=False, use_embedding=False,
+                 long_base_case=True, cuda=True):
+        if is_lambda_calculus:
+            self.tokens = {
+                "<VARIABLE>": 0,
+                "<ABSTRACTION>": 1,
+                "<NUMBER>": 2,
+                "<BOOLEAN>": 3,
+                "<NIL>": 4,
+                "<IF>": 5,
+                "<CONS>": 6,
+                "<MATCH>": 7,
+                "<UNARYOPER>": 8,
+                "<BINARYOPER>": 9,
+                "<LET>": 10,
+                "<LETREC>": 11,
+                "<TRUE>": 12,
+                "<FALSE>": 13,
+                "<TINT>": 14,
+                "<TBOOL>": 15,
+                "<TINTLIST>": 16,
+                "<TFUN>": 17,
+                "<ARGUMENT>": 18,
+                "<NEG>": 19,
+                "<NOT>": 20,
+                "<PLUS>": 21,
+                "<MINUS>": 22,
+                "<TIMES>": 23,
+                "<DIVIDE>": 24,
+                "<AND>": 25,
+                "<OR>": 26,
+                "<EQUAL>": 27,
+                "<LESS>": 28,
+                "<APPLICATION>": 29,
+                "<HEAD>": 30,
+                "<TAIL>": 31
+            }
+        else:
+            self.tokens = {
+                "<VAR>": 0,
+                "<CONST>": 1,
+                "<PLUS>": 2,
+                "<MINUS>": 3,
+                "<EQUAL>": 4,
+                "<LE>": 5,
+                "<GE>": 6,
+                "<ASSIGN>": 7,
+                "<IF>": 8,
+                "<SEQ>": 9,
+                "<FOR>": 10
+            }
+
+        self.num_vars = num_vars
+        self.num_ints = num_ints
+        self.input_eos_token = input_eos_token
+        self.binarize = binarize
+        self.is_lambda_calculus = is_lambda_calculus
+        self.use_embedding = use_embedding
+        self.input_as_seq = input_as_seq
+        self.cuda = cuda
+
+        progsjson = json.load(open(path))
+        self.progs = [self.convert_to_triple(prog_input_output, thinking_time, repeats) for prog_input_output in progsjson]
+
+    def convert_to_triple(self, prog_input_output, thinking_time, repeats):
+        #the prog_tree code is a placeholder depending on how different make_tree for the two
+        #end up being and what we call them
+        prog_tree = make_tree(prog_input_output[0], is_lambda_calculus=self.is_lambda_calculus)
+        if self.binarize:
+            prog_tree = binarize_tree(prog_tree)
+
+        if self.use_embedding:
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, one_hot=False)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree) + [token_size]))
+                else:
+                    prog_tree = Variable(torch.LongTensor(tree_to_list(prog_tree)))
+            else:
+                prog_tree = map_tree(lambda val: Variable(torch.LongTensor([val])), prog_tree)
+        else:
+            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=input_eos_token)
+            if self.input_as_seq:
+                if self.input_eos_token:
+                    prog_tree = torch.stack(tree_to_list(prog_tree) + [make_one_hot(token_size+1, token_size)])
+                else:
+                    prog_tree = torch.stack(tree_to_list(prog_tree))
+
+        if self.cuda:
+            prog_tree = prog_tree.cuda()
+
+        inputs_outputs = torch.FloatTensor(prog_input_output[1][:]*repeats)
+        inputs = inputs_outputs[:,0].unsqueeze(1)
+        outputs = inputs_outputs[:,1]
+        inputs = torch.cat((inputs, torch.zeros((inputs.size(0), thinking_time))), 1) 
+        return prog_tree, inputs, outputs
+            
     def __len__(self):
         return len(self.progs)
 
