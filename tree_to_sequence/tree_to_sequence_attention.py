@@ -3,6 +3,8 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 from tree_to_sequence.tree_to_sequence import TreeToSequence
+from tree_to_sequence.translating_trees import t2s_pretty_print_attention
+
 
 class TreeToSequenceAttention(TreeToSequence):
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size,
@@ -21,6 +23,7 @@ class TreeToSequenceAttention(TreeToSequence):
 
         self.align_type = align_type
         self.register_buffer('et', torch.zeros(1, hidden_size))
+        self.i = 0
 
     """
         input: The output of the encoder for the tree should have be a triple. The first
@@ -49,6 +52,7 @@ class TreeToSequenceAttention(TreeToSequence):
         et = Variable(self.et)
         loss = 0
 
+        all_attention_probs = []
         for i in range(target_length):
             decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
             decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
@@ -56,6 +60,7 @@ class TreeToSequenceAttention(TreeToSequence):
 
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
+            all_attention_probs.append(attention_probs)
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
             log_odds = self.output_log_odds(et)
@@ -67,6 +72,9 @@ class TreeToSequenceAttention(TreeToSequence):
                 _, next_input = log_odds.topk(1)
 
             word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
+        if self.i % 200 == 0:
+            t2s_pretty_print_attention(all_attention_probs, input, target, threshold=0.5)
+        self.i = self.i + 1
         return loss
 
     """
