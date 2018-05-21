@@ -53,13 +53,13 @@ class ForLambdaDataset(Dataset):
 
         for_size = num_vars + num_ints + len(for_ops.keys())
         lambda_size = num_vars + num_ints + len(lambda_ops.keys())
-        print("before anything")
-        pretty_print_tree(for_progs[0])
+#         print("before anything")
+#         pretty_print_tree(for_progs[0])
         
         if use_embedding:
             for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens, one_hot=False) for prog in for_progs] #HERE 2
-            print("after here 2")
-            pretty_print_tree(for_progs[0])
+#             print("after here 2")
+#             pretty_print_tree(for_progs[0])
             if input_as_seq:
                 if eos_tokens:
                     for_progs = [Variable(torch.LongTensor(tree_to_list(prog) + [for_size])) for prog in for_progs]
@@ -67,8 +67,8 @@ class ForLambdaDataset(Dataset):
                     for_progs = [Variable(torch.LongTensor(tree_to_list(prog))) for prog in for_progs]
             else: #HERE
                 for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in for_progs]
-                print("after 3")
-                pretty_print_tree(for_progs[0])
+#                 print("after 3")
+#                 pretty_print_tree(for_progs[0])
         else:
             for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens) for prog in for_progs]
             if input_as_seq:
@@ -79,19 +79,19 @@ class ForLambdaDataset(Dataset):
         
         if eos_tokens and not binarize and not input_as_seq: # HERE 1
             _ = [add_eos(prog, output_token_count, make_variable=False) for prog in for_progs] #TODO... why change when lambda)progs here?
-        print("after 1")
-        pretty_print_tree(for_progs[0])
+#         print("after 1")
+#         pretty_print_tree(for_progs[0])
         
         if output_as_seq:                              
             lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
         else: 
             lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens, one_hot=False) for prog in lambda_progs] #HERE
-            print("after 4")
-            pretty_print_tree(for_progs[0])
+#             print("after 4")
+#             pretty_print_tree(for_progs[0])
                                                                    
             lambda_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in lambda_progs]#HERE
-            print("after 5")
-            pretty_print_tree(lambda_progs[0])
+#             print("after 5")
+#             prexstty_print_tree(lambda_progs[0])
             
             if eos_tokens and not binarize:
                 _ = [add_eos(prog, output_token_count, make_variable=False) for prog in lambda_progs] #HERE
