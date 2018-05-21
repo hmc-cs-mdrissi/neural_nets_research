@@ -110,7 +110,7 @@ def binarize_tree(tree, add_eos=False):
     curr_node = new_tree
     for child in tree.children:
         new_node = binarize_tree(child, add_eos=add_eos)
-        if not add_eos or curr_node is new_tree:
+        if curr_node is new_tree or not add_eos:
             curr_node.children.append(new_node)
         else:
             curr_node.children[1] = new_node
@@ -374,12 +374,11 @@ class LambdaGrammar(IntEnum):
     VAR_NAME = 2
     VAR = 3
     EXPR = 4
-    VARAPPFUNC = 5
+    VARAPP = 5
     CMP = 6
     TERM = 7
-    VARUNITBLANK = 8
-    FUNCBLANK = 9
-    ALL = 10
+    VARUNIT = 8
+    ALL = 9
     
     
 class Lambda(IntEnum):
@@ -395,8 +394,6 @@ class Lambda(IntEnum):
     UNIT = 9
     LETREC = 10
     APP = 11
-    BLANK = 12
-    FUNC = 13
     
 def parent_to_category_LAMBDA(parent, child_index, num_vars, num_ints):
     """
@@ -426,13 +423,11 @@ def parent_to_category_LAMBDA(parent, child_index, num_vars, num_ints):
         Lambda.LE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.GE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.IF: [LambdaGrammar.CMP, LambdaGrammar.TERM, LambdaGrammar.TERM],
-        Lambda.LET: [LambdaGrammar.VARUNITBLANK, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.LET: [LambdaGrammar.VARUNIT, LambdaGrammar.TERM, LambdaGrammar.TERM],
         Lambda.UNIT: [],
-        Lambda.LETREC: [LambdaGrammar.FUNCBLANK, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.LETREC: [LambdaGrammar.VAR_NAME, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
 #         Lambda.LETREC: [LambdaGrammar.VAR, LambdaGrammar.VAR, LambdaGrammar.TERM, LambdaGrammar.TERM],
-        Lambda.APP: [LambdaGrammar.VARAPPFUNC, LambdaGrammar.EXPR],
-        Lambda.BLANK: [LambdaGrammar.EOS],
-        Lambda.FUNC: [LambdaGrammar.EOS]
+        Lambda.APP: [LambdaGrammar.VARAPP, LambdaGrammar.EXPR],
     }
     # If we're asking for a child at an index greater than the number of children an op gives,
     # Just return EOS (this happens when an EOS token is a right-hand child)
@@ -449,18 +444,17 @@ def category_to_child_LAMBDA(category, num_vars, num_ints):
     :param num_ints: number of ints a program can use
     """
     n = num_ints + num_vars
-    EOS = num_ints + num_vars + 14 # 14 for the 14 Lambda ops
+    EOS = num_ints + num_vars + 12 # 12 for the 12 Lambda ops
     lambda_grammar = {
         LambdaGrammar.EOS: [EOS], 
         LambdaGrammar.INT: range(num_ints),
         LambdaGrammar.VAR_NAME: range(num_ints, n),
         LambdaGrammar.VAR: [x + n for x in [Lambda.VAR]],
         LambdaGrammar.EXPR: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.CONST]],
-        LambdaGrammar.VARAPPFUNC: [x + n for x in [Lambda.VAR, Lambda.APP, Lambda.FUNC]],
+        LambdaGrammar.VARAPP: [x + n for x in [Lambda.VAR, Lambda.APP]] + list(range(num_ints, n)),
         LambdaGrammar.CMP: [x + n for x in [Lambda.EQUAL, Lambda.LE, Lambda.GE]],
-        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.UNIT, Lambda.IF, Lambda.APP, Lambda.BLANK]],
-        LambdaGrammar.VARUNITBLANK: [x + n for x in [Lambda.VAR, Lambda.UNIT, Lambda.BLANK]], 
-        LambdaGrammar.FUNCBLANK: [x + n for x in [Lambda.FUNC, Lambda.BLANK]],
+        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.UNIT, Lambda.IF, Lambda.APP]] + list(range(num_ints, n)),
+        LambdaGrammar.VARUNIT: [x + n for x in [Lambda.VAR, Lambda.UNIT]] + list(range(num_ints, n)),
         LambdaGrammar.ALL: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.EQUAL, Lambda.LE, Lambda.GE, Lambda.IF, Lambda.LET, Lambda.UNIT, Lambda.LETREC, Lambda.APP]] + [EOS]
     }
     return lambda_grammar[category]
@@ -562,7 +556,7 @@ def translate_from_for(tree):
             return t1
         else:
             new_tree = Node('<LET>')
-            new_tree.children.extend([Node('<BLANK>'), t1, t2])
+            new_tree.children.extend([Node('a8'), t1, t2])
             return new_tree
     elif tree.value == '<IF>':
         cmp = tree.children[0]
@@ -579,20 +573,20 @@ def translate_from_for(tree):
         body = translate_from_for(tree.children[4])
 
         tb = Node('<LET>')
-        tb.children.append(Node('<BLANK>'))
+        tb.children.append(Node('a8'))
         tb.children.append(body)
         increment = Node('<APP>')
-        increment.children.extend([Node('<FUNC>'), inc])
+        increment.children.extend([Node('a9'), inc])
         tb.children.append(increment)
 
         funcbody = Node('<IF>')
         funcbody.children.extend([cmp, tb, Node('<UNIT>')])
         
         translate = Node('<LETREC>')
-        translate.children.extend([Node('<FUNC>'), var, funcbody])
+        translate.children.extend([Node('a9'), var, funcbody])
                 
         initialize = Node('<APP>')
-        initialize.children.extend([Node('<FUNC>'), init])
+        initialize.children.extend([Node('a9'), init])
         translate.children.append(initialize)
 
         return translate
