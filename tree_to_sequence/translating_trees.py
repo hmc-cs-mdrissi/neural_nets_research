@@ -261,6 +261,29 @@ def pretty_print_attention(attention_probs, target_tree, threshold=0.1):
         # Mark the nodes being focused on while each node is generated 
         pretty_print_attention_tree(attention_list[i], target_tree, None, i, 0)
     print("===================== ENDING ATTENTION PRINT =================")
+    
+def pretty_print_attention_t2t(attention_probs, input_tree, target_tree, threshold=0.1):
+    """
+    Display the parts of the tree focused on at each iteration by the attention 
+    mechanism at each step of the generation of the target sequence. 
+    This function was designed for the identity dataset, 
+    where the input and target trees are identical.
+    
+    :param attention_probs: a list of vectors of length equal to the input tree; the attention mechanism probabilities
+    :param input_tree: input program, in tree form 
+    :param target_tree: target program, in tree form 
+    :param threshold: probability threshold above which we mark the attention as having focused on a location in the input tree
+    """
+    attention_list = extract_attention(attention_probs, threshold)
+    
+    # Pretty print each node of the tree
+    print("===================== STARTING ATTENTION PRINT =================")
+    for i in range(target_tree.size()):
+        # Mark the nodes being focused on while each node is generated 
+        print(">>>")
+        pretty_print_attention_tree(attention_list[i], input_tree, None, -1, 0) #Input
+        pretty_print_attention_tree([], target_tree, None, i, 0) # output
+    print("===================== ENDING ATTENTION PRINT =================")
 
 def extract_attention(attention_probs, threshold):
     """
