@@ -25,6 +25,7 @@ class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
 
         self.align_type = align_type
         self.register_buffer('et', torch.zeros(1, hidden_size))
+        self.counter = 0
 
     """
         input: The output of the encoder for the tree should have be a triple. The first
@@ -50,10 +51,10 @@ class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
         This is just an alias for point_wise_prediction, so that training code that assumes the presence
         of a forward_train and forward_prediction works.
     """
-    def forward_prediction(self, prog_input):
-        return self.point_wise_prediction(prog_input)
+    def forward_prediction(self, prog_input, print_time = False):
+        return self.point_wise_prediction(prog_input, print_time)
 
-    def point_wise_prediction(self, prog_input):
+    def point_wise_prediction(self, prog_input, print_time=False):
         tree_input = prog_input[0]
         input_val = prog_input[1]
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(tree_input)
@@ -71,6 +72,8 @@ class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
         et = Variable(self.et)
         loss = 0
         self.ntm.reset_reads(input_val)
+#         if print_time:
+#             print("ABOUT TO PRINT A BUNCHA STUFF ===========================")
         for i in range(len(input_val)):
 
             decoder_input = torch.cat((input_val[i].unsqueeze(0),
@@ -83,6 +86,8 @@ class TreeToSequenceAttentionNTM(TreeToSequenceAttention):
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0)  # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
             current_val = self.ntm.forward_step(et)
+#             if print_time:
+#                 print("CURRENT VAL", current_val)
             #  Feed in ntm output, input, attention in each, input is 0 for all but k - 1
         return current_val
 
