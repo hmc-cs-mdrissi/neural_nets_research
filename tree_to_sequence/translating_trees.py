@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 import pptree
 from enum import IntEnum
 
@@ -30,6 +29,9 @@ def make_var_name(var_name):
     else:
         return var_name
 
+# TODO: Split make_tree into one function per language. Having a make_tree for all languages is
+# going to be problematic as we keep on adding languages.
+    
 def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # First base case - variable name
     if isinstance(json, string_types):
@@ -69,7 +71,8 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # Special case for assignment.
     if tag == '<ASSIGN>':
         var_name = children[0]
-        expr = make_tree(children[1], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        expr = make_tree(children[1], long_base_case=long_base_case,
+                         is_lambda_calculus=is_lambda_calculus)
         
         if long_base_case:
             var = Node('<VAR>')
@@ -83,48 +86,50 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # Special case for unary operators.
     if tag == '<UNARYOPER>':
         unary_op = "<" + children[0].upper() + ">"
-        unary_operand = make_tree(children[1], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        unary_operand = make_tree(children[1], long_base_case=long_base_case,
+                                  is_lambda_calculus=is_lambda_calculus)
         parentNode.children.extend([Node(unary_op), unary_operand])
         return parentNode
 
     # Special case for binary operators.
     if tag == '<BINARYOPER>':
         binary_op = "<" + children[1].upper() + ">"
-        binary_operand1 = make_tree(children[0], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
-        binary_operand2 = make_tree(children[2], long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus)
+        binary_operand1 = make_tree(children[0], long_base_case=long_base_case,
+                                    is_lambda_calculus=is_lambda_calculus)
+        binary_operand2 = make_tree(children[2], long_base_case=long_base_case,
+                                    is_lambda_calculus=is_lambda_calculus)
         parentNode.children.extend([binary_operand1, Node(binary_op), binary_operand2])
         return parentNode
 
     if type(children) is list:
-        parentNode.children.extend(map(lambda child: make_tree(child, long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus), children))
+        parentNode.children.extend(map(lambda child: make_tree(child, long_base_case=long_base_case,
+                                   is_lambda_calculus=is_lambda_calculus), children))
     else:
-        parentNode.children.append(make_tree(children, long_base_case=long_base_case, is_lambda_calculus=is_lambda_calculus))
+        parentNode.children.append(make_tree(children, long_base_case=long_base_case,
+                                             is_lambda_calculus=is_lambda_calculus))
 
     return parentNode
 
-
 EOS = "EOS"
 
-def binarize_tree(tree, add_eos=False):
+def binarize_tree(tree):
     new_tree = Node(tree.value)
     curr_node = new_tree
     for child in tree.children:
-        new_node = binarize_tree(child, add_eos=add_eos)
-        if not add_eos or curr_node is new_tree:
+        new_node = binarize_tree(child)
+        
+        if curr_node is new_tree:
             curr_node.children.append(new_node)
         else:
             curr_node.children[1] = new_node
+        
         curr_node = new_node 
-    # While the current child doesn't have 2 children, add and EOS
-    if add_eos:
-        while len(new_tree.children) < 2:
-            new_tree.children.append(Node(EOS))
-    return new_tree
 
+    return new_tree
 
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if val is EOS:
-        index = num_vars + num_ints + len(ops)  
+        index = num_vars + num_ints + len(ops.keys)  
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
@@ -151,33 +156,28 @@ def map_tree(func, tree):
     new_tree.children.extend(map(partial(map_tree, func), tree.children))
     return new_tree
 
-# Only legit if you binarize.  TODO: deal with case where you don't
-def add_eos(tree, eos, make_variable=True):
+def add_eos(tree, eos, num_children, one_hot=False):
     """
     Add in EOS tokens at the end of all existing branches in a tree
-    Assumes the tree is binarized (i.e. inserts 2 EOS tokens onto each leaf
     
     :param tree: the tree which will have eos inserted into it
     :param eos: the EOS value to be inserted (int)
-    :param make_variable: whether or not the EOS value should be wrapped in a Variable/Tensor
+    :param num_children: the maximum number of children a node can have (int)
+    :param one_hot: whether to make the values one hot vectors.
     :returns tree: input tree, but with EOS tokens now (also modifies the original tree in-place)
     """
     # Loop through children
     for child in tree.children:
         # Recursively add EOS to children
-        add_eos(child, eos, make_variable)
-    # Add enough EOS nodes that the final child count is 2
-    if len(tree.children) < 2:
-        if make_variable:
-            tree.children.append(Node(EOS))
-#             tree.children.append(Node(Variable(torch.LongTensor([eos]))))
-            if len(tree.children) == 1:
-#                 tree.children.append(Node(Variable(torch.LongTensor([eos]))))
-                tree.children.append(Node(EOS))
+        add_eos(child, eos, num_children, make_variable)
+    
+    # Add enough EOS nodes that the final child count is num_children
+    while len(tree.children) < num_children:
+        if one_hot:
+            tree.children.append(Node(make_one_hot(eos + 1, eos)))
         else:
             tree.children.append(Node(eos))
-            if len(tree.children) == 1:
-                tree.children.append(Node(eos))
+
     return tree
 
 def print_tree(tree):
@@ -186,32 +186,21 @@ def print_tree(tree):
     
     :param tree: the tree to print
     """
-    print(get_val(tree.value))
+    print(int(tree.value))
     for child in tree.children:
         print_tree(child)
-        
-def get_val(value):
-    """
-    Extract the integer value of the input
-    
-    :param value: an integer, tensor, or Variable (with one integer element)
-    """
-    if type(value) is torch.autograd.variable.Variable:
-        return int(value.data[0])
-    elif type(value) is torch.LongTensor:
-        return int(value[0])
-    else:
-        return value
     
 def t2s_pretty_print_attention(attention_probs, input_tree, target_seq, threshold=0.1):
     """
     Display the parts of the tree focused on at each iteration by the attention mechanism at each 
     step of the generation of the target sequence.
     
-    :param attention_probs: vector of length equal to the input tree, the attention mechanism probabilities
+    :param attention_probs: attention probabilities; a list of vectors of length equal to the number 
+                            of nodes in the input tree
     :param input_tree: input program, in tree form 
     :param target_seq: desired output program, sequence form 
-    :param threshold: probability threshold above which we mark the attention as having focused on a location in the input tree
+    :param threshold: probability threshold above which we mark the attention as having focused on a 
+                      location in the input tree
     """ 
     attention_list = extract_attention(attention_probs, threshold)
     
@@ -237,21 +226,23 @@ def pretty_print_seq(target_seq, write_index):
     s = ""
     for i in range(target_seq.size()[0]):
         if i == write_index:
-            s = s + " *" + str(int(target_seq[i].data)) + "*"
+            s += " *" + str(int(target_seq[i])) + "*"
         else:
-            s = s + " " + str(int(target_seq[i].data))
+            s += + " " + str(int(target_seq[i]))
     print(s)
     
-def pretty_print_attention(attention_probs, target_tree, threshold=0.1):
+def pretty_print_attention(attention_probs, input_tree, threshold=0.1):
     """
     Display the parts of the tree focused on at each iteration by the attention 
     mechanism at each step of the generation of the target sequence. 
     This function was designed for the identity dataset, 
     where the input and target trees are identical.
     
-    :param attention_probs: a list of vectors of length equal to the input/target tree; the attention mechanism probabilities
-    :param input_tree: input/target program, in tree form 
-    :param threshold: probability threshold above which we mark the attention as having focused on a location in the input tree
+    :param attention_probs: a list of vectors of length equal to the input tree; the 
+                            attention mechanism probabilities
+    :param input_tree: input program, in tree form 
+    :param threshold: probability threshold above which we mark the attention as having focused on a 
+                      location in the input tree
     """
     attention_list = extract_attention(attention_probs, threshold)
     
@@ -259,18 +250,21 @@ def pretty_print_attention(attention_probs, target_tree, threshold=0.1):
     print("===================== STARTING ATTENTION PRINT =================")
     for i in range(target_tree.size()):
         # Mark the nodes being focused on while each node is generated 
-        pretty_print_attention_tree(attention_list[i], target_tree, None, i, 0)
+        pretty_print_attention_tree(attention_list[i], input_tree, None, i, 0)
     print("===================== ENDING ATTENTION PRINT =================")
 
 def extract_attention(attention_probs, threshold):
     """
     Get a list of the tree locations being focused on at each timestep.
     
-    :param attention_probs: attention probabilities; a list of vectors of length equal to the number of nodes in the input tree
-    :param threshold: the probability cutoff to determine whether a node has been focused on by attention.
+    :param attention_probs: attention probabilities; a list of vectors of length equal to the number 
+                            of nodes in the input tree
+    :param threshold: the probability cutoff to determine whether a node has been focused on by 
+                      attention.
     """
     attention_list = []
-    # Loop through list (each element corresponding to a diff node in the input tree being generated)
+    # Loop through list (each element corresponding to a diff node in the input tree being 
+    # generated)
     for prob in attention_probs:
         important_indices = []
         # Loop through the attention values for one iteration
@@ -281,10 +275,9 @@ def extract_attention(attention_probs, threshold):
         attention_list.append(important_indices)
     return attention_list
 
-
-def pretty_print_attention_tree(attention_list, target_tree, parent, write_index, curr_index):
+def pretty_print_attention_tree(attention_list, input_tree, parent, write_index, curr_index):
     """
-    Display the parts of the tree focused on  by the attention 
+    Display the parts of the tree focused on by the attention 
     while a particular node is being generated.
     This function was designed for the identity dataset, 
     where the input and target trees are identical.
@@ -298,22 +291,24 @@ def pretty_print_attention_tree(attention_list, target_tree, parent, write_index
     """
     
     # If the current node was being generated or was focused on by the attention, mark it
-    root_val = str(get_val(target_tree.value))
+    root_val = str(int(target_tree.value))
+    
     if curr_index == write_index:
         root_val = "*" + root_val + "*"
     if curr_index in attention_list:
         root_val = "(" + root_val + ")"
+    
     # Create new node
-    if parent is None:
-        root_node = pptree.Node(root_val, parent)
-    else:
-        root_node = pptree.Node(root_val, parent)
+    root_node = pptree.Node(root_val, parent)
     curr_index += 1
+    
     # Recursively add the child subtrees to the tree.
-    for child in target_tree.children[::]:
-        curr_index = pretty_print_attention_tree(attention_list, child, root_node, write_index, curr_index)
+    for child in target_tree.children:
+        curr_index = pretty_print_attention_tree(attention_list, child, root_node, write_index, 
+                                                 curr_index)
     if parent is None:
         pptree.print_tree(root_node)
+        
     return curr_index
         
 def pretty_print_tree(tree):
@@ -324,9 +319,10 @@ def pretty_print_tree(tree):
     """
     # The printing library uses a special kind of node,
     # so let's just recreate our existing tree as theirs.
-    root_node = pptree.Node(str(get_val(tree.value)))
+    root_node = pptree.Node(str(int(tree.value)))
     for child in tree.children:
         make_pretty_tree(child, root_node)
+    
     # Print it out now!
     pptree.print_tree(root_node)
         
@@ -337,13 +333,13 @@ def make_pretty_tree(node, parent):
     :param node: node we are converting into a node of pptree library
     :param parent: parent node (a pptree node)
     """
-    new_node = pptree.Node(str(get_val(node.value)), parent)
+    new_node = pptree.Node(str(int(node.value)), parent)
     for child in node.children:
         make_pretty_tree(child, new_node)
         
-
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
-    return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, one_hot=one_hot), tree)
+    return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
+                                           one_hot=one_hot), tree)
 
 def decode_tokens(seq, num_vars, num_ints, ops):
     reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))
@@ -353,20 +349,21 @@ def decode_tokens(seq, num_vars, num_ints, ops):
             return index
         elif index < num_ints + num_vars:
             return 'a' + str(index - num_ints)
+        elif index == num_ints + num_vars + len(reverse_ops.keys()):
+            return EOS
         else:
             return reverse_ops[index - num_ints - num_vars]
 
     return list(map(lambda val: index_to_token(int(val)), seq))
 
 def tree_to_list(tree):
-  """
+    """
         Concatenate a tree into a list using a pre-order traversal.
 
         :param tree: a tree.
         :return a list of values of the tree
-  """
-  return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
-
+    """
+    return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
 
 class LambdaGrammar(IntEnum):
     EOS = 0
