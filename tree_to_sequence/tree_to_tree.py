@@ -4,6 +4,7 @@ from torch.autograd import Variable
 from tree_to_sequence.translating_trees import Node
 from tree_to_sequence.translating_trees import print_tree
 from tree_to_sequence.translating_trees import pretty_print_tree
+from tree_to_sequence.translating_trees import pretty_print_attention_t2t
 
 
 class TreeToTree(nn.Module):
@@ -72,7 +73,6 @@ class TreeToTree(nn.Module):
         while (len(unexpanded)) > 0:
             # Pop last item
             decoder_hiddens, decoder_cell_states, targetNode, parent_val, child_index = unexpanded.pop()
-            
             # Use attention and past hidden state to generate scores
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
@@ -80,7 +80,7 @@ class TreeToTree(nn.Module):
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), dim=1))) # 1 x hidden_size
             # Calculate loss
-            loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
+            loss = loss + self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
                 
             # If we have an EOS, there are no children to generate
             if int(targetNode.value) == self.EOS_value:
@@ -109,7 +109,7 @@ class TreeToTree(nn.Module):
 
         # Uncomment if you want to see where the attention is focusing as each node is generated
 #         if self.i % 200 == 0:
-#             pretty_print_attention(all_attention_probs, target)
+#             pretty_print_attention_t2t(all_attention_probs, input_tree, target_tree)
         self.i += 1
         return loss
     

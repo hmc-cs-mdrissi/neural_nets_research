@@ -8,24 +8,54 @@ from tree_to_sequence.tree_to_sequence_attention import TreeToSequenceAttention
 class TreeToSequenceAttentionANC(TreeToSequenceAttention):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, M, R,
                  N=11, alignment_size=50, align_type=1, correctness_weight=1,
-                 halting_weight=1, confidence_weight=2, efficiency_weight=0, t_max=7, mix_probabilities = False):
+                 halting_weight=1, confidence_weight=2, efficiency_weight=0,
+                 diversity_weight=0, t_max=7, mix_probabilities=False, 
+                 predict_registers=False, predict_ir=False, use_constant_registers=False):
         # The 1 is for nclasses which is not used in this model.
         super(TreeToSequenceAttentionANC, self).__init__(encoder, decoder, hidden_size, 1, embedding_size,
                                                          alignment_size=alignment_size, align_type=align_type)
-        # the initial registers all have value 0 with probability 1
-        prob_dist = torch.zeros(R, M)
-        prob_dist[:, 0] = 1
 
-        self.register_buffer('initial_registers', prob_dist)
+        if use_constant_registers and predict_registers:
+            raise ValueError("You can't have both use constant registers and predict registers set to true.")
+
+        if use_constant_registers and R < M:
+            raise ValueError("When using constant registers, you must have at least as many registers as possible values.")
+
+        if predict_registers:
+            self.extract_registers = nn.Linear(hidden_size, R*M)
+        else:
+            prob_dist = torch.zeros(R, M)
+
+            if use_constant_registers:
+                # the ith register in the first M registers has value i with probability 1.
+                for i in range(M):
+                    prob_dist[i, i] = 7
+
+                prob_dist[M:, 0] = 7
+            else:
+                # the initial registers all have value 0 with probability 1.
+                prob_dist[:, 0] = 7
+
+            self.register_buffer('initial_registers', prob_dist)
+
+        if predict_ir:
+            self.extract_ir = nn.Linear(hidden_size, M)
+        else:
+            IR = torch.zeros(M)
+            IR[0] = 7
+            self.register_buffer('initial_ir', IR)
 
         self.M, self.R, self.N = M, R, N
         self.correctness_weight, self.halting_weight = correctness_weight, halting_weight
         self.confidence_weight, self.efficiency_weight = confidence_weight, efficiency_weight
+        self.diversity_weight = diversity_weight
         self.t_max = t_max
+        self.mix_probabilities = mix_probabilities
+        self.predict_registers = predict_registers
+        self.predict_ir = predict_ir
 
         self.initial_word_input = nn.Parameter(torch.Tensor(1, N + 3*R))
         self.output_log_odds = nn.Linear(hidden_size, N + 3*R)
-        self.mix_probabilities = mix_probabilities
 
 
     """
@@ -54,7 +84,7 @@ class TreeToSequenceAttentionANC(TreeToSequenceAttention):
     """
     def forward_prediction(self, input):
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-        # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
+        # align_type: 0 number_of_nodes x alignment_size or align_type: 1-2 bengio number_of_nodes x hidden_size
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
@@ -67,6 +97,16 @@ class TreeToSequenceAttentionANC(TreeToSequenceAttention):
         et = Variable(self.et)
 
         output_words = []
+
+        if self.predict_registers:
+            initial_registers = self.extract_registers(decoder_hiddens[-1]).view(self.R, self.M)
+        else:
+            initial_registers = Variable(self.initial_registers)
+
+        if self.predict_ir:
+            ir = self.extract_ir(decoder_hiddens[-1]).squeeze(0)
+        else:
+            ir = Variable(self.initial_ir)
 
         for i in range(self.M):
             decoder_input = torch.cat((word_input, et), dim=1) # 1 x N + 3*R + hidden_size
@@ -86,10 +126,11 @@ class TreeToSequenceAttentionANC(TreeToSequenceAttention):
         second_arg = controller_params[self.N+self.R:self.N+2*self.R]
         output = controller_params[self.N+2*self.R:self.N + 3*self.R]
         controller = Controller(first_arg=first_arg, second_arg=second_arg, output=output,
-                                instruction=instruction, initial_registers=Variable(self.initial_registers),
+                                instruction=instruction, ir=ir, initial_registers=initial_registers,
                                 multiplier=1, correctness_weight=self.correctness_weight, halting_weight=self.halting_weight,
-                                confidence_weight=self.confidence_weight, efficiency_weight=self.efficiency_weight, 
-                                mix_probabilities = self.mix_probabilities, t_max=self.t_max)
+                                confidence_weight=self.confidence_weight, efficiency_weight=self.efficiency_weight,
+                                diversity_weight=self.diversity_weight, mix_probabilities=self.mix_probabilities, 
+                                t_max=self.t_max)
 
         if controller_params.is_cuda:
             controller = controller.cuda()

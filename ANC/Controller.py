@@ -17,13 +17,15 @@ class Controller(nn.Module):
                  second_arg = None, 
                  output = None, 
                  instruction = None, 
-                 initial_registers = None, 
+                 initial_registers = None,
+                 ir = None,
                  stop_threshold = 0.9, 
                  multiplier = 5,
                  correctness_weight = .2, 
                  halting_weight = .2, 
                  confidence_weight = .2, 
                  efficiency_weight = .4,
+                 diversity_weight = 0,
                  optimize = False,
                  mix_probabilities=False,
                  t_max = 75):
@@ -58,6 +60,7 @@ class Controller(nn.Module):
         self.halting_weight = halting_weight
         self.confidence_weight = confidence_weight
         self.efficiency_weight = efficiency_weight
+        self.diversity_weight = diversity_weight
         
         # And yet more initialized constants... yeah, there are a bunch, I know.
         self.t_max = t_max
@@ -66,6 +69,13 @@ class Controller(nn.Module):
         self.mix_probabilities = mix_probabilities
 
         self.optimize = optimize
+        
+        if ir is None:
+            IR = torch.zeros(M)
+            IR[0] = 1
+        else:
+            IR = ir
+        
         if optimize:
             # Initialize parameters.  These are the things that are going to be optimized. 
             self.first_arg = nn.Parameter(multiplier * first_arg)
@@ -73,8 +83,6 @@ class Controller(nn.Module):
             self.output = nn.Parameter(multiplier * output)
             self.instruction = nn.Parameter(multiplier * instruction) 
             self.registers = nn.Parameter(multiplier * initial_registers)
-            IR = torch.zeros(M)
-            IR[0] = 1
             self.IR = nn.Parameter(multiplier * IR)
         else:
             self.first_arg = multiplier * first_arg
@@ -82,16 +90,13 @@ class Controller(nn.Module):
             self.output = multiplier * output
             self.instruction = multiplier * instruction
             self.registers = multiplier * initial_registers
-            IR = torch.zeros(M)
-            IR[0] = 1
             self.register_buffer('IR', multiplier * IR)
         
         self.register_buffer('initial_stop_probability', torch.zeros(1))
         
         # Machine initialization
         self.machine = Machine(M, R)
-        self.softmax0 = nn.Softmax(0)
-        self.softmax1 = nn.Softmax(1)
+        self.softmax = nn.Softmax(0)
     
     def forward(self, input, forward_train):
         if forward_train:
@@ -122,45 +127,39 @@ class Controller(nn.Module):
         self.output_memory = Variable(output_memory)
         self.output_mask = Variable(output_mask)
         self.stop_probability = Variable(self.initial_stop_probability)
-            
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
-        registers = self.softmax1(self.registers)
-        
-        if not self.optimize:
-            IR = Variable(self.IR)
-        else:
-            IR = self.IR
-            
-        IR = self.softmax0(IR)
+        registers = nn.Softmax(1)(self.registers)
+        IR = self.softmax(self.IR)
         
         if self.mix_probabilities:
-            first_arg = self.softmax1(self.first_arg)
-            second_arg = self.softmax1(self.second_arg)
-            output = self.softmax1(self.output)
-            instruction = self.softmax1(self.instruction)
+            first_arg = self.softmax(self.first_arg)
+            second_arg = self.softmax(self.second_arg)
+            output = self.softmax(self.output)
+            instruction = self.softmax(self.instruction)
         
         # loss initialization
         self.confidence = 0
         self.efficiency = 1
         self.halting = 0
         self.correctness = 0
+        self.diversity = 0
         
         t = 0 
         
         # Run the program, one timestep at a time, until the program terminates or whe time out
         while t < self.t_max and float(self.stop_probability) < self.stop_threshold: 
             if self.mix_probabilities:
-                a = torch.matmul(self.first_arg, IR)
-                b = torch.matmul(self.second_arg, IR)
-                o = torch.matmul(self.output, IR)
-                e = torch.matmul(self.instruction, IR)
+                a = torch.matmul(first_arg, IR)
+                b = torch.matmul(second_arg, IR)
+                o = torch.matmul(output, IR)
+                e = torch.matmul(instruction, IR)
             else:
-                a = self.softmax0(torch.matmul(self.first_arg, IR))
-                b = self.softmax0(torch.matmul(self.second_arg, IR))
-                o = self.softmax0(torch.matmul(self.output, IR))
-                e = self.softmax0(torch.matmul(self.instruction, IR))
+                a = self.softmax(torch.matmul(self.first_arg, IR))
+                b = self.softmax(torch.matmul(self.second_arg, IR))
+                o = self.softmax(torch.matmul(self.output, IR))
+                e = self.softmax(torch.matmul(self.instruction, IR))
                         
             # Update memory, registers, and IR after machine operation
             self.old_stop_probability = self.stop_probability
@@ -188,35 +187,29 @@ class Controller(nn.Module):
         
         # Copy registers so we aren't using the values from the previous iteration. Also
         # make both registers and IR into a probability distribution.
-        registers = self.softmax1(self.registers)
-        
-        if not self.optimize:
-            IR = Variable(self.IR)
-        else:
-            IR = self.IR
-        
-        IR = self.softmax0(IR)
+        registers = nn.Softmax(1)(self.registers)
+        IR = self.softmax(self.IR)
         
         if self.mix_probabilities:
-            first_arg = self.softmax1(self.first_arg)
-            second_arg = self.softmax1(self.second_arg)
-            output = self.softmax1(self.output)
-            instruction = self.softmax1(self.instruction)
+            first_arg = self.softmax(self.first_arg)
+            second_arg = self.softmax(self.second_arg)
+            output = self.softmax(self.output)
+            instruction = self.softmax(self.instruction)
         
         t = 0 
         
         # Run the program, one timestep at a time, until the program terminates or whe time out
         while t < self.t_max and float(self.stop_probability) < self.stop_threshold: 
             if self.mix_probabilities:
-                a = torch.matmul(self.first_arg, IR)
-                b = torch.matmul(self.second_arg, IR)
-                o = torch.matmul(self.output, IR)
-                e = torch.matmul(self.instruction, IR)
+                a = torch.matmul(first_arg, IR)
+                b = torch.matmul(second_arg, IR)
+                o = torch.matmul(output, IR)
+                e = torch.matmul(instruction, IR)
             else:
-                a = self.softmax0(torch.matmul(self.first_arg, IR))
-                b = self.softmax0(torch.matmul(self.second_arg, IR))
-                o = self.softmax0(torch.matmul(self.output, IR))
-                e = self.softmax0(torch.matmul(self.instruction, IR))
+                a = self.softmax(torch.matmul(self.first_arg, IR))
+                b = self.softmax(torch.matmul(self.second_arg, IR))
+                o = self.softmax(torch.matmul(self.output, IR))
+                e = self.softmax(torch.matmul(self.instruction, IR))
                         
             # Update memory, registers, and IR after machine operation
             self.old_stop_probability = self.stop_probability
@@ -243,11 +236,14 @@ class Controller(nn.Module):
         # Halting loss
         if t == self.t_max:
             self.halting = (1 - self.stop_probability)
+            
+         # Diversity loss
+        self.diversity = self.softmax(self.instruction).prod(1).sum(0)
 
     def total_loss(self):
         """ compute four diferent loss functions and return a weighted average of the four measuring correctness, 
         halting, efficiency, and confidence"""
-        return  (self.correctness*self.correctness_weight) + (self.confidence_weight*self.confidence) + (self.halting_weight*self.halting) + (self.efficiency_weight*self.efficiency)     
+        return  (self.correctness*self.correctness_weight) + (self.confidence_weight*self.confidence) + (self.halting_weight*self.halting) + (self.efficiency_weight*self.efficiency) + (self.diversity_weight*self.diversity)
 
 
 

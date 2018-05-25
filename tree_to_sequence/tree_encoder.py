@@ -41,6 +41,7 @@ class TreeEncoder(nn.Module):
 
         """
         if self.use_embedding:
+#             map_tree(lambda node: print(node), tree)
             tree = map_tree(lambda node: self.embedding(node).squeeze(0), tree)
             
         if self.dropout:
