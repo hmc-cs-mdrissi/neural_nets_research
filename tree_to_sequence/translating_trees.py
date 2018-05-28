@@ -340,25 +340,7 @@ def pretty_print_tree(tree):
     
     :param tree: the tree to print
     """
-    # The printing library uses a special kind of node,
-    # so let's just recreate our existing tree as theirs.
-    root_node = pptree.Node(str(int(tree.value)))
-    for child in tree.children:
-        make_pretty_tree(child, root_node)
-    
-    # Print it out now!
-    pptree.print_tree(root_node)
-        
-def make_pretty_tree(node, parent):
-    """
-    Helper function for the pretty_print_tree func
-    
-    :param node: node we are converting into a node of pptree library
-    :param parent: parent node (a pptree node)
-    """
-    new_node = pptree.Node(str(int(node.value)), parent)
-    for child in node.children:
-        make_pretty_tree(child, new_node)
+    pptree.print_tree(root_node, nameattr="value")
         
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
@@ -389,17 +371,14 @@ def tree_to_list(tree):
     return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
 
 class LambdaGrammar(IntEnum):
-    EOS = 0
-    INT = 1
-    VAR_NAME = 2
-    VAR = 3
-    EXPR = 4
-    VARAPP = 5
-    CMP = 6
-    TERM = 7
-    VARUNIT = 8
-    ALL = 9
-    
+    INT = 0
+    VAR_NAME = 1
+    VAR = 2
+    EXPR = 3
+    VARAPP = 4
+    CMP = 5
+    TERM = 6
+    UNIT = 7
     
 class Lambda(IntEnum):
     VAR = 0
@@ -414,26 +393,24 @@ class Lambda(IntEnum):
     UNIT = 9
     LETREC = 10
     APP = 11
-    
-def parent_to_category_LAMBDA(parent, child_index, num_vars, num_ints):
+    ROOT = 12
+
+# TODO: Once I've understood the full grammar stuff, fix it.
+def parent_to_category_LAMBDA(num_vars, num_ints, parent, only_ops=False):
     """
-    Return the category of output which can be produced by a certain parent node 
-    at a certain child index in the Lambda language.
+    Return the categories of output which can be produced by a certain parent index.
     
-    :param parent: int, the value of the parent node 
-    :param child_index: the index of the child being generated (e.g. left=0, right=1)
     :param num_vars: number of variables a program can use
     :param num_ints: number of ints a program can use
-    """
-    # If we're at the root of our tree, we can generate mostly anything
-    if parent is None:
-        return LambdaGrammar.ALL
+    :param parent: int, the value of the parent node 
+    :param only_ops: Should we only consider ops and ignore
+    """    
+    # If parent is an int or a variable name, we are done.
+    if int(parent) <= num_ints + num_vars:
+        return []
     
-    # If parent is an int or a variable name, we have EOS next
-    if int(parent) in range(num_ints + num_vars):
-        return LambdaGrammar.EOS
-    # If parent is an op, return the class of outputs it can return
-    op_index = int(parent) - num_vars - num_ints
+    # If parent is an op, return the categories it can return
+    op_index = parent if only_ops else parent - num_vars - num_ints
     lambda_grammar = {
         Lambda.VAR: [LambdaGrammar.VAR_NAME], 
         Lambda.CONST: [LambdaGrammar.INT], 
@@ -443,21 +420,20 @@ def parent_to_category_LAMBDA(parent, child_index, num_vars, num_ints):
         Lambda.LE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.GE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.IF: [LambdaGrammar.CMP, LambdaGrammar.TERM, LambdaGrammar.TERM],
-        Lambda.LET: [LambdaGrammar.VARUNIT, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.LET: [LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
         Lambda.UNIT: [],
-        Lambda.LETREC: [LambdaGrammar.VAR_NAME, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
-#         Lambda.LETREC: [LambdaGrammar.VAR, LambdaGrammar.VAR, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.LETREC: [LambdaGrammar.VAR_NAME, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, 
+                        LambdaGrammar.TERM],
         Lambda.APP: [LambdaGrammar.VARAPP, LambdaGrammar.EXPR],
+        Lambda.ROOT: [LambdaGrammar.TERM]
     }
-    # If we're asking for a child at an index greater than the number of children an op gives,
-    # Just return EOS (this happens when an EOS token is a right-hand child)
-    if len(lambda_grammar[op_index]) <= child_index:
-        return LambdaGrammar.EOS
-    return lambda_grammar[op_index][child_index]
     
-def category_to_child_LAMBDA(category, num_vars, num_ints):
+    return lambda_grammar[op_index]
+    
+def category_to_child_LAMBDA(num_vars, num_ints, category):
     """
-    Take a category of output, and return a list of new tokens which can be its children in the Lambda language.
+    Take a category of output, and return a list of new tokens which can be its children in the 
+    Lambda language.
     
     :param category: category of output generated next
     :param num_vars: number of variables a program can use
@@ -466,19 +442,19 @@ def category_to_child_LAMBDA(category, num_vars, num_ints):
     n = num_ints + num_vars
     EOS = num_ints + num_vars + 12 # 12 for the 12 Lambda ops
     lambda_grammar = {
-        LambdaGrammar.EOS: [EOS], 
         LambdaGrammar.INT: range(num_ints),
         LambdaGrammar.VAR_NAME: range(num_ints, n),
         LambdaGrammar.VAR: [x + n for x in [Lambda.VAR]],
-        LambdaGrammar.EXPR: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.CONST]],
+        LambdaGrammar.EXPR: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, 
+                                             Lambda.CONST]],
         LambdaGrammar.VARAPP: [x + n for x in [Lambda.VAR, Lambda.APP]] + list(range(num_ints, n)),
         LambdaGrammar.CMP: [x + n for x in [Lambda.EQUAL, Lambda.LE, Lambda.GE]],
-        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.UNIT, Lambda.IF, Lambda.APP]] + list(range(num_ints, n)),
-        LambdaGrammar.VARUNIT: [x + n for x in [Lambda.VAR, Lambda.UNIT]] + list(range(num_ints, n)),
-        LambdaGrammar.ALL: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.EQUAL, Lambda.LE, Lambda.GE, Lambda.IF, Lambda.LET, Lambda.UNIT, Lambda.LETREC, Lambda.APP]] + [EOS]
+        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.VAR, Lambda.CONST, 
+                                             Lambda.PLUS, Lambda.MINUS, Lambda.UNIT, Lambda.IF, 
+                                             Lambda.APP]] + list(range(num_ints, n)),
+        LambdaGrammar.UNIT: [x + n for x in [Lambda.VAR, Lambda.UNIT]] + list(range(num_ints, n))
     }
     return lambda_grammar[category]
-
 
 class ForGrammar(IntEnum):
     EOS = 0
@@ -489,8 +465,6 @@ class ForGrammar(IntEnum):
     CMP = 5
     SINGLE = 6
     STATEMENT = 7
-    ALL = 8
-    
     
 class For(IntEnum):
     VAR = 0
@@ -505,19 +479,17 @@ class For(IntEnum):
     SEQ = 9
     FOR = 10
 
-def parent_to_category_FOR(parent, child_index, num_vars, num_ints):
+def parent_to_category_FOR(num_vars, num_ints, parent):
     """
-    Return the category of output which can be produced by a certain parent node 
-    at a certain child index in the For language.
+    Return the categories of output which can be produced by a certain parent node.
     
-    :param parent: int, the value of the parent node 
-    :param child_index: the index of the child being generated (e.g. left=0, right=1)
     :param num_vars: number of variables a program can use
     :param num_ints: number of ints a program can use
+    :param parent: int, the value of the parent node 
     """
     # If we're at the root of our tree, we can generate mostly anything
     if parent is None:
-        return ForGrammar.ALL
+        return ForGrammar.STATEMENT
     
     # If parent is an int or a variable name, we have EOS next
     if int(parent) in range(num_ints + num_vars):
@@ -535,7 +507,8 @@ def parent_to_category_FOR(parent, child_index, num_vars, num_ints):
         For.ASSIGN: [ForGrammar.VAR, ForGrammar.EXPR],
         For.IF: [ForGrammar.CMP, ForGrammar.STATEMENT, ForGrammar.STATEMENT],
         For.SEQ: [ForGrammar.STATEMENT, ForGrammar.SINGLE],
-        For.FOR: [ForGrammar.VAR_NAME, ForGrammar.EXPR, ForGrammar.CMP, ForGrammar.EXPR, ForGrammar.STATEMENT]
+        For.FOR: [ForGrammar.VAR_NAME, ForGrammar.EXPR, ForGrammar.CMP, ForGrammar.EXPR, 
+                  ForGrammar.STATEMENT]
     }
     # If we're asking for a child at an index greater than the number of children an op gives,
     # Just return EOS (this happens when an EOS token is a right-hand child)
@@ -543,13 +516,14 @@ def parent_to_category_FOR(parent, child_index, num_vars, num_ints):
         return ForGrammar.EOS
     return for_grammar[op_index][child_index]
     
-def category_to_child_FOR(category, num_vars, num_ints):
+def category_to_child_FOR(num_vars, num_ints, category):
     """
-    Take a category of output, and return a list of new tokens which can be its children in the For language.
+    Take a category of output, and return a list of new tokens which can be its children in the For 
+    language.
     
-    :param category: category of output generated next
     :param num_vars: number of variables a program can use
     :param num_ints: number of ints a program can use
+    :param category: category of output generated next
     """
     n = num_ints + num_vars
     EOS = num_ints + num_vars + 11 #11 for the 11 For ops
@@ -562,11 +536,9 @@ def category_to_child_FOR(category, num_vars, num_ints):
         ForGrammar.CMP: [x + n for x in [For.EQUAL, For.LE, For.GE]],
         ForGrammar.SINGLE: [x + n for x in [For.ASSIGN, For.IF, For.FOR]],
         ForGrammar.STATEMENT: [x + n for x in [For.ASSIGN, For.IF, For.FOR, For.SEQ]],
-        ForGrammar.ALL: [x + n for x in [For.VAR, For.CONST, For.PLUS, For.MINUS, For.EQUAL, For.LE, For.GE, For.ASSIGN, For.IF, For.SEQ, For.FOR]] + [EOS]
     }
     return for_grammar[category]
 
-    
 def translate_from_for(tree):
     if tree.value == '<SEQ>':
         t1 = translate_from_for(tree.children[0])
