@@ -65,7 +65,7 @@ class ForLambdaDataset(Dataset):
             _ = [add_eos(prog, output_token_count, max_children_lambda) for prog in lambda_progs]
         
         if use_embedding:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens, 
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=input_token_count if eos_tokens else False, 
                                      one_hot=False) for prog in for_progs]
             if input_as_seq:
                 if eos_tokens:
@@ -78,7 +78,7 @@ class ForLambdaDataset(Dataset):
                 for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog 
                              in for_progs]
         else:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens) for 
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=input_token_count if eos_tokens else False) for 
                          prog in for_progs]
             if input_as_seq:
                 for_progs = map(tree_to_list, for_progs)
@@ -89,9 +89,9 @@ class ForLambdaDataset(Dataset):
                 
                                    
         if output_as_seq:                              
-            lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
+            lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=output_token_count if eos_tokens else False,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
         else: 
-            lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens, one_hot=False) for prog in lambda_progs]
+            lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=output_token_count if eos_tokens else False, one_hot=False) for prog in lambda_progs]
                                                                    
             lambda_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in 
                             lambda_progs]

@@ -127,9 +127,10 @@ def binarize_tree(tree):
 
     return new_tree
 
-def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
-    if val is EOS:
-        index = num_vars + num_ints + len(ops.keys)  
+def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
+    # don't change eos value
+    if val is eos_token:
+        index = val  
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
