@@ -1,171 +1,194 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
+from tree_to_sequence.translating_trees import Node
+from tree_to_sequence.translating_trees import print_tree
+from tree_to_sequence.translating_trees import pretty_print_tree
+from tree_to_sequence.translating_trees import pretty_print_attention_t2t
 
-from tree_to_sequence.tree_to_sequence import TreeToSequence #TODO
-
-class TreeToTreeAttention(TreeToSequence):
-    def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size,
-                 alignment_size=50, align_type=1):
-        super(TreeToSequenceAttention, self).__init__(encoder, decoder, hidden_size, nclass, embedding_size)
-
-        self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
+class TreeToTreeAttention(nn.Module):
+    def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass=32, max_size=50,
+                 max_num_children=2, alignment_size=50, align_type=1):
+        """
+        Translates an encoded representation of one tree into another
+        """
+        super(TreeToTree, self).__init__()
+        
+        # Save useful values
+        self.nclass = nclass
+        self.encoder = encoder
+        self.decoder = decoder
+        self.max_size = max_size
+        self.max_num_children = max_num_children
+        self.align_type = align_type
+        
+        # EOS is always the last token
+        self.EOS_value = nclass
+        
+        # Useful functions
+        self.loss_func = nn.CrossEntropyLoss()
+        self.softmax = nn.Softmax(0)
         self.tanh = nn.Tanh()
-
+        
+        # Set up attention
         if align_type == 0:
             self.attention_hidden = nn.Linear(hidden_size, alignment_size)
             self.attention_context = nn.Linear(hidden_size, alignment_size, bias=False)
             self.attention_alignment_vector = nn.Linear(alignment_size, 1)
         elif align_type == 1:
             self.attention_hidden = nn.Linear(hidden_size, hidden_size)
-
-        self.align_type = align_type
         self.register_buffer('et', torch.zeros(1, hidden_size))
+        self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
+        
+        self.embedding = nn.Embedding(nclass + 1, embedding_size)        
 
-    """
-        input: The output of the encoder for the tree should have be a triple. The first
-               part of the triple should be the annotations and have dimensions,
-               number_of_nodes x hidden_size. The second triple of the pair should be the hidden
-               representations of the root and should have dimensions, num_layers x hidden_size.
-               The third part should correspond to the cell states of the root and should
-               have dimensions, num_layers x hidden_size.
-        target: The target should have dimensions, seq_len, and should be a LongTensor.
-    """
-    def forward_train(self, input, target, teacher_forcing=True):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-        # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
+    def forward_train(self, input_tree, target_tree, teacher_forcing=True):
+        """
+        Generate predictions for an output tree given an input tree, then calculate the loss.
+        """
+        # Encode tree
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
+        
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
 
-        decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
-        decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
-
-        target_length, = target.size()
-        SOS_token = Variable(self.SOS_token)
-
-        word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
-        et = Variable(self.et)
+        # number to accumulate loss
         loss = 0
-
-        for i in range(target_length):
-            decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
-            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
-            decoder_hidden = decoder_hiddens[-1]
-
-            attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
+        
+        # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
+        unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, None, 0)]
+                
+        # while stack isn't empty:
+        while (len(unexpanded)) > 0:
+            # Pop last item
+            decoder_hiddens, decoder_cell_states, targetNode, parent_val, child_index = \
+            unexpanded.pop()
+            # Use attention and past hidden state to generate scores
+            attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-            et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
-            log_odds = self.output_log_odds(et)
-            loss += self.loss_func(log_odds, target[i])
-
+            et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
+                                                               dim=1))) # 1 x hidden_size
+            # Calculate loss
+            loss = loss + self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
+                
+            # If we have an EOS, there are no children to generate
+            if int(targetNode.value) == self.EOS_value:
+                continue
+            
+            # Teacher forcing means we use the correct value (not the predicted value) of a node to 
+            # generate its children
             if teacher_forcing:
-                next_input = target[i].unsqueeze(1)
+                next_input = targetNode.value
             else:
                 _, next_input = log_odds.topk(1)
+            
+            decoder_input = torch.cat((self.embedding(next_input), et), 1)
+            
+            for i, child in enumerate(targetNode.children):
+                # Parent node of a node's children is that node
+                parent = next_input
+                new_child_index = i
+                    
+                # Get hidden state and cell state which will be used to generate this node's 
+                # children
+                child_hiddens, child_cell_states = self.decoder.get_next(parent, new_child_index, 
+                                                                         decoder_input, 
+                                                                         decoder_hiddens, 
+                                                                         decoder_cell_states)
+                unexpanded.append((child_hiddens, child_cell_states, child, parent, 
+                                   new_child_index))
 
-            word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
         return loss
-
-    """
-        This is just an alias for point_wise_prediction, so that training code that assumes the presence
-        of a forward_train and forward_prediction works.
-    """
-    def forward_prediction(self, input, maximum_length=150):
-        return self.point_wise_prediction(input, maximum_length)
-
-    def point_wise_prediction(self, input, maximum_length=150):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-
-        # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
+       
+    def forward_prediction(self, input_tree):
+        """
+        Generate an output tree given an input tree
+        """
+        # Encode tree
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
+        
+        # Counter of how many nodes we've generated so far
+        num_nodes = 0
+        
+        PLACEHOLDER = 1
+        
+        # Output tree we're building up.  The value is a placeholder
+        tree = Node(PLACEHOLDER)
+        
+        # Create stack of unexpanded nodes
+        # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
+        unexpanded = [(decoder_hiddens, decoder_cell_states, tree, None, 0)]
+        
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-
-        decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
-        decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
-        SOS_token = Variable(self.SOS_token)
-
-        word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
-        et = Variable(self.et)
-        output_so_far = []
-
-        for i in range(maximum_length):
-            decoder_input = torch.cat((word_input, et), dim=1) # 1 x embedding_size + hidden_size
-            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
-            decoder_hidden = decoder_hiddens[-1]
-
-            attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
+        
+        # while stack isn't empty:
+        while (len(unexpanded)) > 0:
+            # Pop last item
+            decoder_hiddens, decoder_cell_states, curr_root, parent_val, child_index = \
+            unexpanded.pop()  
+            
+            # Use attention and pas hidden state to make a prediction
+            attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-            et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1)))
-            log_odds = self.output_log_odds(et)
-            _, next_input = log_odds.topk(1)
-
-            output_so_far.append(int(next_input))
-
-            if int(next_input) == self.EOS_value:
+            et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
+                                                               dim=1))) # 1 x hidden_size
+            next_input = self.decoder.make_prediction(parent_val, child_index, et)
+            curr_root.value = next_input
+            num_nodes += 1
+            
+            # Only generate up to max_size nodes
+            if num_nodes > self.max_size:
                 break
-
-            word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
-
-        return output_so_far
-
-    def beam_search_prediction(self, input, maximum_length=20, beam_width=5):
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input)
-        # align_size: 0 number_of_nodes x alignment_size or align_size: 1-2 bengio number_of_nodes x hidden_size
-        if self.align_type <= 1:
-            attention_hidden_values = self.attention_hidden(annotations)
-        else:
-            attention_hidden_values = annotations
-
-        decoder_hiddens = decoder_hiddens.unsqueeze(1) # num_layers x 1 x hidden_size
-        decoder_cell_states = decoder_cell_states.unsqueeze(1) # num_layers x 1 x hidden_size
-        SOS_token = Variable(self.SOS_token)
-
-        word_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
-        et = Variable(self.et)
-
-        decoder_input = torch.cat((word_input, et), dim=1)
-        word_inputs = []
-
-        for _ in range(beam_width):
-            word_inputs.append((0, [], True, [decoder_input, decoder_hiddens, decoder_cell_states]))
-
-        for _ in range(maximum_length):
-            new_word_inputs = []
-
-            for i in range(beam_width):
-                if not word_inputs[i][2]:
-                    new_word_inputs.append(word_inputs[i])
-                    continue
-
-                decoder_input, decoder_hiddens, decoder_cell_states = word_inputs[i][3]
-                decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
-                decoder_hidden = decoder_hiddens[-1]
-
-                attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
-                attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
-                context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
-                et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), dim=1))) # 1 x hidden_size
-                log_odds = self.output_log_odds(et).squeeze(0) # nclasses
-                log_probs = self.log_softmax(log_odds)
-
-                log_value, next_input = log_probs.topk(beam_width) # beam_width, beam_width
-                word_input = self.embedding(next_input.unsqueeze(1)) # beam_width x 1 x embedding size
-                decoder_input = torch.cat((word_input, et.unsqueeze(0).repeat(beam_width, 1, 1)), dim=2)
-
-                new_word_inputs.extend((word_inputs[i][0] + float(log_value[k]), word_inputs[i][1] + [int(next_input[k])],
-                                        int(next_input[k]) != self.EOS_value, [word_input[k], decoder_hiddens, decoder_cell_states])
-                                        for k in range(beam_width))
-            word_inputs = sorted(new_word_inputs, key=lambda word_input: word_input[0])[-beam_width:]
-        return word_inputs[-1][1]
+            
+            # If we have an EOS, there are no children to generate
+            if int(curr_root.value) == self.EOS_value:
+                continue
+                
+            decoder_input = torch.cat((self.embedding(next_input), et), 1)
+            
+            for i in range(self.max_num_children):
+                # Parent node of a node's children is that node
+                parent = next_input
+                new_child_index = i
+                    
+                # Get hidden state and cell state which will be used to generate this node's 
+                # children
+                child_hiddens, child_cell_states = self.decoder.get_next(parent, new_child_index, 
+                                                                         decoder_input, 
+                                                                         decoder_hiddens, 
+                                                                         decoder_cell_states)
+                # Add children to the stack
+                curr_child = Node(PLACEHOLDER)
+                unexpanded.append((child_hiddens, child_cell_states, curr_child, parent, 
+                                   new_child_index))
+                curr_root.children.append(curr_child)
+        return tree
+    
+    def print_example(self, input_tree, target_tree):
+        """
+        Print out the desired and actual output trees for one example
+        """
+        print("DESIRED")
+        pretty_print_tree(target_tree)
+        print("WE GOT!")
+        pretty_print_tree(self.forward_prediction(input_tree))
 
     def attention_logits(self, attention_hidden_values, decoder_hidden):
+        """
+        Calculates the logits over the nodes in the input tree.
+        """
         if self.align_type == 0:
-            return self.attention_alignment_vector(self.tanh(self.attention_context(decoder_hidden) + attention_hidden_values))
+            return self.attention_alignment_vector(self.tanh(self.attention_context(decoder_hidden) 
+                                                             + attention_hidden_values))
         else:
-            return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1)
+            return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1)            
+
+         
+        
+

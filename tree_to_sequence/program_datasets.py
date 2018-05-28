@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 from torch.utils.data import Dataset
 from tree_to_sequence.translating_trees import *
 import copy
@@ -48,9 +47,11 @@ class ForLambdaDataset(Dataset):
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
         
         if binarize and not input_as_seq:
-            for_progs = [binarize_tree(prog, add_eos=input_token_count if eos_tokens else False) for prog in for_progs]
+            for_progs = [binarize_tree(prog, add_eos=input_token_count if eos_tokens else False) for 
+                         prog in for_progs]
         if binarize and not output_as_seq:
-            lambda_progs = [binarize_tree(prog, add_eos=output_token_count if eos_tokens else False) for prog in lambda_progs]
+            lambda_progs = [binarize_tree(prog, add_eos=output_token_count if eos_tokens else False) 
+                            for prog in lambda_progs]
         for_size = num_vars + num_ints + len(for_ops.keys())
         lambda_size = num_vars + num_ints + len(lambda_ops.keys())
         
@@ -61,28 +62,36 @@ class ForLambdaDataset(Dataset):
             pretty_print_tree(lambda_progs[0])
         
         if use_embedding:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens, one_hot=False) for prog in for_progs]
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens, 
+                                     one_hot=False) for prog in for_progs]
             if input_as_seq:
                 if eos_tokens:
-                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog) + [for_size])) for prog in for_progs]
+                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog) + [for_size])) for 
+                                 prog in for_progs]
                 else: 
-                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog))) for prog in for_progs]
+                    for_progs = [Variable(torch.LongTensor(tree_to_list(prog))) for prog in 
+                                 for_progs]
             else:
-                for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in for_progs]
+                for_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog 
+                             in for_progs]
         else:
-            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens) for prog in for_progs]
+            for_progs = [encode_tree(prog, num_vars, num_ints, for_ops, eos_token=eos_tokens) for 
+                         prog in for_progs]
             if input_as_seq:
+                for_progs = map(tree_to_list, for_progs)
+                
                 if eos_tokens:
-                    for_progs = [torch.stack(tree_to_list(prog) + [make_one_hot(for_size+1, for_size)]) for prog in for_progs]
-                else:
-                    for_progs =  [torch.stack(tree_to_list(prog)) for prog in for_progs]
-        
+                    for_progs = map(lambda ls: ls.append(make_one_hot(for_size+1, for_size), 
+                                    for_progs)
+                
+                                   
         if output_as_seq:                              
-            lambda_progs = [Variable(torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens,  one_hot=False)) + [lambda_size+1])) for prog in lambda_progs]
+            lambda_progs = [torch.LongTensor(tree_to_list(encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens,  one_hot=False)) + [lambda_size+1]) for prog in lambda_progs]
         else: 
             lambda_progs = [encode_tree(prog, num_vars, num_ints, lambda_ops, eos_token=eos_tokens, one_hot=False) for prog in lambda_progs]
                                                                    
-            lambda_progs = [map_tree(lambda val: Variable(torch.LongTensor([val])), prog) for prog in lambda_progs]#HERE
+            lambda_progs = [map_tree(lambda val: torch.LongTensor([val]), prog) for prog in 
+                            lambda_progs]
 
         self.for_data_pairs = list(zip(for_progs, lambda_progs))
 
