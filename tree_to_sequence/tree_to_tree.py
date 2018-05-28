@@ -81,7 +81,6 @@ class TreeToTree(nn.Module):
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), dim=1))) # 1 x hidden_size
             # Calculate loss
             loss = loss + self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
-                
             # If we have an EOS, there are no children to generate
             if int(targetNode.value) == self.EOS_value:
                 continue

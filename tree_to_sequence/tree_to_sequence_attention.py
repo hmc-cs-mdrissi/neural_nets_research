@@ -72,8 +72,6 @@ class TreeToSequenceAttention(TreeToSequence):
                 _, next_input = log_odds.topk(1)
 
             word_input = self.embedding(next_input).squeeze(1) # 1 x embedding size
-        if self.i % 200 == 0:
-            t2s_pretty_print_attention(all_attention_probs, input, target, threshold=0.5)
         self.i = self.i + 1
         return loss
 
