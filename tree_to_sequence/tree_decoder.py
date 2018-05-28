@@ -26,7 +26,7 @@ class TreeDecoder(nn.Module):
         for i in range(max_num_children):
             self.lstm_list.append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
     
-    def calculate_loss(parent, child_index, et, true_value):
+    def calculate_loss(self, parent, child_index, et, true_value):
         """
         Calculate cross entropy loss from et.
         

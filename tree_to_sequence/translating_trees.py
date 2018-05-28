@@ -169,7 +169,7 @@ def add_eos(tree, eos, num_children, one_hot=False):
     # Loop through children
     for child in tree.children:
         # Recursively add EOS to children
-        add_eos(child, eos, num_children, make_variable)
+        add_eos(child, eos, num_children, one_hot)
     
     # Add enough EOS nodes that the final child count is num_children
     while len(tree.children) < num_children:
@@ -334,13 +334,32 @@ def pretty_print_attention_tree(attention_list, input_tree, parent, write_index,
         
     return curr_index
         
-def pretty_print_tree(tree):
-    """
-    Print a tree out with a visualized tree structure.
+# def pretty_print_tree(tree):
+#     """
+#     Print a tree out with a visualized tree structure.
     
-    :param tree: the tree to print
-    """
-    pptree.print_tree(root_node, nameattr="value")
+#     :param tree: the tree to print
+#     """
+#     pptree.print_tree(tree, nameattr="value")
+# Hey Mehdi, I changed this func back to the original version b/c this version doesn't
+# play well with Variables.  If there's an easy way around it, feel free to add this back.
+
+def pretty_print_tree(tree):
+    root_node = pptree.Node(str(get_val(tree.value)))
+    for child in tree.children:
+        make_pretty_tree(child, root_node)
+    pptree.print_tree(root_node)
+        
+def make_pretty_tree(node, parent):
+    new_node = pptree.Node(str(get_val(node.value)), parent)
+    for child in node.children:
+        make_pretty_tree(child, new_node)
+        
+def get_val(value):
+    if type(value) is torch.autograd.variable.Variable:
+        return value.data[0]
+    else:
+        return value
         
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 

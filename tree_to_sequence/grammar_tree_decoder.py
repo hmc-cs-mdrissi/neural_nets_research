@@ -47,9 +47,10 @@ class GrammarTreeDecoder(nn.Module):
             for category in range(num_categories):
                 possible_children = category_to_child(category)
                 if len(possible_children) != 0:
-                    
+                    pass #TODO: You shall not pass! -- Gandalf
                 self.linear_lists.append(nn.Linear(hidden, 
         else:
+            pass #TODO: something.  Anything but pass.
                     
         for child in range(max_num_children):
             linear_list = nn.ModuleList()

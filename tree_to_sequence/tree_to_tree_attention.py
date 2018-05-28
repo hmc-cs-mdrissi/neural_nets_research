@@ -4,6 +4,7 @@ from tree_to_sequence.translating_trees import Node
 from tree_to_sequence.translating_trees import print_tree
 from tree_to_sequence.translating_trees import pretty_print_tree
 from tree_to_sequence.translating_trees import pretty_print_attention_t2t
+# from tree_to_sequence.tree_to_tree import TreeToTree
 
 class TreeToTreeAttention(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass=32, max_size=50,
@@ -11,7 +12,7 @@ class TreeToTreeAttention(nn.Module):
         """
         Translates an encoded representation of one tree into another
         """
-        super(TreeToTree, self).__init__()
+        super(TreeToTreeAttention, self).__init__()
         
         # Save useful values
         self.nclass = nclass
