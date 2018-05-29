@@ -1,16 +1,11 @@
 import torch
 from torch.utils.data import Dataset
 from tree_to_sequence.translating_trees import *
-import copy
-from torch.autograd import Variable
 
+import copy
 import json
 
-class ForLambdaDataset(Dataset):
-    def __init__(self, path, num_vars = 10, num_ints = 11, binarize = False,
-                 eos_tokens=True, input_as_seq=False, output_as_seq=True, use_embedding=False,
-                 long_base_case=True):
-        for_ops = {
+for_ops = {
             "<VAR>": 0,
             "<CONST>": 1,
             "<PLUS>": 2,
@@ -24,7 +19,7 @@ class ForLambdaDataset(Dataset):
             "<FOR>": 10
         }
 
-        lambda_ops = {
+lambda_ops = {
             "<VAR>": 0,
             "<CONST>": 1,
             "<PLUS>": 2,
@@ -38,11 +33,49 @@ class ForLambdaDataset(Dataset):
             "<LETREC>": 10,
             "<APP>": 11,
         }
-        
+
+lambda_calculus_ops = {
+                "<VARIABLE>": 0,
+                "<ABSTRACTION>": 1,
+                "<NUMBER>": 2,
+                "<BOOLEAN>": 3,
+                "<NIL>": 4,
+                "<IF>": 5,
+                "<CONS>": 6,
+                "<MATCH>": 7,
+                "<UNARYOPER>": 8,
+                "<BINARYOPER>": 9,
+                "<LET>": 10,
+                "<LETREC>": 11,
+                "<TRUE>": 12,
+                "<FALSE>": 13,
+                "<TINT>": 14,
+                "<TBOOL>": 15,
+                "<TINTLIST>": 16,
+                "<TFUN>": 17,
+                "<ARGUMENT>": 18,
+                "<NEG>": 19,
+                "<NOT>": 20,
+                "<PLUS>": 21,
+                "<MINUS>": 22,
+                "<TIMES>": 23,
+                "<DIVIDE>": 24,
+                "<AND>": 25,
+                "<OR>": 26,
+                "<EQUAL>": 27,
+                "<LESS>": 28,
+                "<APPLICATION>": 29,
+                "<HEAD>": 30,
+                "<TAIL>": 31
+            }
+
+class ForLambdaDataset(Dataset):
+    def __init__(self, path, num_vars=10, num_ints=11, binarize=False, eos_tokens=True, 
+                 input_as_seq=False, output_as_seq=True, use_embedding=False, long_base_case=True):
         progsjson = json.load(open(path))
         
         input_token_count = num_vars + num_ints + len(for_ops.keys())
-        output_token_count = num_vars + num_ints + len(lambda_ops.keys()) 
+        output_token_count = num_vars + num_ints + len(lambda_ops.keys())
         max_children_for = 5
         max_children_lambda = 4
         
@@ -50,10 +83,9 @@ class ForLambdaDataset(Dataset):
         for_progs = [make_tree(prog, long_base_case=long_base_case) for prog in progsjson]
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
         
-        if binarize and not input_as_seq:
+        if binarize:
             for_progs = [binarize_tree(prog, add_eos=input_token_count if eos_tokens else False) for 
                          prog in for_progs]
-        if binarize and not output_as_seq:
             lambda_progs = [binarize_tree(prog, add_eos=output_token_count if eos_tokens else False) 
                             for prog in lambda_progs]
         for_size = num_vars + num_ints + len(for_ops.keys())
@@ -104,60 +136,15 @@ class ForLambdaDataset(Dataset):
     def __getitem__(self, index):
         return self.for_data_pairs[index]
     
-
 class TreeANCDataset(Dataset):
     def __init__(self, path, is_lambda_calculus, num_vars = 10, num_ints = 11, binarize = False,
                  input_eos_token=True, input_as_seq=False, use_embedding=False,
                  long_base_case=True, cuda=True):
+        
         if is_lambda_calculus:
-            self.tokens = {
-                "<VARIABLE>": 0,
-                "<ABSTRACTION>": 1,
-                "<NUMBER>": 2,
-                "<BOOLEAN>": 3,
-                "<NIL>": 4,
-                "<IF>": 5,
-                "<CONS>": 6,
-                "<MATCH>": 7,
-                "<UNARYOPER>": 8,
-                "<BINARYOPER>": 9,
-                "<LET>": 10,
-                "<LETREC>": 11,
-                "<TRUE>": 12,
-                "<FALSE>": 13,
-                "<TINT>": 14,
-                "<TBOOL>": 15,
-                "<TINTLIST>": 16,
-                "<TFUN>": 17,
-                "<ARGUMENT>": 18,
-                "<NEG>": 19,
-                "<NOT>": 20,
-                "<PLUS>": 21,
-                "<MINUS>": 22,
-                "<TIMES>": 23,
-                "<DIVIDE>": 24,
-                "<AND>": 25,
-                "<OR>": 26,
-                "<EQUAL>": 27,
-                "<LESS>": 28,
-                "<APPLICATION>": 29,
-                "<HEAD>": 30,
-                "<TAIL>": 31
-            }
+            self.tokens = lambda_calculus_ops
         else:
-            self.tokens = {
-                "<VAR>": 0,
-                "<CONST>": 1,
-                "<PLUS>": 2,
-                "<MINUS>": 3,
-                "<EQUAL>": 4,
-                "<LE>": 5,
-                "<GE>": 6,
-                "<ASSIGN>": 7,
-                "<IF>": 8,
-                "<SEQ>": 9,
-                "<FOR>": 10
-            }
+            self.tokens = for_ops
 
         self.num_vars = num_vars
         self.num_ints = num_ints
@@ -231,7 +218,6 @@ class TreeANCDataset(Dataset):
 
     def __getitem__(self, index):
         return self.progs[index]
-
 
 class TreeNTMDataset(Dataset):
     def __init__(self, path, is_lambda_calculus, thinking_time, repeats=2, num_vars = 10, num_ints = 11, binarize = False,
@@ -337,60 +323,11 @@ class TreeNTMDataset(Dataset):
 
     def __getitem__(self, index):
         return self.progs[index]
-
-
-    
+  
 class IdentityTreeToTreeDataset(Dataset):
-    def __init__(self, path, is_lambda_calculus=False, use_embedding=False, binarize=True, cuda=True, num_vars=10, num_ints = 5, eos_tokens=True):
-        if is_lambda_calculus:
-            self.tokens = {
-                "<VARIABLE>": 0,
-                "<ABSTRACTION>": 1,
-                "<NUMBER>": 2,
-                "<BOOLEAN>": 3,
-                "<NIL>": 4,
-                "<IF>": 5,
-                "<CONS>": 6,
-                "<MATCH>": 7,
-                "<UNARYOPER>": 8,
-                "<BINARYOPER>": 9,
-                "<LET>": 10,
-                "<LETREC>": 11,
-                "<TRUE>": 12,
-                "<FALSE>": 13,
-                "<TINT>": 14,
-                "<TBOOL>": 15,
-                "<TINTLIST>": 16,
-                "<TFUN>": 17,
-                "<ARGUMENT>": 18,
-                "<NEG>": 19,
-                "<NOT>": 20,
-                "<PLUS>": 21,
-                "<MINUS>": 22,
-                "<TIMES>": 23,
-                "<DIVIDE>": 24,
-                "<AND>": 25,
-                "<OR>": 26,
-                "<EQUAL>": 27,
-                "<LESS>": 28,
-                "<APPLICATION>": 29,
-                "<HEAD>": 30,
-                "<TAIL>": 31
-            }
-        else:
-            self.tokens = {
-                "<VAR>": 0,
-                "<CONST>": 1,
-                "<PLUS>": 2,
-                "<MINUS>": 3,
-                "<EQUAL>": 4,
-                "<LE>": 5,
-                "<GE>": 6,
-                "<ASSIGN>": 7,
-                "<IF>": 8,
-                "<SEQ>": 9,
-                "<FOR>": 10
-            }
+    def __init__(self, path, tokens, use_embedding=False, binarize=True, 
+                 num_vars=10, num_ints = 5, eos_tokens=True):
+        self.tokens = tokens
 
         self.binarize = binarize
         self.is_lambda_calculus = is_lambda_calculus
@@ -402,6 +339,7 @@ class IdentityTreeToTreeDataset(Dataset):
 
         progsjson = json.load(open(path))
         self.progs = [self.convert_to_pair(prog_input_output) for prog_input_output in progsjson]
+        
     def convert_to_pair(self, prog_input_output):
         input_token_count = self.num_vars + self.num_ints + len(self.tokens.keys())
         prog_tree = make_tree(prog_input_output[0], is_lambda_calculus=self.is_lambda_calculus)
@@ -427,88 +365,8 @@ class IdentityTreeToTreeDataset(Dataset):
         return self.progs[index]
    
     
-class Const0(Dataset):
-    def __init__(self, path, is_lambda_calculus=False, use_embedding=False, binarize=True, cuda=True, num_vars=10, num_ints = 5):
-        if is_lambda_calculus:
-            self.tokens = {
-                "<VARIABLE>": 0,
-                "<ABSTRACTION>": 1,
-                "<NUMBER>": 2,
-                "<BOOLEAN>": 3,
-                "<NIL>": 4,
-                "<IF>": 5,
-                "<CONS>": 6,
-                "<MATCH>": 7,
-                "<UNARYOPER>": 8,
-                "<BINARYOPER>": 9,
-                "<LET>": 10,
-                "<LETREC>": 11,
-                "<TRUE>": 12,
-                "<FALSE>": 13,
-                "<TINT>": 14,
-                "<TBOOL>": 15,
-                "<TINTLIST>": 16,
-                "<TFUN>": 17,
-                "<ARGUMENT>": 18,
-                "<NEG>": 19,
-                "<NOT>": 20,
-                "<PLUS>": 21,
-                "<MINUS>": 22,
-                "<TIMES>": 23,
-                "<DIVIDE>": 24,
-                "<AND>": 25,
-                "<OR>": 26,
-                "<EQUAL>": 27,
-                "<LESS>": 28,
-                "<APPLICATION>": 29,
-                "<HEAD>": 30,
-                "<TAIL>": 31
-            }
-        else:
-            self.tokens = {
-                "<VAR>": 0,
-                "<CONST>": 1,
-                "<PLUS>": 2,
-                "<MINUS>": 3,
-                "<EQUAL>": 4,
-                "<LE>": 5,
-                "<GE>": 6,
-                "<ASSIGN>": 7,
-                "<IF>": 8,
-                "<SEQ>": 9,
-                "<FOR>": 10
-            }
-
-        self.binarize = binarize
-        self.is_lambda_calculus = is_lambda_calculus
-        self.use_embedding = use_embedding
-        self.cuda = cuda
-        self.num_vars = num_vars
-        self.num_ints = num_ints
-        progsjson = json.loads('[{"tag": "Const", "contents": 5}]')
-        self.progs = [self.convert_to_pair(prog_input_output) for prog_input_output in progsjson] * 20
-
-    def convert_to_pair(self, prog_input_output):
-        prog_tree = make_tree(prog_input_output, is_lambda_calculus=self.is_lambda_calculus)
-        if self.binarize:
-            prog_tree = binarize_tree(prog_tree)
-
-        print_tree(prog_tree)
-        if self.use_embedding:
-            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, one_hot=False)
-            prog_tree = map_tree(lambda val: Variable(torch.LongTensor([val])), prog_tree)
-        else:
-            prog_tree = encode_tree(prog_tree, self.num_vars, self.num_ints, self.tokens, eos_token=False)
-                  
-        if self.cuda:
-            prog_tree = prog_tree.cuda()
-
-        return prog_tree, prog_tree
-            
-    def __len__(self):
-        return len(self.progs)
-
-    def __getitem__(self, index):
-        return self.progs[index]
-
+class Const0(IdentityTreeToTreeDataset):
+    def __init__(self, path, is_lambda_calculus=False, use_embedding=False, binarize=True, 
+                 cuda=True, num_vars=10, num_ints=5):
+        super(Const0, self).__init__('[{"tag": "Const", "contents": 5}]'
 

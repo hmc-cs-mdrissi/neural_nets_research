@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 from tree_to_sequence.tree_to_sequence import TreeToSequence #TODO
 

@@ -17,7 +17,7 @@ class TreeDecoder(nn.Module):
                 
         self.loss_func = nn.CrossEntropyLoss()
         
-        # Linear layer to calculate log odds
+        # Linear layer to calculate log odds. The one is to account for the eos token.
         self.output_log_odds = nn.Linear(hidden_size, nclass + 1)        
         
         # Create a separate lstm for each child index

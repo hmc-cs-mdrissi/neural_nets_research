@@ -31,8 +31,8 @@ def make_var_name(var_name):
 
 # TODO: Split make_tree into one function per language. Having a make_tree for all languages is
 # going to be problematic as we keep on adding languages.
-    
-def make_tree(json, long_base_case=True, is_lambda_calculus=False):
+
+def general_base_cases(json):
     # First base case - variable name
     if isinstance(json, string_types):
         return Node(make_var_name(json))
@@ -40,7 +40,77 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # Second base case - variable value
     if type(json) is int:
         return Node(json)
+    
+    return None
 
+def make_tree_for(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
+    tag = "<" + json["tag"].upper() + ">"
+    parentNode = Node(tag)
+    
+    children = json["contents"]
+    
+    if not long_base_case:
+        if tag == '<CONST>' or tag == '<VAR>':
+            return Node(children)
+    
+    # Special case for assignment.
+    if tag == '<ASSIGN>':
+        var_name = children[0]
+        expr = make_tree_for(children[1], long_base_case=long_base_case)
+        
+        if long_base_case:
+            var = Node('<VAR>')
+            var.children.append(Node(var_name))
+        else:
+            var = Node(var_name)
+        
+        parentNode.children.extend([var, expr])
+        return parentNode
+    
+    if type(children) is list:
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_for(child, long_base_case=long_base_case), 
+                                       children))
+    else:
+        parentNode.children.append(make_tree_for(children, long_base_case=long_base_case))
+
+    return parentNode
+    
+def make_tree_lambda(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
+    tag = "<" + json["tag"].upper() + ">"
+    parentNode = Node(tag)
+    
+    children = json["contents"]
+    
+    if not long_base_case:
+        if tag == '<CONST>' or tag == '<VAR>':
+            return Node(children)
+        
+    if type(children) is list:
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_lambda(child, long_base_case=long_base_case), 
+                                       children))
+    else:
+        parentNode.children.append(make_tree_lambda(children, long_base_case=long_base_case))
+
+    return parentNode 
+    
+def make_tree_lambda_calculus(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
     # Third base case for head of abstraction.
     if type(json) is list:
         var_type = "<" + json[1]["tag"].upper() + ">"
@@ -54,61 +124,65 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     if type(json) is bool:
         bool_str = "<" + str(json).upper() + ">"
         return Node(bool_str)
-
+    
     tag = "<" + json["tag"].upper() + ">"
     parentNode = Node(tag)
 
     # Fifth base for nil.
     if tag == '<NIL>':
         return parentNode
-
+    
     children = json["contents"]
     
     if not long_base_case:
-        if tag == '<CONST>' or tag == '<NUMBER>' or tag == '<VARIABLE>' or tag == '<VAR>':
+        if tag == '<NUMBER>' or tag == '<VARIABLE>':
             return Node(children)
-    
-    # Special case for assignment.
-    if tag == '<ASSIGN>':
-        var_name = children[0]
-        expr = make_tree(children[1], long_base_case=long_base_case,
-                         is_lambda_calculus=is_lambda_calculus)
         
-        if long_base_case:
-            var = Node('<VAR>')
-            var.children.append(Node(var_name))
-        else:
-            var = Node(var_name)
-        
-        parentNode.children.extend([var, expr])
-        return parentNode
-
     # Special case for unary operators.
     if tag == '<UNARYOPER>':
         unary_op = "<" + children[0].upper() + ">"
-        unary_operand = make_tree(children[1], long_base_case=long_base_case,
-                                  is_lambda_calculus=is_lambda_calculus)
+        unary_operand = make_tree_lambda_calculus(children[1], long_base_case=long_base_case)
         parentNode.children.extend([Node(unary_op), unary_operand])
         return parentNode
 
     # Special case for binary operators.
     if tag == '<BINARYOPER>':
         binary_op = "<" + children[1].upper() + ">"
-        binary_operand1 = make_tree(children[0], long_base_case=long_base_case,
-                                    is_lambda_calculus=is_lambda_calculus)
-        binary_operand2 = make_tree(children[2], long_base_case=long_base_case,
-                                    is_lambda_calculus=is_lambda_calculus)
+        binary_operand1 = make_tree_lambda_calculus(children[0], long_base_case=long_base_cases)
+        binary_operand2 = make_tree_lambda_calculus(children[2], long_base_case=long_base_case)
         parentNode.children.extend([binary_operand1, Node(binary_op), binary_operand2])
         return parentNode
-
+    
     if type(children) is list:
-        parentNode.children.extend(map(lambda child: make_tree(child, long_base_case=long_base_case,
-                                   is_lambda_calculus=is_lambda_calculus), children))
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_lambda_calculus(child, 
+                                                                 long_base_case=long_base_case), 
+                                       children))
     else:
-        parentNode.children.append(make_tree(children, long_base_case=long_base_case,
-                                             is_lambda_calculus=is_lambda_calculus))
+        parentNode.children.append(make_tree_lambda_calculus(children, 
+                                                             long_base_case=long_base_case))
 
-    return parentNode
+    return parentNode    
+
+# TODO: All of the make_tree's with pass.
+def make_tree_javascript(json, long_base_case=True):
+    pass
+
+def make_tree_coffeescript(json, long_base_case=True):
+    pass
+
+def make_tree_java(json):
+    pass
+
+def make_tree_csharp(json):
+    pass
+
+# TODO: Canonicalizing trees for java/csharp.
+def canonicalize_java(tree):
+    pass
+
+def canonicalize_csharp(tree):
+    pass
 
 EOS = "EOS"
 
@@ -128,10 +202,12 @@ def binarize_tree(tree):
     return new_tree
 
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
-    # don't change eos value
-    if val is eos_token:
-        index = val  
-    elif type(val) is int:
+    """
+        Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
+        to the value is found. value should not correspond to the eos_token. Instead vectorization
+        should occur prior to adding eos_tokens.
+    """
+    if type(val) is int:
         index = val % num_ints
     elif val not in ops:
         index = int(val[1:]) + num_ints
@@ -261,10 +337,12 @@ def pretty_print_attention_t2t(attention_probs, input_tree, target_tree, thresho
     This function was designed for the identity dataset, 
     where the input and target trees are identical.
     
-    :param attention_probs: a list of vectors of length equal to the input tree; the attention mechanism probabilities
+    :param attention_probs: a list of vectors of length equal to the input tree; the attention 
+                            mechanism probabilities
     :param input_tree: input program, in tree form 
     :param target_tree: target program, in tree form 
-    :param threshold: probability threshold above which we mark the attention as having focused on a location in the input tree
+    :param threshold: probability threshold above which we mark the attention as having focused on a 
+                      location in the input tree
     """
     attention_list = extract_attention(attention_probs, threshold)
     
@@ -335,32 +413,13 @@ def pretty_print_attention_tree(attention_list, input_tree, parent, write_index,
         
     return curr_index
         
-# def pretty_print_tree(tree):
-#     """
-#     Print a tree out with a visualized tree structure.
-    
-#     :param tree: the tree to print
-#     """
-#     pptree.print_tree(tree, nameattr="value")
-# Hey Mehdi, I changed this func back to the original version b/c this version doesn't
-# play well with Variables.  If there's an easy way around it, feel free to add this back.
-
 def pretty_print_tree(tree):
-    root_node = pptree.Node(str(get_val(tree.value)))
-    for child in tree.children:
-        make_pretty_tree(child, root_node)
-    pptree.print_tree(root_node)
-        
-def make_pretty_tree(node, parent):
-    new_node = pptree.Node(str(get_val(node.value)), parent)
-    for child in node.children:
-        make_pretty_tree(child, new_node)
-        
-def get_val(value):
-    if type(value) is torch.autograd.variable.Variable:
-        return value.data[0]
-    else:
-        return value
+    """
+    Print a tree out with a visualized tree structure.
+    
+    :param tree: the tree to print
+    """
+    pptree.print_tree(map_tree(lambda val: str(int(val)), tree), nameattr="value")
         
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
@@ -415,7 +474,6 @@ class Lambda(IntEnum):
     APP = 11
     ROOT = 12
 
-# TODO: Once I've understood the full grammar stuff, fix it.
 def parent_to_category_LAMBDA(num_vars, num_ints, parent, only_ops=False):
     """
     Return the categories of output which can be produced by a certain parent index.

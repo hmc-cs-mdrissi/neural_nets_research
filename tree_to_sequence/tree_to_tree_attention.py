@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
-from tree_to_sequence.translating_trees import Node
-from tree_to_sequence.translating_trees import print_tree
-from tree_to_sequence.translating_trees import pretty_print_tree
-from tree_to_sequence.translating_trees import pretty_print_attention_t2t
-# from tree_to_sequence.tree_to_tree import TreeToTree
+from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
+from tree_to_sequence.tree_to_tree import TreeToTree
 
 class TreeToTreeAttention(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass=32, max_size=50,
