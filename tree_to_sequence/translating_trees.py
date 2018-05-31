@@ -29,9 +29,6 @@ def make_var_name(var_name):
     else:
         return var_name
 
-# TODO: Split make_tree into one function per language. Having a make_tree for all languages is
-# going to be problematic as we keep on adding languages.
-
 def general_base_cases(json):
     # First base case - variable name
     if isinstance(json, string_types):
@@ -209,7 +206,12 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
         to the value is found. value should not correspond to the eos_token. Instead vectorization
         should occur prior to adding eos_tokens.
     """
-    if type(val) is int:
+    if val == EOS:
+        if not eos_token:
+            raise ValueError("EOS tokens should not be present while eos_token is false")
+        
+        index = num_ints + num_vars + ops[val]
+    elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
         index = int(val[1:]) + num_ints
@@ -235,30 +237,33 @@ def map_tree(func, tree):
     new_tree.children.extend(map(partial(map_tree, func), tree.children))
     return new_tree
 
-def add_eos(tree, eos, num_children, one_hot=False):
+def add_eos(program, num_children=None):
     """
-    Add in EOS tokens at the end of all existing branches in a tree
+    Add in EOS tokens at the end of all existing branches in a tree or to end of sequence as
+    needed.
     
-    :param tree: the tree which will have eos inserted into it
-    :param eos: the EOS value to be inserted (int)
-    :param num_children: the maximum number of children a node can have (int)
-    :param one_hot: whether to make the values one hot vectors.
-    :returns tree: input tree, but with EOS tokens now (also modifies the original tree in-place)
+    :param program: the program which will have eos inserted into it
+    :param num_children: the maximum number of children a node can have (int). Only needed
+                         if you are doing this on a tree.
+    :returns program: input program, but with EOS tokens now (also modifies the original in-place)
     """
+    if isinstance(program, Node):            
+        return add_eos_tree(program, num_children)
+    else:
+        return program.append(EOS)
+
+def add_eos_tree(program, num_children):
     # Loop through children
     for child in tree.children:
         # Recursively add EOS to children
-        add_eos(child, eos, num_children, one_hot)
-    
+        add_eos(child, num_children)
+
     # Add enough EOS nodes that the final child count is num_children
     while len(tree.children) < num_children:
-        if one_hot:
-            tree.children.append(Node(make_one_hot(eos + 1, eos)))
-        else:
-            tree.children.append(Node(eos))
+        tree.children.append(Node(EOS))
 
     return tree
-
+        
 def print_tree(tree):
     """
     Print out a tree as a sequence of values
@@ -438,9 +443,17 @@ def get_val(value):
         return value
     
         
-def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
-    return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
-                                           one_hot=one_hot), tree)
+def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
+    if isinstance(program, Node):
+        return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
+                                           one_hot=one_hot), program)
+    else:
+        program = map(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
+                                             one_hot=one_hot), program)
+        if one_hot:
+            return torch.stack(program)
+        else:
+            return torch.LongTensor(program)
 
 def decode_tokens(seq, num_vars, num_ints, ops):
     reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))
