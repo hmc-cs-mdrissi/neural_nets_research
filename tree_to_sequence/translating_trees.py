@@ -104,6 +104,7 @@ def make_tree_lambda(json, long_base_case=True):
         parentNode.children.append(make_tree_lambda(children, long_base_case=long_base_case))
 
     return parentNode 
+
     
 def make_tree_lambda_calculus(json, long_base_case=True):
     check_general_base_cases = general_base_cases(json)
@@ -172,17 +173,18 @@ def make_tree_coffeescript(json, long_base_case=True):
     pass
 
 def make_tree_java(json):
-    pass
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
-def make_tree_csharp(json):
-    pass
+def make_tree_csharp(json, long_base_case=True):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+
+def canonicalize_csharp(tree):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 # TODO: Canonicalizing trees for java/csharp.
 def canonicalize_java(tree):
-    pass
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
-def canonicalize_csharp(tree):
-    pass
 
 EOS = "EOS"
 
@@ -419,7 +421,22 @@ def pretty_print_tree(tree):
     
     :param tree: the tree to print
     """
-    pptree.print_tree(map_tree(lambda val: str(int(val)), tree), nameattr="value")
+    pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
+    
+    
+def get_val(value):
+    """
+    Extract the integer value of the input (or keep it as a string it it's not an integer/tensor)
+    
+    :param value: an integer, tensor, or Variable (with one integer element)
+    """
+    if type(value) is torch.autograd.variable.Variable:
+        return int(value.data[0])
+    elif type(value) is torch.LongTensor:
+        return int(value[0])
+    else:
+        return value
+    
         
 def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
@@ -668,4 +685,3 @@ def translate_from_for(tree):
     else:
         return tree
  
-
