@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
-from tree_to_sequence.tree_to_tree import TreeToTree
 
 class TreeToTreeAttention(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass,
-                 alignment_size=50, align_type=1):
+                 alignment_size=50, align_type=1, max_size=50):
         """
         Translates an encoded representation of one tree into another
         """
@@ -15,8 +14,8 @@ class TreeToTreeAttention(nn.Module):
         self.nclass = nclass
         self.encoder = encoder
         self.decoder = decoder
-        self.max_num_children = max_num_children
         self.align_type = align_type
+        self.max_size = max_size
         
         # EOS is always the last token
         self.EOS_value = nclass
@@ -101,10 +100,13 @@ class TreeToTreeAttention(nn.Module):
 
         return loss
        
-    def forward_prediction(self, input_tree, max_size=50):
+    def forward_prediction(self, input_tree, max_size=None):
         """
         Generate an output tree given an input tree
         """
+        if max_size is None:
+            max_size = self.max_size
+        
         # Encode tree
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
         
@@ -118,7 +120,7 @@ class TreeToTreeAttention(nn.Module):
         
         # Create stack of unexpanded nodes
         # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
-        unexpanded = [(decoder_hiddens, decoder_cell_states, tree, None, 0)]
+        unexpanded = [(decoder_hiddens, decoder_cell_states, tree, 0, 0)]
         
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)
@@ -162,8 +164,7 @@ class TreeToTreeAttention(nn.Module):
                                                                          decoder_cell_states)
                 # Add children to the stack
                 curr_child = Node(PLACEHOLDER)
-                unexpanded.append((child_hiddens, child_cell_states, curr_child, parent, 
-                                   new_child_index))
+                unexpanded.append((child_hiddens, child_cell_states, curr_child, parent, i))
                 curr_root.children.append(curr_child)
         return tree
     
@@ -186,6 +187,5 @@ class TreeToTreeAttention(nn.Module):
         else:
             return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1)            
 
-         
-        
-
+    def update_max_size(self, max_size):
+        self.max_size = max_size

@@ -46,27 +46,28 @@ class GrammarTreeDecoder(nn.Module):
         if self.share_linear:
             for category in range(num_categories):
                 possible_children = self.category_to_child(category)
-                self.linear_lists.append(nn.Linear(hidden_size, len(possible_children)) 
+                self.linear_lists.append(nn.Linear(hidden_size, len(possible_children)))
         else:
             for parent in range(num_possible_parents):
                 self.linear_lists.append(nn.ModuleList())
                                          
                 for category in self.parent_to_category(parent):
                     possible_children = self.category_to_child(category)                  
-                    self.linear_lists[i].append(nn.Linear(hidden_size, len(possible_children))               
+                    self.linear_lists[i].append(nn.Linear(hidden_size, len(possible_children)))
+
         # A list of lists of lstm_cells layers which will be used to generate the hidden states we 
         # will later use to generate a node's children.
         self.lstm_lists = nn.ModuleList()
         
         if share_lstm_cell:
             for category in range(num_categories):
-                self.lstm_lists.append(nn.LSTMCell(embedding_size + hidden_size, hidden_size)
+                self.lstm_lists.append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
         else:
             for parent in range(num_possible_parents):
                 self.lstm_lists.append(nn.ModuleList())
                                          
                 for category in self.parent_to_category(parent):
-                    self.lstm_lists[i].append(nn.LSTMCell(embedding_size + hidden_size, hidden_size)
+                    self.lstm_lists[i].append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
                                               
         self.register_buffer('true_index', torch.LongTensor([0]))
         

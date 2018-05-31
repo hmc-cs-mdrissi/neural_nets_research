@@ -5,7 +5,7 @@ class TreeDecoder(nn.Module):
     """
     Decoder which produces nodes of a tree.
     """
-    def __init__(self, embedding_size, hidden_size, max_num_children, nclass=32):
+    def __init__(self, embedding_size, hidden_size, max_num_children, nclass):
         """
         :param embedding_size: length of the encoded representation of a node
         :param hidden_size: hidden state size
@@ -45,7 +45,7 @@ class TreeDecoder(nn.Module):
     def make_prediction(self, parent, child_index, et):
         log_odds = self.output_log_odds(et)
         _, max_index = torch.max(log_odds, 1)
-        return max_index.squeeze(0)
+        return max_index
     
     def get_next(self, parent, child_index, input, hidden_state, cell_state):
         """
@@ -72,5 +72,5 @@ class TreeDecoder(nn.Module):
         :param bias_value: value the forget bias wil be set to
         """
         for lstm in self.lstm_list:
-            nn.init.constant(lstm.bias_ih, bias_value)
-            nn.init.constant(lstm.bias_hh, bias_value)
+            nn.init.constant_(lstm.bias_ih, bias_value)
+            nn.init.constant_(lstm.bias_hh, bias_value)

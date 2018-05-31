@@ -73,7 +73,7 @@ class TreeCell(nn.Module):
 
     def initialize_forget_bias(self, bias_value):
         for i in range(3, len(self.gates_value)):
-            nn.init.constant(self.gates_value[i].bias, bias_value)
+            nn.init.constant_(self.gates_value[i].bias, bias_value)
 
 class TreeLSTM(nn.Module):
     '''
@@ -91,6 +91,7 @@ class TreeLSTM(nn.Module):
 
         self.valid_num_children = [0] + valid_num_children
         self.lstm_list = nn.ModuleList()
+        self.hidden_size = hidden_size
 
         for size in self.valid_num_children:
             self.lstm_list.append(TreeCell(input_size, hidden_size, size))
@@ -102,7 +103,11 @@ class TreeLSTM(nn.Module):
         :param tree: a tree where each node has a value vector and a list of children
         :return a tuple - (root of encoded tree, cell state)
         """
-
+        value = node.value
+        
+        if value is None:
+            return (Node(None), torch.zeros(1, self.hidden_size))
+        
         # List of tuples: (node, cell state)
         children = []
 
@@ -115,8 +120,10 @@ class TreeLSTM(nn.Module):
         inputH = [vec[0].value for vec in children]
         inputC = [vec[1] for vec in children]
 
-        value = node.value
-
+        for i, hidden in enumerate(inputH):
+            if hidden is None:
+                inputH[i] = torch.zeros(1, self.hidden_size)
+        
         found = False
 
         # Feed the inputs into the TreeCell with the appropriate number of children.
@@ -128,7 +135,8 @@ class TreeLSTM(nn.Module):
 
         if not found:
             print("WHAAAAAT?")
-            raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to live.")
+            raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to"
+                             " live.")
 
         # Set our encoded vector as the root of the new tree
         rootNode = Node(newH)

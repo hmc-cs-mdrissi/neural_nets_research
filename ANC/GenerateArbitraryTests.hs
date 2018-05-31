@@ -3,7 +3,7 @@ module GenerateArbitraryTests where
 import Test.QuickCheck
 import Data.Aeson
 
-import ArbitraryTests
+import ArbitraryForTests
 import LambdaParser
 import ForParser
 import ForInterp

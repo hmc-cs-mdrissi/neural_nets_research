@@ -185,12 +185,14 @@ EOS = "EOS"
 
 def binarize_tree(tree):
     new_tree = Node(tree.value)
+    new_tree.children = [Node(None), Node(None)]
     curr_node = new_tree
+    
     for child in tree.children:
         new_node = binarize_tree(child)
-        
+                
         if curr_node is new_tree:
-            curr_node.children.append(new_node)
+            curr_node.children[0] = new_node
         else:
             curr_node.children[1] = new_node
         
@@ -198,17 +200,35 @@ def binarize_tree(tree):
 
     return new_tree
 
+def convert_binary_tree_to_tree(binary_tree):
+    pass
+
+def clean_binarized_tree(tree):
+    if len(tree.children) == 2:
+        if tree.children[0].value is None and tree.children[1].value is None:
+            tree.children = []
+        elif tree.children[1].value is None:
+            tree.children = [tree.children[0]]
+    elif len(tree.children) == 1:
+        if tree.children[0].value is None:
+            tree.children = []
+            
+    for child in tree.children:
+        clean_binarized_tree(child)
+    
+    return tree
+
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
     """
         Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
         to the value is found. value should not correspond to the eos_token. Instead vectorization
-        should occur prior to adding eos_tokens.
+        should occur prior to adding eos_tokens. Nodes with value None are simply returned as None.
     """
     if val == EOS:
         if not eos_token:
             raise ValueError("EOS tokens should not be present while eos_token is false")
         
-        index = num_ints + num_vars + ops[val]
+        index = num_ints + num_vars + len(ops.keys())
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
@@ -220,18 +240,18 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
         eos_bonus = 1 if eos_token else 0
         return make_one_hot(num_vars + num_ints + len(ops.keys()) + eos_bonus, index)
 
-    return index
+    return torch.LongTensor([index])
 
 def make_one_hot(len, index):
     vector = torch.zeros(len)
     vector[index] = 1
-    return Variable(vector)
+    return vector
 
 def un_one_hot(vector):
-    return int(vector.data.nonzero())
+    return int(vector.nonzero())
 
 def map_tree(func, tree):
-    new_tree = Node(func(tree.value))
+    new_tree = Node(func(tree.value) if tree.value is not None else tree.value)
     new_tree.children.extend(map(partial(map_tree, func), tree.children))
     return new_tree
 
@@ -250,9 +270,12 @@ def add_eos(program, num_children=None):
     else:
         return program.append(EOS)
 
-def add_eos_tree(program, num_children):
+def add_eos_tree(tree, num_children):
     # Loop through children
-    for child in tree.children:
+    for i, child in enumerate(tree.children):
+        if child is None:
+            tree.children[i] = Node(EOS)
+        
         # Recursively add EOS to children
         add_eos(child, num_children)
 
@@ -268,7 +291,9 @@ def print_tree(tree):
     
     :param tree: the tree to print
     """
-    print(int(tree.value))
+    if tree.value is not None:
+        print(int(tree.value))
+    
     for child in tree.children:
         print_tree(child)
     
@@ -426,25 +451,21 @@ def pretty_print_tree(tree):
     """
     pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
     
-    
 def get_val(value):
     """
     Extract the integer value of the input (or keep it as a string it it's not an integer/tensor)
     
-    :param value: an integer, tensor, or Variable (with one integer element)
+    :param value: an integer or tensor (with one integer element)
     """
-    if type(value) is torch.autograd.variable.Variable:
-        return int(value.data[0])
-    elif type(value) is torch.LongTensor:
-        return int(value[0])
+    if type(value) is torch.Tensor:
+        return int(value)
     else:
         return value
     
-        
 def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if isinstance(program, Node):
         return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
-                                           one_hot=one_hot), program)
+                                               one_hot=one_hot), program)
     else:
         program = map(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
                                              one_hot=one_hot), program)

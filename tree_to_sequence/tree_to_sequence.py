@@ -8,7 +8,7 @@ class TreeToSequence(nn.Module):
       appear in batches and most also output non-batched tensors.
     """
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size):
-        super(TreeToSequence, self).__init__()
+        super().__init__()
         self.encoder = encoder
         self.decoder = decoder
 
