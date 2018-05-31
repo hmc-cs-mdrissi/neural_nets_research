@@ -169,17 +169,17 @@ def make_tree_coffeescript(json, long_base_case=True):
     pass
 
 def make_tree_java(json):
-    pass
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
-def make_tree_csharp(json):
-    pass
+def make_tree_csharp(json, long_base_case=True):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+
+def canonicalize_csharp(tree):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 # TODO: Canonicalizing trees for java/csharp.
 def canonicalize_java(tree):
-    pass
-
-def canonicalize_csharp(tree):
-    pass
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 EOS = "EOS"
 
@@ -424,7 +424,22 @@ def pretty_print_tree(tree):
     
     :param tree: the tree to print
     """
-    pptree.print_tree(map_tree(lambda val: str(int(val)), tree), nameattr="value")
+    pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
+    
+    
+def get_val(value):
+    """
+    Extract the integer value of the input (or keep it as a string it it's not an integer/tensor)
+    
+    :param value: an integer, tensor, or Variable (with one integer element)
+    """
+    if type(value) is torch.autograd.variable.Variable:
+        return int(value.data[0])
+    elif type(value) is torch.LongTensor:
+        return int(value[0])
+    else:
+        return value
+    
         
 def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     if isinstance(program, Node):
