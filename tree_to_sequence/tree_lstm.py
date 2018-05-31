@@ -81,7 +81,6 @@ class TreeLSTM(nn.Module):
 
     Takes in a tree where each node has a value and a list of children.
     Produces a tree of the same size where the value of each node is now encoded.
-
     '''
 
     def __init__(self, input_size, hidden_size, valid_num_children):

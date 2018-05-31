@@ -41,7 +41,6 @@ class TreeEncoder(nn.Module):
 
         """
         if self.use_embedding:
-#             map_tree(lambda node: print(node), tree)
             tree = map_tree(lambda node: self.embedding(node).squeeze(0), tree)
             
         if self.dropout:
@@ -54,7 +53,6 @@ class TreeEncoder(nn.Module):
             tree, cell_state = lstm(tree)
             hiddens.append(tree.value)
             cell_states.append(cell_state)
-
 
         hiddens = torch.stack(hiddens)
         cell_states = torch.stack(cell_states)

@@ -4,8 +4,8 @@ from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
 from tree_to_sequence.tree_to_tree import TreeToTree
 
 class TreeToTreeAttention(nn.Module):
-    def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass=32, max_size=50,
-                 max_num_children=2, alignment_size=50, align_type=1):
+    def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass,
+                 alignment_size=50, align_type=1):
         """
         Translates an encoded representation of one tree into another
         """
@@ -15,7 +15,6 @@ class TreeToTreeAttention(nn.Module):
         self.nclass = nclass
         self.encoder = encoder
         self.decoder = decoder
-        self.max_size = max_size
         self.max_num_children = max_num_children
         self.align_type = align_type
         
@@ -23,7 +22,6 @@ class TreeToTreeAttention(nn.Module):
         self.EOS_value = nclass
         
         # Useful functions
-        self.loss_func = nn.CrossEntropyLoss()
         self.softmax = nn.Softmax(0)
         self.tanh = nn.Tanh()
         
@@ -34,6 +32,7 @@ class TreeToTreeAttention(nn.Module):
             self.attention_alignment_vector = nn.Linear(alignment_size, 1)
         elif align_type == 1:
             self.attention_hidden = nn.Linear(hidden_size, hidden_size)
+            
         self.register_buffer('et', torch.zeros(1, hidden_size))
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         
@@ -55,21 +54,23 @@ class TreeToTreeAttention(nn.Module):
         loss = 0
         
         # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
-        unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, None, 0)]
+        unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, 0, 0)]
                 
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
             decoder_hiddens, decoder_cell_states, targetNode, parent_val, child_index = \
             unexpanded.pop()
+            
             # Use attention and past hidden state to generate scores
-            attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
+            decoder_hidden = decoder_hiddens[-1].unsqueeze(0)
+            attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
             # Calculate loss
-            loss = loss + self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
+            loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
                 
             # If we have an EOS, there are no children to generate
             if int(targetNode.value) == self.EOS_value:
@@ -100,7 +101,7 @@ class TreeToTreeAttention(nn.Module):
 
         return loss
        
-    def forward_prediction(self, input_tree):
+    def forward_prediction(self, input_tree, max_size=50):
         """
         Generate an output tree given an input tree
         """
@@ -131,6 +132,7 @@ class TreeToTreeAttention(nn.Module):
             unexpanded.pop()  
             
             # Use attention and pas hidden state to make a prediction
+            decoder_hidden = decoder_hiddens[-1].unsqueeze(0)
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
@@ -149,15 +151,12 @@ class TreeToTreeAttention(nn.Module):
                 continue
                 
             decoder_input = torch.cat((self.embedding(next_input), et), 1)
+            parent = next_input
             
-            for i in range(self.max_num_children):
-                # Parent node of a node's children is that node
-                parent = next_input
-                new_child_index = i
-                    
+            for i in range(self.decoder.number_children(parent)):                    
                 # Get hidden state and cell state which will be used to generate this node's 
                 # children
-                child_hiddens, child_cell_states = self.decoder.get_next(parent, new_child_index, 
+                child_hiddens, child_cell_states = self.decoder.get_next(parent, i, 
                                                                          decoder_input, 
                                                                          decoder_hiddens, 
                                                                          decoder_cell_states)
