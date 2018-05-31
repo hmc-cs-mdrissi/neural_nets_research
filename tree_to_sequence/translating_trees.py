@@ -110,22 +110,37 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
 
     return parentNode
 
-EOS = "EOS"
 
-def binarize_tree(tree):
+# Hey Mehdi, not sure why you got rid of the eos insertions in the function, but binarization was broken so I added it back.
+# (with slight modifications to play nicely with the other changes you made in other functions).
+# Hopefully the new comments explain better why I think it makes sense here.
+def binarize_tree(tree, eos_token=False):
+    """
+    Binarize a tree using the left-child right-sibling representation.
+    Also add in EOS tokens.  (We need to add EOS tokens here rather than later, since otherwise there's
+    no easy way to differentiate between a node with one child that's a "real" child and a node with one
+    child that's an EOS.
+    
+    :param tree: the tree which to be binarized
+    :param eos_token: the EOS value to be inserted (int) or False, if we don't want to insert EOS
+    
+    
+    """
     new_tree = Node(tree.value)
     curr_node = new_tree
     for child in tree.children:
-        new_node = binarize_tree(child)
-        
-        if curr_node is new_tree:
+        new_node = binarize_tree(child, eos_token=eos_token)
+        if curr_node is new_tree or not eos_token:
             curr_node.children.append(new_node)
         else:
             curr_node.children[1] = new_node
-        
         curr_node = new_node 
-
+    # While the current child doesn't have 2 children, add and EOS
+    if eos_token:
+        while len(new_tree.children) < 2:
+            new_tree.children.append(Node(eos_token))
     return new_tree
+
 
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
     # don't change eos value

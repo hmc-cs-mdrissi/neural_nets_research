@@ -51,10 +51,10 @@ class ForLambdaDataset(Dataset):
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
         
         if binarize and not input_as_seq:
-            for_progs = [binarize_tree(prog, add_eos=input_token_count if eos_tokens else False) for 
+            for_progs = [binarize_tree(prog, eos_token=input_token_count if eos_tokens else False) for 
                          prog in for_progs]
         if binarize and not output_as_seq:
-            lambda_progs = [binarize_tree(prog, add_eos=output_token_count if eos_tokens else False) 
+            lambda_progs = [binarize_tree(prog, eos_token=output_token_count if eos_tokens else False) 
                             for prog in lambda_progs]
         for_size = num_vars + num_ints + len(for_ops.keys())
         lambda_size = num_vars + num_ints + len(lambda_ops.keys())
