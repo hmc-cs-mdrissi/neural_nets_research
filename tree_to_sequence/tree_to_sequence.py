@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 class TreeToSequence(nn.Module):
     """
@@ -9,7 +8,7 @@ class TreeToSequence(nn.Module):
       appear in batches and most also output non-batched tensors.
     """
     def __init__(self, encoder, decoder, hidden_size, nclass, embedding_size):
-        super(TreeToSequence, self).__init__()
+        super().__init__()
         self.encoder = encoder
         self.decoder = decoder
 
@@ -43,12 +42,13 @@ class TreeToSequence(nn.Module):
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
 
         target_length, = target.size()
-        SOS_token = Variable(self.SOS_token)
-        decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
+        decoder_input = self.embedding(self.SOS_token).squeeze(0) # 1 x embedding_size
         loss = 0
 
         for i in range(target_length):
-            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states)) # num_layers x 1 x hidden_size
+            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, 
+                                                                (decoder_hiddens,
+                                                                 decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1] # 1 x hidden_size
             log_odds = self.output_log_odds(decoder_hidden)
 
@@ -64,8 +64,8 @@ class TreeToSequence(nn.Module):
         return loss
 
     """
-        This is just an alias for point_wise_prediction, so that training code that assumes the presence
-        of a forward_train and forward_prediction works.
+        This is just an alias for point_wise_prediction, so that training code that assumes the 
+        presence of a forward_train and forward_prediction works.
     """
     def forward_prediction(self, input, maximum_length=20):
         return self.point_wise_prediction(input, maximum_length)
@@ -75,12 +75,13 @@ class TreeToSequence(nn.Module):
         decoder_hiddens = decoder_hiddens.unsqueeze(1)
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
 
-        SOS_token = Variable(self.SOS_token)
-        decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
+        decoder_input = self.embedding(self.SOS_token).squeeze(0) # 1 x embedding_size
         output_so_far = []
 
         for _ in range(maximum_length):
-            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
+            decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, 
+                                                                (decoder_hiddens, 
+                                                                 decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1]
             log_odds = self.output_log_odds(decoder_hidden)
 
@@ -99,8 +100,7 @@ class TreeToSequence(nn.Module):
         decoder_hiddens = decoder_hiddens.unsqueeze(1)
         decoder_cell_states = decoder_cell_states.unsqueeze(1)
 
-        SOS_token = Variable(self.SOS_token)
-        decoder_input = self.embedding(SOS_token).squeeze(0) # 1 x embedding_size
+        decoder_input = self.embedding(self.SOS_token).squeeze(0) # 1 x embedding_size
         word_inputs = []
 
         for _ in range(beam_width):
@@ -115,17 +115,21 @@ class TreeToSequence(nn.Module):
                     continue
 
                 decoder_input, decoder_hiddens, decoder_cell_states = word_inputs[i][3]
-                decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, (decoder_hiddens, decoder_cell_states))
+                decoder_hiddens, decoder_cell_states = self.decoder(decoder_input, 
+                                                                    (decoder_hiddens, 
+                                                                     decoder_cell_states))
                 decoder_hidden = decoder_hiddens[-1]
                 log_odds = self.output_log_odds(decoder_hidden).squeeze(0) # nclasses
                 log_probs = self.log_softmax(log_odds)
 
                 log_value, next_input = log_probs.topk(beam_width) # beam_width, beam_width
-                decoder_input = self.embedding(next_input.unsqueeze(1)) # beam_width x 1 x embedding size
+                decoder_input = self.embedding(next_input.unsqueeze(1)) 
 
-                new_word_inputs.extend((word_inputs[i][0] + float(log_value[k]), word_inputs[i][1] + [int(next_input[k])],
-                                        int(next_input[k]) != self.EOS_value, [decoder_input[k], decoder_hiddens, decoder_cell_states])
+                new_word_inputs.extend((word_inputs[i][0] + float(log_value[k]), 
+                                        word_inputs[i][1] + [int(next_input[k])],
+                                        int(next_input[k]) != self.EOS_value, 
+                                        [decoder_input[k], decoder_hiddens, decoder_cell_states])
                                         for k in range(beam_width))
 
-            word_inputs = sorted(new_word_inputs, key=lambda word_input: word_input[0])[-beam_width:]
+            word_inputs = sorted(new_word_inputs, key=lambda word_input:word_input[0])[-beam_width:]
         return word_inputs[-1][1]

@@ -5,7 +5,7 @@ class TreeDecoder(nn.Module):
     """
     Decoder which produces nodes of a tree.
     """
-    def __init__(self, embedding_size, hidden_size, max_num_children, nclass=32):
+    def __init__(self, embedding_size, hidden_size, max_num_children, nclass):
         """
         :param embedding_size: length of the encoded representation of a node
         :param hidden_size: hidden state size
@@ -17,13 +17,15 @@ class TreeDecoder(nn.Module):
                 
         self.loss_func = nn.CrossEntropyLoss()
         
-        # Linear layer to calculate log odds
+        # Linear layer to calculate log odds. The one is to account for the eos token.
         self.output_log_odds = nn.Linear(hidden_size, nclass + 1)        
         
         # Create a separate lstm for each child index
         self.lstm_list = nn.ModuleList()
         
-        for i in range(max_num_children):
+        self.max_num_children = max_num_children
+        
+        for i in range(self.max_num_children):
             self.lstm_list.append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
     
     def calculate_loss(self, parent, child_index, et, true_value):
@@ -43,7 +45,7 @@ class TreeDecoder(nn.Module):
     def make_prediction(self, parent, child_index, et):
         log_odds = self.output_log_odds(et)
         _, max_index = torch.max(log_odds, 1)
-        return max_index.squeeze(0)
+        return max_index
     
     def get_next(self, parent, child_index, input, hidden_state, cell_state):
         """
@@ -58,6 +60,9 @@ class TreeDecoder(nn.Module):
         """
         return self.lstm_list[child_index](input, (hidden_state, cell_state))
     
+    def number_children(self, parent):
+        return self.max_num_children
+    
     def initialize_forget_bias(self, bias_value):
         """
         Initialize the forget bias to a certain value. Primary purpose is that initializing
@@ -67,5 +72,5 @@ class TreeDecoder(nn.Module):
         :param bias_value: value the forget bias wil be set to
         """
         for lstm in self.lstm_list:
-            nn.init.constant(lstm.bias_ih, bias_value)
-            nn.init.constant(lstm.bias_hh, bias_value)
+            nn.init.constant_(lstm.bias_ih, bias_value)
+            nn.init.constant_(lstm.bias_hh, bias_value)

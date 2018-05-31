@@ -29,10 +29,7 @@ def make_var_name(var_name):
     else:
         return var_name
 
-# TODO: Split make_tree into one function per language. Having a make_tree for all languages is
-# going to be problematic as we keep on adding languages.
-    
-def make_tree(json, long_base_case=True, is_lambda_calculus=False):
+def general_base_cases(json):
     # First base case - variable name
     if isinstance(json, string_types):
         return Node(make_var_name(json))
@@ -40,7 +37,77 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     # Second base case - variable value
     if type(json) is int:
         return Node(json)
+    
+    return None
 
+def make_tree_for(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
+    tag = "<" + json["tag"].upper() + ">"
+    parentNode = Node(tag)
+    
+    children = json["contents"]
+    
+    if not long_base_case:
+        if tag == '<CONST>' or tag == '<VAR>':
+            return Node(children)
+    
+    # Special case for assignment.
+    if tag == '<ASSIGN>':
+        var_name = children[0]
+        expr = make_tree_for(children[1], long_base_case=long_base_case)
+        
+        if long_base_case:
+            var = Node('<VAR>')
+            var.children.append(Node(var_name))
+        else:
+            var = Node(var_name)
+        
+        parentNode.children.extend([var, expr])
+        return parentNode
+    
+    if type(children) is list:
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_for(child, long_base_case=long_base_case), 
+                                       children))
+    else:
+        parentNode.children.append(make_tree_for(children, long_base_case=long_base_case))
+
+    return parentNode
+    
+def make_tree_lambda(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
+    tag = "<" + json["tag"].upper() + ">"
+    parentNode = Node(tag)
+    
+    children = json["contents"]
+    
+    if not long_base_case:
+        if tag == '<CONST>' or tag == '<VAR>':
+            return Node(children)
+        
+    if type(children) is list:
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_lambda(child, long_base_case=long_base_case), 
+                                       children))
+    else:
+        parentNode.children.append(make_tree_lambda(children, long_base_case=long_base_case))
+
+    return parentNode 
+    
+def make_tree_lambda_calculus(json, long_base_case=True):
+    check_general_base_cases = general_base_cases(json)
+    
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
     # Third base case for head of abstraction.
     if type(json) is list:
         var_type = "<" + json[1]["tag"].upper() + ">"
@@ -54,98 +121,119 @@ def make_tree(json, long_base_case=True, is_lambda_calculus=False):
     if type(json) is bool:
         bool_str = "<" + str(json).upper() + ">"
         return Node(bool_str)
-
+    
     tag = "<" + json["tag"].upper() + ">"
     parentNode = Node(tag)
 
     # Fifth base for nil.
     if tag == '<NIL>':
         return parentNode
-
+    
     children = json["contents"]
     
     if not long_base_case:
-        if tag == '<CONST>' or tag == '<NUMBER>' or tag == '<VARIABLE>' or tag == '<VAR>':
+        if tag == '<NUMBER>' or tag == '<VARIABLE>':
             return Node(children)
-    
-    # Special case for assignment.
-    if tag == '<ASSIGN>':
-        var_name = children[0]
-        expr = make_tree(children[1], long_base_case=long_base_case,
-                         is_lambda_calculus=is_lambda_calculus)
         
-        if long_base_case:
-            var = Node('<VAR>')
-            var.children.append(Node(var_name))
-        else:
-            var = Node(var_name)
-        
-        parentNode.children.extend([var, expr])
-        return parentNode
-
     # Special case for unary operators.
     if tag == '<UNARYOPER>':
         unary_op = "<" + children[0].upper() + ">"
-        unary_operand = make_tree(children[1], long_base_case=long_base_case,
-                                  is_lambda_calculus=is_lambda_calculus)
+        unary_operand = make_tree_lambda_calculus(children[1], long_base_case=long_base_case)
         parentNode.children.extend([Node(unary_op), unary_operand])
         return parentNode
 
     # Special case for binary operators.
     if tag == '<BINARYOPER>':
         binary_op = "<" + children[1].upper() + ">"
-        binary_operand1 = make_tree(children[0], long_base_case=long_base_case,
-                                    is_lambda_calculus=is_lambda_calculus)
-        binary_operand2 = make_tree(children[2], long_base_case=long_base_case,
-                                    is_lambda_calculus=is_lambda_calculus)
+        binary_operand1 = make_tree_lambda_calculus(children[0], long_base_case=long_base_cases)
+        binary_operand2 = make_tree_lambda_calculus(children[2], long_base_case=long_base_case)
         parentNode.children.extend([binary_operand1, Node(binary_op), binary_operand2])
         return parentNode
-
+    
     if type(children) is list:
-        parentNode.children.extend(map(lambda child: make_tree(child, long_base_case=long_base_case,
-                                   is_lambda_calculus=is_lambda_calculus), children))
+        parentNode.children.extend(map(lambda child: 
+                                       make_tree_lambda_calculus(child, 
+                                                                 long_base_case=long_base_case), 
+                                       children))
     else:
-        parentNode.children.append(make_tree(children, long_base_case=long_base_case,
-                                             is_lambda_calculus=is_lambda_calculus))
+        parentNode.children.append(make_tree_lambda_calculus(children, 
+                                                             long_base_case=long_base_case))
 
-    return parentNode
+    return parentNode    
+
+# TODO: All of the make_tree's with pass.
+def make_tree_javascript(json, long_base_case=True):
+    pass
+
+def make_tree_coffeescript(json, long_base_case=True):
+    pass
+
+def make_tree_java(json):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+
+def make_tree_csharp(json, long_base_case=True):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+
+def canonicalize_csharp(tree):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+
+# TODO: Canonicalizing trees for java/csharp.
+def canonicalize_java(tree):
+    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 
-# Hey Mehdi, not sure why you got rid of the eos insertions in the function, but binarization was broken so I added it back.
-# (with slight modifications to play nicely with the other changes you made in other functions).
-# Hopefully the new comments explain better why I think it makes sense here.
 def binarize_tree(tree, eos_token=False):
     """
     Binarize a tree using the left-child right-sibling representation.
-    Also add in EOS tokens.  (We need to add EOS tokens here rather than later, since otherwise there's
-    no easy way to differentiate between a node with one child that's a "real" child and a node with one
-    child that's an EOS.
+    To deal with the issue of a node potentially having a right child, but not a left child,
+    None is used. None is fine for the input tree. For the output tree, None should be replaced
+    by EOS and add_eos will take care of that. Some extra Nones may end up present and can
+    be cleaned out with clean_binarized_tree. Cleaning only matters for the input tree
+    as any extra Nones would end up replaced by EOS anyway.
     
-    :param tree: the tree which to be binarized
-    :param eos_token: the EOS value to be inserted (int) or False, if we don't want to insert EOS
-    
-    
+    :param tree: the tree which to be binarized    
     """
     new_tree = Node(tree.value)
+    new_tree.children = [Node(None), Node(None)]
     curr_node = new_tree
+    
     for child in tree.children:
-        new_node = binarize_tree(child, eos_token=eos_token)
-        if curr_node is new_tree or not eos_token:
-            curr_node.children.append(new_node)
+        new_node = binarize_tree(child)
+                
+        if curr_node is new_tree:
+            curr_node.children[0] = new_node
         else:
             curr_node.children[1] = new_node
         curr_node = new_node 
-    # While the current child doesn't have 2 children, add and EOS
-    if eos_token:
-        while len(new_tree.children) < 2:
-            new_tree.children.append(Node(eos_token))
+    
     return new_tree
 
+def clean_binarized_tree(tree):
+    if len(tree.children) == 2:
+        if tree.children[0].value is None and tree.children[1].value is None:
+            tree.children = []
+        elif tree.children[1].value is None:
+            tree.children = [tree.children[0]]
+    elif len(tree.children) == 1:
+        if tree.children[0].value is None:
+            tree.children = []
+            
+    for child in tree.children:
+        clean_binarized_tree(child)
+    
+    return tree
 
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
-    # don't change eos value
-    if val is eos_token:
-        index = val  
+    """
+        Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
+        to the value is found. value should not correspond to the eos_token. Instead vectorization
+        should occur prior to adding eos_tokens. Nodes with value None are simply returned as None.
+    """
+    if val == EOS:
+        if not eos_token:
+            raise ValueError("EOS tokens should not be present while eos_token is false")
+        
+        index = num_ints + num_vars + len(ops.keys())
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
@@ -157,52 +245,60 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
         eos_bonus = 1 if eos_token else 0
         return make_one_hot(num_vars + num_ints + len(ops.keys()) + eos_bonus, index)
 
-    return index
+    return torch.LongTensor([index])
 
 def make_one_hot(len, index):
     vector = torch.zeros(len)
     vector[index] = 1
-    return Variable(vector)
+    return vector
 
 def un_one_hot(vector):
-    return int(vector.data.nonzero())
+    return int(vector.nonzero())
 
 def map_tree(func, tree):
-    new_tree = Node(func(tree.value))
+    new_tree = Node(func(tree.value) if tree.value is not None else tree.value)
     new_tree.children.extend(map(partial(map_tree, func), tree.children))
     return new_tree
 
-def add_eos(tree, eos, num_children, one_hot=False):
+def add_eos(program, num_children=None):
     """
-    Add in EOS tokens at the end of all existing branches in a tree
+    Add in EOS tokens at the end of all existing branches in a tree or to end of sequence as
+    needed.
     
-    :param tree: the tree which will have eos inserted into it
-    :param eos: the EOS value to be inserted (int)
-    :param num_children: the maximum number of children a node can have (int)
-    :param one_hot: whether to make the values one hot vectors.
-    :returns tree: input tree, but with EOS tokens now (also modifies the original tree in-place)
+    :param program: the program which will have eos inserted into it
+    :param num_children: the maximum number of children a node can have (int). Only needed
+                         if you are doing this on a tree.
+    :returns program: input program, but with EOS tokens now (also modifies the original in-place)
     """
+    if isinstance(program, Node):            
+        return add_eos_tree(program, num_children)
+    else:
+        return program.append(EOS)
+
+def add_eos_tree(tree, num_children):
     # Loop through children
-    for child in tree.children:
+    for i, child in enumerate(tree.children):
+        if child is None:
+            tree.children[i] = Node(EOS)
+        
         # Recursively add EOS to children
-        add_eos(child, eos, num_children, one_hot)
-    
+        add_eos(child, num_children)
+
     # Add enough EOS nodes that the final child count is num_children
     while len(tree.children) < num_children:
-        if one_hot:
-            tree.children.append(Node(make_one_hot(eos + 1, eos)))
-        else:
-            tree.children.append(Node(eos))
+        tree.children.append(Node(EOS))
 
     return tree
-
+        
 def print_tree(tree):
     """
     Print out a tree as a sequence of values
     
     :param tree: the tree to print
     """
-    print(int(tree.value))
+    if tree.value is not None:
+        print(int(tree.value))
+    
     for child in tree.children:
         print_tree(child)
     
@@ -276,10 +372,12 @@ def pretty_print_attention_t2t(attention_probs, input_tree, target_tree, thresho
     This function was designed for the identity dataset, 
     where the input and target trees are identical.
     
-    :param attention_probs: a list of vectors of length equal to the input tree; the attention mechanism probabilities
+    :param attention_probs: a list of vectors of length equal to the input tree; the attention 
+                            mechanism probabilities
     :param input_tree: input program, in tree form 
     :param target_tree: target program, in tree form 
-    :param threshold: probability threshold above which we mark the attention as having focused on a location in the input tree
+    :param threshold: probability threshold above which we mark the attention as having focused on a 
+                      location in the input tree
     """
     attention_list = extract_attention(attention_probs, threshold)
     
@@ -350,36 +448,36 @@ def pretty_print_attention_tree(attention_list, input_tree, parent, write_index,
         
     return curr_index
         
-# def pretty_print_tree(tree):
-#     """
-#     Print a tree out with a visualized tree structure.
-    
-#     :param tree: the tree to print
-#     """
-#     pptree.print_tree(tree, nameattr="value")
-# Hey Mehdi, I changed this func back to the original version b/c this version doesn't
-# play well with Variables.  If there's an easy way around it, feel free to add this back.
-
 def pretty_print_tree(tree):
-    root_node = pptree.Node(str(get_val(tree.value)))
-    for child in tree.children:
-        make_pretty_tree(child, root_node)
-    pptree.print_tree(root_node)
-        
-def make_pretty_tree(node, parent):
-    new_node = pptree.Node(str(get_val(node.value)), parent)
-    for child in node.children:
-        make_pretty_tree(child, new_node)
-        
+    """
+    Print a tree out with a visualized tree structure.
+    
+    :param tree: the tree to print
+    """
+    pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
+    
 def get_val(value):
-    if type(value) is torch.autograd.variable.Variable:
-        return value.data[0]
+    """
+    Extract the integer value of the input (or keep it as a string it it's not an integer/tensor)
+    
+    :param value: an integer or tensor (with one integer element)
+    """
+    if type(value) is torch.Tensor:
+        return int(value)
     else:
         return value
-        
-def encode_tree(tree, num_vars, num_ints, ops, eos_token=False, one_hot=True):
-    return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
-                                           one_hot=one_hot), tree)
+    
+def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
+    if isinstance(program, Node):
+        return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
+                                               one_hot=one_hot), program)
+    else:
+        program = map(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
+                                             one_hot=one_hot), program)
+        if one_hot:
+            return torch.stack(program)
+        else:
+            return torch.LongTensor(program)
 
 def decode_tokens(seq, num_vars, num_ints, ops):
     reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))
@@ -413,40 +511,36 @@ class LambdaGrammar(IntEnum):
     VARAPP = 4
     CMP = 5
     TERM = 6
-    UNIT = 7
     
 class Lambda(IntEnum):
-    VAR = 0
-    CONST = 1
-    PLUS = 2
-    MINUS = 3
-    EQUAL = 4
-    LE = 5
-    GE = 6
-    IF = 7
-    LET = 8
-    UNIT = 9
+    ROOT = 0
+    VAR = 1
+    CONST = 2
+    PLUS = 3
+    MINUS = 4
+    EQUAL = 5
+    LE = 6
+    GE = 7
+    IF = 8
+    LET = 9
     LETREC = 10
     APP = 11
-    ROOT = 12
 
-# TODO: Once I've understood the full grammar stuff, fix it.
-def parent_to_category_LAMBDA(num_vars, num_ints, parent, only_ops=False):
+def parent_to_category_LAMBDA(num_vars, num_ints, parent):
     """
     Return the categories of output which can be produced by a certain parent index.
     
     :param num_vars: number of variables a program can use
     :param num_ints: number of ints a program can use
     :param parent: int, the value of the parent node 
-    :param only_ops: Should we only consider ops and ignore
     """    
     # If parent is an int or a variable name, we are done.
     if int(parent) <= num_ints + num_vars:
         return []
     
-    # If parent is an op, return the categories it can return
-    op_index = parent if only_ops else parent - num_vars - num_ints
+    op_index = int(parent) - num_vars - num_ints
     lambda_grammar = {
+        Lambda.ROOT: [LambdaGrammar.TERM],
         Lambda.VAR: [LambdaGrammar.VAR_NAME], 
         Lambda.CONST: [LambdaGrammar.INT], 
         Lambda.PLUS: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
@@ -456,11 +550,9 @@ def parent_to_category_LAMBDA(num_vars, num_ints, parent, only_ops=False):
         Lambda.GE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.IF: [LambdaGrammar.CMP, LambdaGrammar.TERM, LambdaGrammar.TERM],
         Lambda.LET: [LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
-        Lambda.UNIT: [],
         Lambda.LETREC: [LambdaGrammar.VAR_NAME, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, 
                         LambdaGrammar.TERM],
-        Lambda.APP: [LambdaGrammar.VARAPP, LambdaGrammar.EXPR],
-        Lambda.ROOT: [LambdaGrammar.TERM]
+        Lambda.APP: [LambdaGrammar.VARAPP, LambdaGrammar.EXPR]
     }
     
     return lambda_grammar[op_index]
@@ -470,12 +562,11 @@ def category_to_child_LAMBDA(num_vars, num_ints, category):
     Take a category of output, and return a list of new tokens which can be its children in the 
     Lambda language.
     
-    :param category: category of output generated next
     :param num_vars: number of variables a program can use
     :param num_ints: number of ints a program can use
+    :param category: category of output generated next
     """
     n = num_ints + num_vars
-    EOS = num_ints + num_vars + 12 # 12 for the 12 Lambda ops
     lambda_grammar = {
         LambdaGrammar.INT: range(num_ints),
         LambdaGrammar.VAR_NAME: range(num_ints, n),
@@ -484,15 +575,13 @@ def category_to_child_LAMBDA(num_vars, num_ints, category):
                                              Lambda.CONST]],
         LambdaGrammar.VARAPP: [x + n for x in [Lambda.VAR, Lambda.APP]] + list(range(num_ints, n)),
         LambdaGrammar.CMP: [x + n for x in [Lambda.EQUAL, Lambda.LE, Lambda.GE]],
-        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.VAR, Lambda.CONST, 
-                                             Lambda.PLUS, Lambda.MINUS, Lambda.UNIT, Lambda.IF, 
-                                             Lambda.APP]] + list(range(num_ints, n)),
-        LambdaGrammar.UNIT: [x + n for x in [Lambda.VAR, Lambda.UNIT]] + list(range(num_ints, n))
+        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.EXPR, Lambda.UNIT, 
+                                             Lambda.IF, Lambda.APP]],
     }
+    
     return lambda_grammar[category]
 
 class ForGrammar(IntEnum):
-    EOS = 0
     INT = 1
     VAR_NAME = 2
     VAR = 3
@@ -502,17 +591,18 @@ class ForGrammar(IntEnum):
     STATEMENT = 7
     
 class For(IntEnum):
-    VAR = 0
-    CONST = 1
-    PLUS = 2
-    MINUS = 3
-    EQUAL = 4
-    LE = 5
-    GE = 6
-    ASSIGN = 7
-    IF = 8
-    SEQ = 9
-    FOR = 10
+    ROOT = 0
+    VAR = 1
+    CONST = 2
+    PLUS = 3
+    MINUS = 4
+    EQUAL = 5
+    LE = 6
+    GE = 7
+    ASSIGN = 8
+    IF = 9
+    SEQ = 10
+    FOR = 11
 
 def parent_to_category_FOR(num_vars, num_ints, parent):
     """
@@ -522,16 +612,15 @@ def parent_to_category_FOR(num_vars, num_ints, parent):
     :param num_ints: number of ints a program can use
     :param parent: int, the value of the parent node 
     """
-    # If we're at the root of our tree, we can generate mostly anything
-    if parent is None:
-        return ForGrammar.STATEMENT
     
-    # If parent is an int or a variable name, we have EOS next
+    # If parent is an int or a variable name, we are done.
     if int(parent) in range(num_ints + num_vars):
-        return ForGrammar.EOS
+        return []
+    
     # If parent is an op, return the class of outputs it can return
     op_index = int(parent) - num_vars - num_ints
     for_grammar = {
+        For.ROOT: [ForGrammar.STATEMENT],
         For.VAR: [ForGrammar.VAR_NAME], 
         For.CONST: [ForGrammar.INT], 
         For.PLUS: [ForGrammar.EXPR, ForGrammar.EXPR],
@@ -545,11 +634,8 @@ def parent_to_category_FOR(num_vars, num_ints, parent):
         For.FOR: [ForGrammar.VAR_NAME, ForGrammar.EXPR, ForGrammar.CMP, ForGrammar.EXPR, 
                   ForGrammar.STATEMENT]
     }
-    # If we're asking for a child at an index greater than the number of children an op gives,
-    # Just return EOS (this happens when an EOS token is a right-hand child)
-    if len(for_grammar[op_index]) <= child_index:
-        return ForGrammar.EOS
-    return for_grammar[op_index][child_index]
+    
+    return for_grammar[op_index]
     
 def category_to_child_FOR(num_vars, num_ints, category):
     """
@@ -561,9 +647,7 @@ def category_to_child_FOR(num_vars, num_ints, category):
     :param category: category of output generated next
     """
     n = num_ints + num_vars
-    EOS = num_ints + num_vars + 11 #11 for the 11 For ops
     for_grammar = {
-        ForGrammar.EOS: [EOS], 
         ForGrammar.INT: range(num_ints),
         ForGrammar.VAR_NAME: range(num_ints, n),
         ForGrammar.VAR: [x + n for x in [For.VAR]],
@@ -572,6 +656,7 @@ def category_to_child_FOR(num_vars, num_ints, category):
         ForGrammar.SINGLE: [x + n for x in [For.ASSIGN, For.IF, For.FOR]],
         ForGrammar.STATEMENT: [x + n for x in [For.ASSIGN, For.IF, For.FOR, For.SEQ]],
     }
+    
     return for_grammar[category]
 
 def translate_from_for(tree):
@@ -624,5 +709,3 @@ def translate_from_for(tree):
         return new_tree
     else:
         return tree
- 
-

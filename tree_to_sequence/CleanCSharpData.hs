@@ -20,7 +20,26 @@ remove_double_quotes prefix str = case T.splitOn prefix str of
                                     h : t -> T.intercalate prefix $ h : map (remove_third_real_quote . T.tail) t
                                     [] -> error "Not a possible situation."
 
+kill_single_quotes :: T.Text -> T.Text -> T.Text
+kill_single_quotes prefix str = case T.splitOn prefix str of
+                                    h : t -> T.intercalate (T.init prefix) $ h : map (remove_second_char) t
+                                    [] -> error "Not a possible situation."
+
+
+remove_second_char :: T.Text -> T.Text 
+remove_second_char str = if T.head str == '"' 
+                         then T.concat [T.singleton '\\', T.take 1 str, T.drop 2 str] -- if the string starts with ", escape it
+                         else 
+                            if T.take 2 str == T.pack "\\'"
+                            then T.drop 2 str-- if the string starts with \', remove the escape
+                            else
+                                if T.head str == '\\' 
+                                then T.concat [T.take 2 str, T.drop 3 str] -- keep all other escapes, which means we kill the third character
+                                else T.concat [T.take 1 str, T.drop 2 str] -- just chop out second char (') as usual
+
 main :: IO ()
 main = do [filename] <- getArgs
           programs <- readFile filename
-          putStrLn $ T.unpack $ remove_double_quotes "\"StringLiteralExpression\":" (T.pack programs)
+          let slightlyLessBrokenPrograms = T.unpack $ remove_double_quotes "\"StringLiteralExpression\":" (T.pack programs)
+          putStrLn $ T.unpack $ kill_single_quotes "\"CharacterLiteralExpression\":\"'" (T.pack slightlyLessBrokenPrograms)
+
