@@ -51,11 +51,10 @@ class TreeToSequence(nn.Module):
                                                                  decoder_cell_states))
             decoder_hidden = decoder_hiddens[-1] # 1 x hidden_size
             log_odds = self.output_log_odds(decoder_hidden)
-
-            loss += self.loss_func(log_odds, target[i])
+            loss += self.loss_func(log_odds, target[i].unsqueeze(0))
 
             if teacher_forcing:
-                next_input = target[i].unsqueeze(1)
+                next_input = target[i].unsqueeze(0)
             else:
                 _, next_input = log_odds.topk(1)
 

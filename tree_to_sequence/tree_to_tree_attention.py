@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
-from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
+from tree_to_sequence.translating_trees import ( Node, pretty_print_tree, Lambda )
 
 class TreeToTreeAttention(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass,
-                 alignment_size=50, align_type=1, max_size=50):
+                 root_value=-1, alignment_size=50, align_type=1, max_size=50):
         """
         Translates an encoded representation of one tree into another
         """
@@ -16,6 +16,7 @@ class TreeToTreeAttention(nn.Module):
         self.decoder = decoder
         self.align_type = align_type
         self.max_size = max_size
+        self.root_value = root_value
         
         # EOS is always the last token
         self.EOS_value = nclass
@@ -35,7 +36,8 @@ class TreeToTreeAttention(nn.Module):
         self.register_buffer('et', torch.zeros(1, hidden_size))
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         
-        self.embedding = nn.Embedding(nclass + 1, embedding_size)        
+        self.embedding = nn.Embedding(nclass + 1, embedding_size)  
+        self.i = 0 #TODO: for debugging only, remove late
 
     def forward_train(self, input_tree, target_tree, teacher_forcing=True):
         """
@@ -53,8 +55,10 @@ class TreeToTreeAttention(nn.Module):
         loss = 0
         
         # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
-        unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, 0, 0)]
-                
+        unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, self.root_value, 0)]
+        
+#         if not self.i % 4000:
+#             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
@@ -68,8 +72,14 @@ class TreeToTreeAttention(nn.Module):
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
-            # Calculate loss
+#             # Calculate loss
+#             if not self.i % 400:
+#                 print("trying to generate " + str(targetNode.value) + " from parent " + str(parent_val) + " at index " + str(child_index))
+#                 loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value, print_time=True)
+#             else:
             loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
+            
+#             self.i += 1
                 
             # If we have an EOS, there are no children to generate
             if int(targetNode.value) == self.EOS_value:
@@ -120,7 +130,7 @@ class TreeToTreeAttention(nn.Module):
         
         # Create stack of unexpanded nodes
         # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
-        unexpanded = [(decoder_hiddens, decoder_cell_states, tree, 0, 0)]
+        unexpanded = [(decoder_hiddens, decoder_cell_states, tree, self.root_value, 0)]
         
         if self.align_type <= 1:
             attention_hidden_values = self.attention_hidden(annotations)

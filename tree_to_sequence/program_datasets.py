@@ -74,22 +74,22 @@ max_children_lambda_calculus = 3
 
 class SyntacticProgramDataset(Dataset):
     def __init__(self, input_programs, output_programs, input_ops=None, output_ops=None, 
-                 max_children_output=None, num_vars=10, num_ints=11, binarize=False, 
+                         max_children_output=None, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, 
                  eos_token=True,  input_as_seq=False, output_as_seq=True, one_hot=False):
         if eos_token and not output_as_seq and max_children_output is None:
             raise ValueError("When the output is a tree and you want end of tree tokens, it is"
                              " necessary that max_children_output is not None.")
         
-        if binarize and not output_as_seq and not eos_token:
+        if binarize_input and binarize_output and not output_as_seq and not eos_token: #TODO: There's def some more specific criteria relevant here
             raise ValueError("When the output is a binarized tree, you must have end of tree "
                              "tokens.")
         
-        if binarize:
+        if binarize_input:
             input_programs = map(binarize_tree, input_programs)
             input_programs = map(clean_binarized_tree, input_programs)
-            
+        
+        if binarize_output:
             output_programs = map(binarize_tree, output_programs)
-            output_programs = map(clean_binarized_tree, output_programs)
         
         if input_as_seq:
             input_programs = map(lambda ls: filter(lambda x: x is not None, ls), 
@@ -101,13 +101,11 @@ class SyntacticProgramDataset(Dataset):
         
         if eos_token:
             output_programs = map(lambda prog: add_eos(prog, num_children=max_children_output), 
-                                  output_programs)
-            
+                                  output_programs)  
         input_programs = [encode_program(prog, num_vars, num_ints, input_ops, eos_token=eos_token, 
                                          one_hot=one_hot) for prog in input_programs]
         output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token, 
                                           one_hot=one_hot) for prog in output_programs]
-
         self.program_pairs = list(zip(input_programs, output_programs))
 
     def __len__(self):
@@ -117,15 +115,19 @@ class SyntacticProgramDataset(Dataset):
         return self.program_pairs[index]
     
 class ForLambdaDataset(SyntacticProgramDataset):
-    def __init__(self, path, num_vars=10, num_ints=11, binarize=False, eos_token=True, 
+    def __init__(self, path, num_vars=10, num_ints=11, binarize=False, binarize_input=False, binarize_output=False, eos_token=True, 
                  input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True):
-        progs_json = json.load(open(path))        
+        progs_json = json.load(open(path))
         for_progs = [make_tree_for(prog, long_base_case=long_base_case) for prog in progs_json]
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
-        max_children_output = 2 if binarize else max_children_lambda
+        # Temporary fix since I don't want to open the t2s or t2t notebooks since they're training.
+        if binarize:
+            binarize_input = binarize
+            binarize_output = binarize
+        max_children_output = 2 if binarize_output else max_children_lambda
         super().__init__(for_progs, lambda_progs, input_ops=for_ops, output_ops=lambda_ops,
                          max_children_output=max_children_output, num_vars=num_vars, 
-                         num_ints=num_ints, binarize=binarize, eos_token=eos_token,  
+                         num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, eos_token=eos_token,  
                          input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)
         
 class SemanticProgramDataset(Dataset):

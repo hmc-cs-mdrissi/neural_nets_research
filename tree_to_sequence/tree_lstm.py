@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 from tree_to_sequence.translating_trees import Node
@@ -26,11 +27,11 @@ class TreeCell(nn.Module):
         self.gates_children = nn.ModuleList()
         for _ in range(numGates):
             # One linear layer to handle the value of the node
-            value_linear = nn.Linear(input_size, hidden_size, bias = True)
+            value_linear = nn.Linear(input_size, hidden_size, bias=True)
             children_linear = nn.ModuleList()
             # One per child of the node
             for _ in range(num_children):
-                children_linear.append(nn.Linear(hidden_size, hidden_size, bias = False))
+                children_linear.append(nn.Linear(hidden_size, hidden_size, bias=False))
             self.gates_value.append(value_linear)
             self.gates_children.append(children_linear)
 
@@ -95,6 +96,8 @@ class TreeLSTM(nn.Module):
 
         for size in self.valid_num_children:
             self.lstm_list.append(TreeCell(input_size, hidden_size, size))
+            
+        self.register_buffer('zero_buffer', torch.zeros(hidden_size))
 
     def forward(self, node):
         """
@@ -106,7 +109,7 @@ class TreeLSTM(nn.Module):
         value = node.value
         
         if value is None:
-            return (Node(None), torch.zeros(1, self.hidden_size))
+            return (Node(None), self.zero_buffer)
         
         # List of tuples: (node, cell state)
         children = []
@@ -122,7 +125,7 @@ class TreeLSTM(nn.Module):
 
         for i, hidden in enumerate(inputH):
             if hidden is None:
-                inputH[i] = torch.zeros(1, self.hidden_size)
+                inputH[i] = self.zero_buffer
         
         found = False
 
