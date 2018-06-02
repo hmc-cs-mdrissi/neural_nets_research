@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 from tree_to_sequence.translating_trees import Node
@@ -26,11 +27,11 @@ class TreeCell(nn.Module):
         self.gates_children = nn.ModuleList()
         for _ in range(numGates):
             # One linear layer to handle the value of the node
-            value_linear = nn.Linear(input_size, hidden_size, bias = True)
+            value_linear = nn.Linear(input_size, hidden_size, bias=True)
             children_linear = nn.ModuleList()
             # One per child of the node
             for _ in range(num_children):
-                children_linear.append(nn.Linear(hidden_size, hidden_size, bias = False))
+                children_linear.append(nn.Linear(hidden_size, hidden_size, bias=False))
             self.gates_value.append(value_linear)
             self.gates_children.append(children_linear)
 
@@ -73,7 +74,7 @@ class TreeCell(nn.Module):
 
     def initialize_forget_bias(self, bias_value):
         for i in range(3, len(self.gates_value)):
-            nn.init.constant(self.gates_value[i].bias, bias_value)
+            nn.init.constant_(self.gates_value[i].bias, bias_value)
 
 class TreeLSTM(nn.Module):
     '''
@@ -81,7 +82,6 @@ class TreeLSTM(nn.Module):
 
     Takes in a tree where each node has a value and a list of children.
     Produces a tree of the same size where the value of each node is now encoded.
-
     '''
 
     def __init__(self, input_size, hidden_size, valid_num_children):
@@ -92,9 +92,12 @@ class TreeLSTM(nn.Module):
 
         self.valid_num_children = [0] + valid_num_children
         self.lstm_list = nn.ModuleList()
+        self.hidden_size = hidden_size
 
         for size in self.valid_num_children:
             self.lstm_list.append(TreeCell(input_size, hidden_size, size))
+            
+        self.register_buffer('zero_buffer', torch.zeros(hidden_size))
 
     def forward(self, node):
         """
@@ -103,7 +106,11 @@ class TreeLSTM(nn.Module):
         :param tree: a tree where each node has a value vector and a list of children
         :return a tuple - (root of encoded tree, cell state)
         """
-
+        value = node.value
+        
+        if value is None:
+            return (Node(None), self.zero_buffer)
+        
         # List of tuples: (node, cell state)
         children = []
 
@@ -116,8 +123,10 @@ class TreeLSTM(nn.Module):
         inputH = [vec[0].value for vec in children]
         inputC = [vec[1] for vec in children]
 
-        value = node.value
-
+        for i, hidden in enumerate(inputH):
+            if hidden is None:
+                inputH[i] = self.zero_buffer
+        
         found = False
 
         # Feed the inputs into the TreeCell with the appropriate number of children.
@@ -129,7 +138,8 @@ class TreeLSTM(nn.Module):
 
         if not found:
             print("WHAAAAAT?")
-            raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to live.")
+            raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to"
+                             " live.")
 
         # Set our encoded vector as the root of the new tree
         rootNode = Node(newH)

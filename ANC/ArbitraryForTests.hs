@@ -1,15 +1,13 @@
-module ArbitraryTests where 
+module ArbitraryForTests where 
 
 import ForParser
-import LambdaParser
 import ForLambdaCommon
 
-import System.Random
 import Test.QuickCheck
 
 -- 
--- ArbitraryTests.hs
--- A set of functions for generating arbitrary For and ProgLambda programs.
+-- ArbitraryForTests.hs
+-- A set of functions for generating arbitrary For programs.
 -- 
 
 data Difficulty = Debug | Easy | Medium | Hard | VeryHard deriving (Read, Show)

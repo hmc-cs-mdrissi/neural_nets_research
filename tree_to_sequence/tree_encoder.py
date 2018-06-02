@@ -10,20 +10,22 @@ class TreeEncoder(nn.Module):
     Produces a sequence encoding of the tree
     """
     def __init__(self, input_size, hidden_size, num_layers, valid_num_children,
-                 attention=True, use_embedding=True, embedding_size=256, dropout=False):
+                 attention=True, one_hot=False, embedding_size=256, dropout=False):
         super(TreeEncoder, self).__init__()
 
         self.lstm_list = nn.ModuleList()
-        self.use_embedding = use_embedding
+        self.one_hot = one_hot
         self.dropout = False
+        
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
 
-        if use_embedding:
+        if one_hot:
+            self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
+        else:
             self.embedding = nn.Embedding(input_size, embedding_size)
             self.lstm_list.append(TreeLSTM(embedding_size, hidden_size, valid_num_children))
-        else:
-            self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
+            
 
         # All TreeLSTMs have input of hidden_size except the first.
         for i in range(num_layers-1):
@@ -40,8 +42,7 @@ class TreeEncoder(nn.Module):
                 the hidden/cell states of the root node.
 
         """
-        if self.use_embedding:
-#             map_tree(lambda node: print(node), tree)
+        if not self.one_hot:
             tree = map_tree(lambda node: self.embedding(node).squeeze(0), tree)
             
         if self.dropout:
@@ -55,12 +56,11 @@ class TreeEncoder(nn.Module):
             hiddens.append(tree.value)
             cell_states.append(cell_state)
 
-
         hiddens = torch.stack(hiddens)
         cell_states = torch.stack(cell_states)
 
         if self.attention:
-            annotations = torch.stack(tree_to_list(tree))
+            annotations = torch.stack(list(filter(lambda x: x is not None, tree_to_list(tree))))
             return annotations, hiddens, cell_states
         else:
             return hiddens, cell_states

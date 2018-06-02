@@ -5,7 +5,6 @@ import copy
 import time
 
 import torch
-from torch.autograd import Variable
 import torch.utils.data as data
 import torch.optim as optim
 
@@ -340,7 +339,6 @@ def train_model_anc(model,
     model.train(False)
     return best_model, train_plot_losses, validation_plot_losses
 
-
 def train_model_tree_to_anc(model,
                     dset_loader,
                     optimizer,
@@ -531,7 +529,6 @@ def train_model_tree_to_ntm(model,
     model.train(False)
     return best_model, train_plot_losses
 
-
 def train_model_tree_to_tree(model,
                     dset_loader,
                     optimizer,
@@ -542,8 +539,8 @@ def train_model_tree_to_tree(model,
                     batch_size=50,
                     validation_criterion=None,
                     deep_copy_desired=False,
-                    use_cuda=True,
-                    plateau_lr=False):
+                    plateau_lr=False,
+                    use_cuda=False):
     since = time.time()
 
     best_model = model
@@ -572,6 +569,9 @@ def train_model_tree_to_tree(model,
 
         # Iterate over data.
         for input_tree, target_tree in dset_loader:
+            if use_cuda:
+                input_tree, target_tree = input_tree.cuda(), target_tree.cuda()
+            
             total_batch_number += 1
             current_batch += 1
 
@@ -609,18 +609,16 @@ def train_model_tree_to_tree(model,
 
                 print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
                     epoch, current_batch, curr_loss))
-                print('Time so far is {:.0f}m {:.0f}s'.format(
-                    time_elapsed // 60, time_elapsed % 60))
-                print('Example diff:')
-                model.print_example(input_tree, target_tree)
+                print('Time so far is {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
                 running_train_print_loss = 0.0
                 
                 if validation_criterion is not None:
                     curr_validation_loss = running_validation_print_loss / print_every
                     print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
                     epoch, current_batch, curr_validation_loss))
+                    print('Example output:')
+                    model.print_example(input_tree, target_tree)
                     running_validation_print_loss = 0.0
-
                 
             if total_batch_number % plot_every == 0:
                 train_plot_losses.append(running_train_plot_loss / plot_every)
@@ -628,7 +626,6 @@ def train_model_tree_to_tree(model,
                 if validation_criterion is not None:
                     validation_plot_losses.append(running_validation_plot_loss/plot_every)
                     running_validation_plot_loss = 0.0
-
 
         # deep copy the model
         if epoch_running_loss < best_loss / len(dset_loader):
