@@ -1,7 +1,11 @@
+{-# LANGUAGE TupleSections, DeriveGeneric #-}
+
 module ArbitraryCoffeescriptTests where 
 
 import Test.QuickCheck
 import GHC.Generics
+import Control.Arrow (first)
+import Data.Aeson
 
 -- 
 -- ArbitraryCoffeescriptTests.hs
@@ -11,14 +15,53 @@ import GHC.Generics
 data ProgramLength = Short | Long deriving (Read, Show)
 data VariableVariety = Easy | Hard deriving (Read, Show)
 
-data Expr = Var String | Const Int | Plus Expr Expr | Times Expr Expr | Equal Expr Expr deriving (Read, Show, Generic)
-data SimpleCS = Assign Var Expr | Expr Expr deriving (Read, Show, Generic)
-data IfShort = IfSimple SimpleCS Expr | IfComplex IfShort Expr deriving (Read, Show, Generic)
-data WhileShort = WhileSimple SimpleCS Expr | WhileComplex WhileShort Expr deriving (Read, Show, Generic)
-data StatementShort = SimpleStatement SimpleCS | SimpleIf IfShort | SimpleWhile WhileShort deriving (Read, Show, Generic)
-data StatementCS = ShortStatementCS StatementShort | If Expr CoffeeScript | While Expr CoffeeScript | IfElse Expr CoffeeScript CoffeeScript 
-                    | IfThenElse Expr CoffeeScript CoffeeScript deriving (Read, Show, Generic)
-data CoffeeScript = SimpleCS StatementCS | Complex CoffeeScript StatementCS deriving (Read, Show, Generic)
+data ExprCS = Var String | Const Int | Plus ExprCS ExprCS | Times ExprCS ExprCS | Equal ExprCS ExprCS deriving (Read, Show, Generic)
+data SimpleCS = Assign String ExprCS | Expr ExprCS deriving (Read, Show, Generic)
+data IfShortCS = IfSimple SimpleCS ExprCS | IfComplex IfShortCS ExprCS deriving (Read, Show, Generic)
+data WhileShortCS = WhileSimple SimpleCS ExprCS | WhileComplex WhileShortCS ExprCS deriving (Read, Show, Generic)
+data StatementShortCS = SimpleStatement SimpleCS | SimpleIf IfShortCS | SimpleWhile WhileShortCS deriving (Read, Show, Generic)
+data StatementCS = ShortStatementCS StatementShortCS | If ExprCS CoffeeScript | While ExprCS CoffeeScript | IfElse ExprCS CoffeeScript CoffeeScript 
+                    | IfThenElse ExprCS StatementShortCS StatementShortCS deriving (Read, Show, Generic)
+data CoffeeScript = SimpleCS StatementCS | ComplexCS CoffeeScript StatementCS deriving (Read, Show, Generic)
+
+--
+-- JSON instances
+--
+
+instance ToJSON ExprCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON ExprCS
+
+instance ToJSON SimpleCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON SimpleCS
+
+instance ToJSON IfShortCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON IfShortCS
+
+instance ToJSON WhileShortCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON WhileShortCS
+
+instance ToJSON StatementShortCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON StatementShortCS
+
+instance ToJSON StatementCS where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON StatementCS
+
+instance ToJSON CoffeeScript where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON CoffeeScript
 
 -- 
 -- Generators
@@ -28,114 +71,89 @@ combineStringWithNumber :: String -> Int -> String
 combineStringWithNumber s i = s ++ show i
 
 arbitraryIdentifier :: Int -> Gen String
-arbitraryIdentifier upperBound = do identifier <- elements $ map (combineStringWithNumber "a") [0 .. upperBound]
-                                    return identifier
+arbitraryIdentifier upperBound = elements $ map (combineStringWithNumber "a") [0 .. upperBound]
                                             
 arbitraryConstant :: Gen Int
-arbitraryConstant = do firstInt <- elements $ [0 .. 10]
-                       return firstInt 
+arbitraryConstant = elements $ [0 .. 10]
 
-arbitraryConstantExpression :: Gen Expr
-arbitraryConstantExpression = Const <$> arbitraryConstant
-
-arbitrarySizedExpr :: Int -> Int -> Gen Expr
+arbitrarySizedExpr :: Int -> Int -> Gen ExprCS
 arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == -1 
                                            then Const <$> arbitraryConstant
                                            else frequency [(1, Var <$> arbitraryIdentifier upperBound), (1, Const <$> arbitraryConstant)]
-                                | otherwise = if upperBound == -1 
-                                              then frequency [(1, Const <$> arbitraryConstant)
-                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
-                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))] 
-                                              else frequency [(1, Var <$> arbitraryIdentifier upperBound)
-                                                             ,(1, Const <$> arbitraryConstant)
-                                                             ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
-                                                             ,(1, Minus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))] 
-
-instance Arbitrary Expr where
+                                | otherwise = frequency ((if upperBound == -1 then [] else [(1, Var <$> arbitraryIdentifier upperBound)]) 
+                                                ++ [(1, Const <$> arbitraryConstant)
+                                                   ,(1, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
+                                                   ,(1, Times <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))
+                                                   ,(1, Equal <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))])
+                                                             
+instance Arbitrary ExprCS where
     arbitrary = sized (arbitrarySizedExpr 10)
 
     shrink n@(Plus e1 e2) = shrink e1 ++ shrink e2 ++ [n]
-    shrink n@(Minus e1 e2) = shrink e1 ++ shrink e2 ++ [n]
+    shrink n@(Times e1 e2) = shrink e1 ++ shrink e2 ++ [n]
+    shrink n@(Equal e1 e2) = shrink e1 ++ shrink e2 ++ [n]
     shrink n = [n]
 
-arbitrarySizedCmp :: Int -> Int -> Gen Cmp
-arbitrarySizedCmp upperBound n = frequency [(1, Equal <$> smallerArbitrary <*> smallerArbitrary)
-                                           ,(1, Le <$> smallerArbitrary <*> smallerArbitrary)
-                                           ,(1, Ge <$> smallerArbitrary <*> smallerArbitrary)]
-                                 where smallerArbitrary = arbitrarySizedExpr upperBound ((n `div` 3) - 1)
+arbitrarySizedSimpleCS :: Int -> Int -> Gen (SimpleCS, Int)
+arbitrarySizedSimpleCS upperBound n | n <= 2 = do expr <- arbitrarySizedExpr upperBound n
+                                                  return (Expr expr, upperBound)
+                                    | otherwise = frequency [(1, (,upperBound+1) <$> (Assign <$> arbitraryIdentifier (upperBound + 1) <*> arbitrarySizedExpr upperBound (n - 1))),
+                                                             (1, (,upperBound) <$> (Expr <$> arbitrarySizedExpr upperBound n))]
 
-instance Arbitrary Cmp where
-  arbitrary = sized (arbitrarySizedCmp 10)
-  shrink n = [n]
+instance Arbitrary SimpleCS where
+  arbitrary = fst <$> sized (arbitrarySizedSimpleCS 10)
 
--- 
--- Language Specific: For
--- 
+arbitrarySizedIfShortCS :: Int -> Int -> Gen (IfShortCS, Int)
+arbitrarySizedIfShortCS upperBound n | n <= 3 = do expr <- arbitrarySizedExpr upperBound n
+                                                   (simple, _) <- arbitrarySizedSimpleCS upperBound n
+                                                   return (IfSimple simple expr, upperBound)
+                                     | otherwise = frequency [(1, (,upperBound) <$> (IfSimple <$> (fst <$> arbitrarySizedSimpleCS upperBound (n `div` 2)) <*> arbitrarySizedExpr upperBound (n `div` 2))),
+                                                              (1, (,upperBound) <$> (IfComplex <$> (fst <$> arbitrarySizedIfShortCS upperBound (n `div` 2)) <*> arbitrarySizedExpr upperBound (n `div` 2)))]
 
--- If statements may be able to declare new variables for use outside blocks
--- Here, we do not allow variables defined within the If to be used outside the block
-arbitrarySizedProgForIf :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForIf frequencies upperBound n = do comp <- arbitrarySizedCmp upperBound ((n `div` 3) - 1)
-                                                      (if_body, _) <- arbitrarySizedProgFor frequencies upperBound ((n `div` 3) - 2)
-                                                      (else_body, _) <- arbitrarySizedProgFor frequencies upperBound ((n `div` 3) - 2)
-                                                      return (If comp if_body else_body, upperBound)
+instance Arbitrary IfShortCS where
+  arbitrary = fst <$> sized (arbitrarySizedIfShortCS 10)
 
--- Seq statements may be able to declare new variables for use in next block
-arbitrarySizedProgForSeq :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForSeq frequencies upperBound n = do (oneHalfArbitrarySizedProgFor1, firstBlockUpperBound) <- arbitrarySizedProgFor frequencies upperBound (n `div` 2)
-                                                       (oneHalfArbitrarySizedProgFor2, secondBlockUpperBound) <- arbitrarySizedProgFor frequencies firstBlockUpperBound ((n `div` 2) - 1)
-                                                       let arbitrarySeq = Seq oneHalfArbitrarySizedProgFor1 oneHalfArbitrarySizedProgFor2
-                                                       return (arbitrarySeq, secondBlockUpperBound)
+arbitrarySizedWhileShortCS :: Int -> Int -> Gen (WhileShortCS, Int)
+arbitrarySizedWhileShortCS upperBound n | n <= 3 = do expr <- arbitrarySizedExpr upperBound n
+                                                      (simple, _) <- arbitrarySizedSimpleCS upperBound n
+                                                      return (WhileSimple simple expr, upperBound)
+                                        | otherwise = frequency [(1, (,upperBound) <$> (WhileSimple <$> (fst <$> arbitrarySizedSimpleCS upperBound (n `div` 2)) <*> arbitrarySizedExpr upperBound (n `div` 2))),
+                                                                 (1, (,upperBound) <$> (WhileComplex <$> (fst <$> arbitrarySizedWhileShortCS upperBound (n `div` 2)) <*> arbitrarySizedExpr upperBound (n `div` 2)))]
 
--- For statments may be able to declare new variables for use in outside blocks
--- Here, we do not allow variables defined within the For to be used outside the block
-arbitrarySizedProgForFor :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForFor frequencies upperBound n = do (variableName, upperBoundLoop) <- (if upperBound == -1 then return ("a0", 0) else if upperBound == 10 then flip (,) 10 <$> arbitraryIdentifier upperBound else frequency [(4,  return ("a" ++ show (upperBound + 1), upperBound + 1)), (1, (,) <$> arbitraryIdentifier upperBound <*> return upperBound)])
-                                                       initialize <- arbitrarySizedExpr upperBound ((n `div` 4) - 1)
-                                                       comp <- arbitrarySizedCmp upperBoundLoop (n `div` 4)
-                                                       expr <- arbitrarySizedExpr upperBoundLoop (n `div` 4)
-                                                       (body, _) <- arbitrarySizedProgFor frequencies upperBoundLoop ((n `div` 4) - 1)
-                                                       return (For variableName initialize comp expr body, upperBound)
+instance Arbitrary WhileShortCS where
+  arbitrary = fst <$> sized (arbitrarySizedWhileShortCS 10)
 
-arbitrarySizedProgAssign :: Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgAssign upperBound n = if upperBound == -1 then do expr <- arbitrarySizedExpr upperBound 3
-                                                                    return (Assign "a0" expr, 0)
-                                     else if upperBound == 10 then do variableName <- arbitraryIdentifier upperBound
-                                                                      expr <- arbitrarySizedExpr upperBound 3
-                                                                      return (Assign variableName expr, 10)
-                                     else do reassignedVariableName <- arbitraryIdentifier upperBound
-                                             expr <- arbitrarySizedExpr upperBound 3
-                                             frequency [(5, return (Assign reassignedVariableName expr, upperBound) )                   {- Assign to previoiusly declared -}
-                                                       ,(1, return (Assign ("a" ++ show (upperBound + 1)) expr, upperBound + 1) )]      {- Possibly declare new variable  -}
+-- data StatementCS = ShortStatementCS StatementShortCS | If ExprCS CoffeeScript | While ExprCS CoffeeScript | IfElse ExprCS CoffeeScript CoffeeScript 
+--                     | IfThenElse ExprCS CoffeeScript CoffeeScript deriving (Read, Show, Generic)
+-- data CoffeeScript = SimpleCS StatementCS | Complex CoffeeScript StatementCS deriving (Read, Show, Generic)
 
--- Generator for general For programs
--- Parameters:
--- frequencies, the frequency of an Assign, If, For, and Seq statement
--- upperBound, the maximum int in the declared variables so far
--- n, the number of terms (size) of the desired ProgFor program
-arbitrarySizedProgFor :: [Int] -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgFor frequencies@[freqAssign, freqIf, freqFor, freqSeq] upperBound n | n <= 0 = arbitrarySizedProgAssign upperBound n
-                                                                                      | otherwise = frequency [(freqAssign, arbitrarySizedProgAssign upperBound n)
-                                                                                                              ,(freqIf, arbitrarySizedProgForIf frequencies upperBound n)
-                                                                                                              ,(freqFor, arbitrarySizedProgForFor frequencies upperBound n)
-                                                                                                              ,(freqSeq, arbitrarySizedProgForSeq frequencies upperBound n)] 
-arbitrarySizedProgFor _ upperBound n = error "Only four frequencies should be provided."
+arbitrarySizedStatementShortCS :: Int -> Int -> Gen (StatementShortCS, Int)
+arbitrarySizedStatementShortCS upperBound n | n <= 3 = first SimpleStatement <$> arbitrarySizedSimpleCS upperBound n
+                                            | otherwise = frequency [(1, first SimpleStatement <$> arbitrarySizedSimpleCS upperBound n),
+                                                                     (1, first SimpleIf <$> arbitrarySizedIfShortCS upperBound n),
+                                                                     (1, first SimpleWhile <$> arbitrarySizedWhileShortCS upperBound n)]
 
-arbitrarySizedProgForWithDifficulty :: Difficulty -> Int -> Int -> Gen (ProgFor, Int)
-arbitrarySizedProgForWithDifficulty Debug _ _ = do constant <- arbitraryConstantExpression
-                                                   frequency [(1, return (Assign "a1" constant, 1))]
-arbitrarySizedProgForWithDifficulty Easy upperBound n = arbitrarySizedProgFor [1, 0, 0, 0] upperBound n
-arbitrarySizedProgForWithDifficulty Medium upperBound n = arbitrarySizedProgFor [1, 1, 0, 0] upperBound n
-arbitrarySizedProgForWithDifficulty Hard upperBound n = arbitrarySizedProgFor [2, 1, 1, 0] upperBound n
-arbitrarySizedProgForWithDifficulty VeryHard upperBound n = arbitrarySizedProgFor [2, 1, 1, 1] upperBound n
+instance Arbitrary StatementShortCS where
+  arbitrary = fst <$> sized (arbitrarySizedStatementShortCS 10)
 
-instance Arbitrary ProgFor where
-  arbitrary = fst <$> sized (arbitrarySizedProgFor [1, 1, 1, 1] (-1))
+arbitrarySizedStatementCS :: Int -> Int -> Gen (StatementCS, Int)
+arbitrarySizedStatementCS upperBound n | n <= 2 = first ShortStatementCS <$> arbitrarySizedStatementShortCS upperBound n
+                                       | otherwise = frequency [(1, first ShortStatementCS <$> arbitrarySizedStatementShortCS upperBound n),
+                                                                (1, (,upperBound) <$> (If <$> arbitrarySizedExpr upperBound (n `div` 2) <*> (fst <$> arbitrarySizedCoffeeScript upperBound (n `div` 2)))),
+                                                                (1, (,upperBound) <$> (While <$> arbitrarySizedExpr upperBound (n `div` 2) <*> (fst <$> arbitrarySizedCoffeeScript upperBound (n `div` 2)))),
+                                                                (1, (,upperBound) <$> (IfElse <$> arbitrarySizedExpr upperBound (n `div` 3) <*> (fst <$> arbitrarySizedCoffeeScript upperBound (n `div` 3))
+                                                                 <*> (fst <$> arbitrarySizedCoffeeScript upperBound (n `div` 3)))),
+                                                                (1, (,upperBound) <$> (IfThenElse <$> arbitrarySizedExpr upperBound (n `div` 3) <*> (fst <$> arbitrarySizedStatementShortCS upperBound (n `div` 3))
+                                                                 <*> (fst <$> arbitrarySizedStatementShortCS upperBound (n `div` 3))))]
 
-  shrink n@(If c1 p1 p2) = shrink p1 ++ shrink p2 ++ [n]
-  shrink n@(For _ e1 c1 e2 p1) = shrink p1 ++ [n]
-  shrink n@(Seq p1 p2) = shrink p1 ++ shrink p2 ++ [n]
-  shrink n = [n]
+instance Arbitrary StatementCS where
+  arbitrary = fst <$> sized (arbitrarySizedStatementCS 10)
 
+arbitrarySizedCoffeeScript :: Int -> Int -> Gen (CoffeeScript, Int)
+arbitrarySizedCoffeeScript upperBound n | n <= 2 = first SimpleCS <$> arbitrarySizedStatementCS upperBound n
+                                        | otherwise = frequency [(1, first SimpleCS <$> arbitrarySizedStatementCS upperBound n),
+                                                                 (1, arbitrarySizedCoffeeScript upperBound (n `div` 2) >>= \(cs, newBound) -> 
+                                                                     first (ComplexCS cs) <$> arbitrarySizedStatementCS newBound (n `div` 2))]
 
-
+instance Arbitrary CoffeeScript where
+  arbitrary = fst <$> sized (arbitrarySizedCoffeeScript 10)
