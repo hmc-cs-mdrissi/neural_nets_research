@@ -63,10 +63,10 @@ class TreeToSequenceAttention(TreeToSequence):
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden, context_vec), 
                                                                dim=1)))
             log_odds = self.output_log_odds(et)
-            loss += self.loss_func(log_odds, target[i])
+            loss += self.loss_func(log_odds, target[i].unsqueeze(0))
 
             if teacher_forcing:
-                next_input = target[i].unsqueeze(1)
+                next_input = target[i].unsqueeze(0)
             else:
                 _, next_input = log_odds.topk(1)
 

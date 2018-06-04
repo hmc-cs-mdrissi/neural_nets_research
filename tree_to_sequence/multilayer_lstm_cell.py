@@ -25,8 +25,8 @@ class MultilayerLSTMCell(nn.Module):
             n = lstm_cell.bias_ih.size(0)
             start, end = n//4, n//2
             b1 = lstm_cell.bias_ih
-            nn.init.constant(lstm_cell.bias_ih[start:end], bias_value)
-            nn.init.constant(lstm_cell.bias_hh[start:end], bias_value)
+            nn.init.constant_(lstm_cell.bias_ih[start:end], bias_value)
+            nn.init.constant_(lstm_cell.bias_hh[start:end], bias_value)
 
     def forward(self, input, past_states):
         hiddens, cell_states = past_states

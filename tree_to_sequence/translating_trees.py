@@ -181,9 +181,17 @@ def canonicalize_csharp(tree):
 def canonicalize_java(tree):
     pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
-EOS = "EOS"
-
 def binarize_tree(tree):
+    """
+    Binarize a tree using the left-child right-sibling representation.
+    To deal with the issue of a node potentially having a right child, but not a left child,
+    None is used. None is fine for the input tree. For the output tree, None should be replaced
+    by EOS and add_eos will take care of that. Some extra Nones may end up present and can
+    be cleaned out with clean_binarized_tree. Cleaning only matters for the input tree
+    as any extra Nones would end up replaced by EOS anyway.
+    
+    :param tree: the tree which to be binarized    
+    """
     new_tree = Node(tree.value)
     new_tree.children = [Node(None), Node(None)]
     curr_node = new_tree
@@ -195,13 +203,9 @@ def binarize_tree(tree):
             curr_node.children[0] = new_node
         else:
             curr_node.children[1] = new_node
-        
         curr_node = new_node 
-
+    
     return new_tree
-
-def convert_binary_tree_to_tree(binary_tree):
-    pass
 
 def clean_binarized_tree(tree):
     if len(tree.children) == 2:
@@ -218,6 +222,8 @@ def clean_binarized_tree(tree):
     
     return tree
 
+EOS = "EOS"
+
 def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
     """
         Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
@@ -232,7 +238,7 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
-        index = int(val[1:]) + num_ints
+        index = int(val[1:]) + num_ints #TODO: subtract 1 because we start with var a1?
     else:
         index = num_ints + num_vars + ops[val]
 
@@ -268,16 +274,18 @@ def add_eos(program, num_children=None):
     if isinstance(program, Node):            
         return add_eos_tree(program, num_children)
     else:
-        return program.append(EOS)
+        program = list(program)
+        program.append(EOS)
+        return program
 
 def add_eos_tree(tree, num_children):
     # Loop through children
     for i, child in enumerate(tree.children):
-        if child is None:
+        if child.value is None:
             tree.children[i] = Node(EOS)
-        
-        # Recursively add EOS to children
-        add_eos(child, num_children)
+        else:
+            # Recursively add EOS to children
+            add_eos(tree.children[i], num_children)
 
     # Add enough EOS nodes that the final child count is num_children
     while len(tree.children) < num_children:
@@ -470,9 +478,9 @@ def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=Tr
         program = map(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
                                              one_hot=one_hot), program)
         if one_hot:
-            return torch.stack(program)
+            return torch.stack(list(program))
         else:
-            return torch.LongTensor(program)
+            return torch.LongTensor(list(program))
 
 def decode_tokens(seq, num_vars, num_ints, ops):
     reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))
@@ -506,20 +514,22 @@ class LambdaGrammar(IntEnum):
     VARAPP = 4
     CMP = 5
     TERM = 6
+    VARUNIT = 7
     
 class Lambda(IntEnum):
-    ROOT = 0
-    VAR = 1
-    CONST = 2
-    PLUS = 3
-    MINUS = 4
-    EQUAL = 5
-    LE = 6
-    GE = 7
-    IF = 8
-    LET = 9
+    VAR = 0
+    CONST = 1
+    PLUS = 2
+    MINUS = 3
+    EQUAL = 4
+    LE = 5
+    GE = 6
+    IF = 7
+    LET = 8
+    UNIT = 9
     LETREC = 10
     APP = 11
+    ROOT = 12
 
 def parent_to_category_LAMBDA(num_vars, num_ints, parent):
     """
@@ -529,11 +539,6 @@ def parent_to_category_LAMBDA(num_vars, num_ints, parent):
     :param num_ints: number of ints a program can use
     :param parent: int, the value of the parent node 
     """    
-    # If parent is an int or a variable name, we are done.
-    if int(parent) <= num_ints + num_vars:
-        return []
-    
-    op_index = int(parent) - num_vars - num_ints
     lambda_grammar = {
         Lambda.ROOT: [LambdaGrammar.TERM],
         Lambda.VAR: [LambdaGrammar.VAR_NAME], 
@@ -544,11 +549,22 @@ def parent_to_category_LAMBDA(num_vars, num_ints, parent):
         Lambda.LE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.GE: [LambdaGrammar.EXPR, LambdaGrammar.EXPR],
         Lambda.IF: [LambdaGrammar.CMP, LambdaGrammar.TERM, LambdaGrammar.TERM],
-        Lambda.LET: [LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.LET: [LambdaGrammar.VARUNIT, LambdaGrammar.TERM, LambdaGrammar.TERM],
+        Lambda.UNIT: [],
         Lambda.LETREC: [LambdaGrammar.VAR_NAME, LambdaGrammar.VAR_NAME, LambdaGrammar.TERM, 
                         LambdaGrammar.TERM],
         Lambda.APP: [LambdaGrammar.VARAPP, LambdaGrammar.EXPR]
     }
+    
+    op_index = int(parent) - num_vars - num_ints
+    
+    # Special case for the root
+    if op_index == Lambda.ROOT:
+        return lambda_grammar[Lambda.ROOT]
+    
+    # If parent is an int or a variable name, we are done.
+    if int(parent) < num_ints + num_vars:
+        return []
     
     return lambda_grammar[op_index]
     
@@ -566,12 +582,12 @@ def category_to_child_LAMBDA(num_vars, num_ints, category):
         LambdaGrammar.INT: range(num_ints),
         LambdaGrammar.VAR_NAME: range(num_ints, n),
         LambdaGrammar.VAR: [x + n for x in [Lambda.VAR]],
-        LambdaGrammar.EXPR: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, 
-                                             Lambda.CONST]],
+        LambdaGrammar.EXPR: [x + n for x in [Lambda.VAR, Lambda.CONST, Lambda.PLUS, Lambda.MINUS, Lambda.CONST]],
         LambdaGrammar.VARAPP: [x + n for x in [Lambda.VAR, Lambda.APP]] + list(range(num_ints, n)),
         LambdaGrammar.CMP: [x + n for x in [Lambda.EQUAL, Lambda.LE, Lambda.GE]],
-        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.EXPR, Lambda.UNIT, 
-                                             Lambda.IF, Lambda.APP]],
+        LambdaGrammar.TERM: [x + n for x in [Lambda.LET, Lambda.LETREC, Lambda.PLUS, Lambda.MINUS, Lambda.VAR,
+                                             Lambda.CONST, Lambda.UNIT, Lambda.IF, Lambda.APP]],
+        LambdaGrammar.VARUNIT: [x + n for x in [Lambda.VAR]] + list(range(num_ints, n)),
     }
     
     return lambda_grammar[category]
