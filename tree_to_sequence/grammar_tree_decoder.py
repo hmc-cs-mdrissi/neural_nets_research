@@ -32,7 +32,7 @@ class GrammarTreeDecoder(nn.Module):
         self.share_linear = share_linear
         self.share_lstm_cell = share_lstm_cell
         self.num_ints_vars = num_ints_vars
-        
+         
         self.loss_func = nn.CrossEntropyLoss()
         
         # The next two ModuleLists are lists of lists if you don't share.  
@@ -64,10 +64,7 @@ class GrammarTreeDecoder(nn.Module):
                 self.lstm_lists.append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
                 
         else:
-            for parent in range(num_ints_vars, num_ints_vars + num_possible_parents):
-                self.lstm_lists.append(nn.ModuleList())
-            # Another option: separate LSTM for each parent (either in addition to these or as a replacement for categories)
-            for category in self.parent_to_category(parent):
+            for category in range(num_categories):
                 self.lstm_lists.append(nn.ModuleList())
                 for child_index in range(max_num_children):
                     self.lstm_lists[-1].append(nn.LSTMCell(embedding_size + hidden_size, hidden_size))
@@ -149,8 +146,7 @@ class GrammarTreeDecoder(nn.Module):
             return self.lstm_lists[child_index](input, (hidden_state, cell_state))
         
         else:
-            category_index = possible_categories.index(category)
-            return self.lstm_lists[category_index][child_index](input, (hidden_state, cell_state))
+            return self.lstm_lists[category - 1][child_index](input, (hidden_state, cell_state))
     
     def number_children(self, parent):
         return len(self.parent_to_category(parent))
