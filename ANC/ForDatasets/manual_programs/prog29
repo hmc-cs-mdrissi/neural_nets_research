@@ -1,0 +1,6 @@
+if a1 == a3 - a4 then
+    a2 = 3
+else
+    a1 = a3 - a5;
+    a3 = 4 + a4
+    endif

@@ -1,0 +1,9 @@
+if a1 == 4 then
+    if a1 == 3 then
+        a2 = 2
+    else
+        a3 = 3
+    endif
+else
+    a2 = 0
+endif

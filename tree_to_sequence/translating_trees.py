@@ -238,7 +238,7 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
-        index = int(val[1:]) + num_ints #TODO: subtract 1 because we start with var a1?
+        index = int(val[1:]) % num_vars + num_ints
     else:
         index = num_ints + num_vars + ops[val]
 

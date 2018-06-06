@@ -1,4 +1,0 @@
-a2 = 4;
-for a1 = 5; a2 == 4; a2 do
-   a1 = 5
-endfor
