@@ -6,14 +6,12 @@ import Test.QuickCheck
 import GHC.Generics
 import Control.Arrow (first)
 import Data.Aeson
+import Prelude hiding (writeFile)
 
 -- 
 -- ArbitraryCoffeescriptTests.hs
 -- A set of functions for generating arbitrary coffee script programs.
 -- 
-
-data ProgramLength = Short | Long deriving (Read, Show)
-data VariableVariety = Easy | Hard deriving (Read, Show)
 
 data ExprCS = Var String | Const Int | Plus ExprCS ExprCS | Times ExprCS ExprCS | Equal ExprCS ExprCS deriving Generic
 data SimpleCS = Assign String ExprCS | Expr ExprCS deriving Generic
@@ -121,6 +119,9 @@ instance FromJSON CoffeeScript
 -- 
 -- Generators
 -- 
+max_int :: Int
+max_int = 9
+
 
 combineStringWithNumber :: String -> Int -> String
 combineStringWithNumber s i = s ++ show i
@@ -128,15 +129,15 @@ combineStringWithNumber s i = s ++ show i
 arbitraryIdentifier :: Int -> Gen String
 arbitraryIdentifier upperBound = elements $ map (combineStringWithNumber "a") [0 .. upperBound]
                                             
-arbitraryConstant :: Int -> Gen Int
-arbitraryConstant max_int = elements $ [0 .. max_int]
+arbitraryConstant :: Gen Int
+arbitraryConstant = elements $ [0 .. max_int]
 
 arbitrarySizedExpr :: Int -> Int -> Gen ExprCS
 arbitrarySizedExpr upperBound n | n <= 0 = if upperBound == -1 
-                                           then Const <$> arbitraryConstant max_int
-                                           else frequency [(1, Var <$> arbitraryIdentifier upperBound), (1, Const <$> arbitraryConstant max_int)]
+                                           then Const <$> arbitraryConstant
+                                           else frequency [(1, Var <$> arbitraryIdentifier upperBound), (1, Const <$> arbitraryConstant)]
                                 | otherwise = frequency ((if upperBound == -1 then [] else [(1, Var <$> arbitraryIdentifier upperBound)]) 
-                                                ++ [(1, Const <$> arbitraryConstant max_int)
+                                                ++ [(1, Const <$> arbitraryConstant)
                                                    ,(2, Plus <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2)) 
                                                    ,(2, Times <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))
                                                    ,(1, Equal <$> arbitrarySizedExpr upperBound ((n `div` 2) - 1) <*> arbitrarySizedExpr upperBound ((n `div` 2) - 2))])
@@ -152,8 +153,8 @@ instance Arbitrary ExprCS where
 arbitrarySizedSimpleCS :: Int -> Int -> Gen (SimpleCS, Int)
 arbitrarySizedSimpleCS upperBound n | n <= 0 = do expr <- arbitrarySizedExpr upperBound n
                                                   return (Expr expr, upperBound)
-                                    | otherwise = frequency ((if upperbound == -1 then [] else [(1, (,upperBound) <$> (Assign <$> arbitraryIdentifier upperBound <*> arbitrarySizedExpr upperBound (n - 1)))]) 
-                                                  ++ [(3, (,upperBound+1) <$> (Assign (combineStringWithNumber "a" (upperBound + 1)) <*> arbitrarySizedExpr upperBound (n - 1))),
+                                    | otherwise = frequency ((if upperBound == -1 then [] else [(1, (,upperBound) <$> (Assign <$> arbitraryIdentifier upperBound <*> arbitrarySizedExpr upperBound (n - 1)))]) 
+                                                  ++ [(3, (,upperBound+1) <$> (Assign (combineStringWithNumber "a" (upperBound + 1)) <$> arbitrarySizedExpr upperBound (n - 1))),
                                                       (1, (,upperBound) <$> (Expr <$> arbitrarySizedExpr upperBound n))])
 
 instance Arbitrary SimpleCS where

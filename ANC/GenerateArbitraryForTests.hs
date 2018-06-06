@@ -11,7 +11,7 @@ import ForInterp
 import System.Environment
 import System.Exit
 import Data.ByteString.Lazy (writeFile)
-import Data.List (foldr, isPrefixOf)
+import Data.List (isPrefixOf)
 import Data.Map (Map, toList, lookup)
 import qualified Data.Map as Map
 import Control.Monad
