@@ -37,7 +37,6 @@ class TreeToTreeAttention(nn.Module):
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         
         self.embedding = nn.Embedding(nclass + 1, embedding_size)  
-        self.i = 0 #TODO: for debugging only, remove late
 
     def forward_train(self, input_tree, target_tree, teacher_forcing=True):
         """
@@ -57,8 +56,6 @@ class TreeToTreeAttention(nn.Module):
         # Tuple: (hidden_state, cell_state, desired_output, parent_value, child_index)
         unexpanded = [(decoder_hiddens, decoder_cell_states, target_tree, self.root_value, 0)]
         
-#         if not self.i % 4000:
-#             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
@@ -73,14 +70,8 @@ class TreeToTreeAttention(nn.Module):
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
 #             # Calculate loss
-#             if not self.i % 400:
-#                 print("trying to generate " + str(targetNode.value) + " from parent " + str(parent_val) + " at index " + str(child_index))
-#                 loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value, print_time=True)
-#             else:
             loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
             
-#             self.i += 1
-                
             # If we have an EOS, there are no children to generate
             if int(targetNode.value) == self.EOS_value:
                 continue
