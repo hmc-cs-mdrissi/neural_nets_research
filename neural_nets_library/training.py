@@ -644,8 +644,8 @@ def train_model_tree_to_tree(model,
                     curr_validation_loss = running_validation_print_loss / print_every
                     print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
                     epoch, current_batch, curr_validation_loss))
-                    print('Example output:')
-                    model.print_example(input_tree, target_tree)
+#                     print('Example output:')
+#                     model.print_example(input_tree, target_tree)
                     running_validation_print_loss = 0.0
                 
             if total_batch_number % plot_every == 0:

@@ -134,7 +134,7 @@ class TreeToTreeAttention(nn.Module):
             decoder_hiddens, decoder_cell_states, curr_root, parent_val, child_index = \
             unexpanded.pop()  
             
-            # Use attention and pas hidden state to make a prediction
+            # Use attention and pass hidden state to make a prediction
             decoder_hidden = decoder_hiddens[-1].unsqueeze(0)
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1

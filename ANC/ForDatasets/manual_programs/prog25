@@ -1,0 +1,6 @@
+if a1 == 9 then
+    a2 = a1 + 9 + a1
+else
+    a1 = 0;
+    a2 = a1
+    endif

@@ -1,0 +1,5 @@
+if a1 == 4 then
+    a2 = 2
+else
+    a2 = 0
+    endif
