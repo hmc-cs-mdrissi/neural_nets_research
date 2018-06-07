@@ -53,7 +53,7 @@ parser.add_argument('--save_folder', default="test_various_models", help='Name o
 parser.add_argument('--cuda_device', type=int, default=0, help='Number of cuda device. Not relevant if cuda is disabled. Default is 0.')
 parser.add_argument('--num_vars', type=int, default=10, help='Number of variable names. Default is 10.')
 parser.add_argument('--num_ints', type=int, default=11, help='Number of possible integer literals. Default is 11')
-parser.add_argument('--one_hot', action='store_true', default=4, help='Use one hot vectors instead of embeddings.')
+parser.add_argument('--one_hot', action='store_true', help='Use one hot vectors instead of embeddings.')
 parser.add_argument('--binarize_input', action='store_true', help="Binarize the input. Default is not to.")
 parser.add_argument('--binarize_output', action='store_true', help="Binarize the output. Default is not to.")
 parser.add_argument('--long_base_case', action='store_false', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
