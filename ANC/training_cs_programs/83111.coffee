@@ -1,1 +1,0 @@
-if 4 then a0 = 6 else a0 = 8 + 2 while 4 == 8

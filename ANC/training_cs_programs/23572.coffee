@@ -1,1 +1,0 @@
-if (6 + 2 + 6) * (9 + 5) then a0 = 6 while (0 == 3) + 3 else a0 = 9 + 6 while 5 + 2 while 4 + 6

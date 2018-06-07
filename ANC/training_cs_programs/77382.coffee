@@ -1,1 +1,0 @@
-if 8 then a0 = 6 else 0 if 3

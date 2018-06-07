@@ -1,1 +1,0 @@
-if 0 * 7 * 4 + (0 + 1) then a0 = 8 * 3 while 7 * 0 * 3 else a0 = 0 if 7

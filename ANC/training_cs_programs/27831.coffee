@@ -1,8 +1,0 @@
-if 5 * (5 + 5)
-	0 * 6
-	a0 = 6 * 5
-	a0 == 3 if 6 + 2
-while 7 + 5 == 3 + 4
-	a0 = 5
-	a1 = a0
-	if a1 + a0 then a2 = a1 else a2 = a1

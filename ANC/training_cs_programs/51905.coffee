@@ -1,9 +1,0 @@
-if 4 * 1 * 2
-	if 3 + 0 then a0 = 4 else a0 = 1
-else
-	if 7 * 1
-		a0 = 5 + 8
-if 6
-	7 == 8
-	a0 = 1 == 4
-	if a0 + 2 then a0 = 0 else a1 = 1

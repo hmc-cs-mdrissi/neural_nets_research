@@ -1,1 +1,0 @@
-if 3 then a0 = (4 + 8) * (5 + 7) else a0 = 2 * 1 + 2 while 2 + 6

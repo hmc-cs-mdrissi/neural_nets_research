@@ -1,4 +1,0 @@
-a0 = 3 + 2 if 3 * 9 if 9 + 1 if (1 + 4) * 1 if (1 + 7) * (9 * 4)
-while (9 == 0) + 6 * 5
-	while 5
-		if 6 == 6 then 1 else a0 = 3

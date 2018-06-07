@@ -1,1 +1,0 @@
-if 3 + 3 + 6 + 3 * 0 then a0 = 2 * 1 while 5 * 5 while 9 * 9 while 3 * 0 + 6 else 9 + 4 while 5 while 5 + 7 while 5

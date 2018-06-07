@@ -1,6 +1,0 @@
-a0 = 0 + 2
-a1 = a0
-while 8 * a0
-	5
-if 8 == 6 then a2 = a0 * a0 else a2 = 1 + 6
-a2 = (5 * a1 == 8 + 7) + a1

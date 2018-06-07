@@ -1,1 +1,0 @@
-if 0 + 6 + 7 + 3 then a0 = 2 + 6 while 2 * 8 while 2 * 8 while 7 + 5 + 4 else a0 = 5 while 2 * 2 * 4

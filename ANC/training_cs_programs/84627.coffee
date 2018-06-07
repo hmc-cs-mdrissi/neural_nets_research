@@ -1,1 +1,0 @@
-if 9 * 9 * 2 * (4 + 4) then a0 = 2 + (5 + 2) else 2 + 9 while 9 + 1 while 5 * 0 while 0 + 0 == 5

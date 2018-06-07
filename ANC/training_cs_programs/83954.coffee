@@ -1,1 +1,0 @@
-if 8 * 0 * 7 then a0 = (0 + 4) * 1 while 2 + 8 else a0 = 1 * 3 while 2 * 0 while 2 * 5 * 2

@@ -1,9 +1,0 @@
-while 2 + 8 + (9 == 6)
-	while 4
-		0 * 8
-		a0 = 0 + 4
-while 3
-	3 + 1
-	a0 = 4
-	while a0
-		a1 = a0 * 7

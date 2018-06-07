@@ -1,1 +1,0 @@
-if (8 + 3 == 8) * (9 * 8) then a0 = 9 * 1 while 8 * 9 while 0 else a0 = (4 == 8) + 9 while 8 * 9 + 4

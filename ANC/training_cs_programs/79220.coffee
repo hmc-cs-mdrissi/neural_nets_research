@@ -1,1 +1,0 @@
-if 3 then a0 = 6 * 4 == (9 == 6) else a0 = 3 while (6 == 4) * 1

@@ -1,9 +1,0 @@
-if (4 + 5) * 6 == 8 * 4
-	1 * 3
-	a0 = 6 * 5
-	if a0 + a0 then a1 = a0 else a0 + 6
-else
-	a0 = 8 * 7
-	a0 + a0
-	if a0 * a0
-		a0 * 1

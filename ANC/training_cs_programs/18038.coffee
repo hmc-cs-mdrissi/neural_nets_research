@@ -1,9 +1,0 @@
-if 6 * 2 + 0 + (7 + 9)
-	a0 = 5 + 7
-	a1 = a0 == 8
-	if a1 + a1 then a2 = a1 else a2 = 6
-else
-	a0 = 7 + 1
-	7
-	while a0
-		a1 = 9

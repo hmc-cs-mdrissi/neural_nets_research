@@ -1,1 +1,0 @@
-if 1 * 2 * 6 == 6 * 6 then a0 = 1 * (6 + 2) else a0 = 6 + 9 while 6 * 3 while 7

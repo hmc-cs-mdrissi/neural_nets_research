@@ -1,1 +1,0 @@
-if 8 == 4 then a0 = 2 + (2 + 0) else a0 = 3 * 6 + 3 while 0 + 9 + 0

@@ -1,1 +1,0 @@
-if (7 * 9 + 5) * (4 * 1) then a0 = 0 else a0 = 7 while 4 * 3 while 5

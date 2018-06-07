@@ -1,1 +1,0 @@
-if 8 == 8 + 8 then a0 = 3 * 4 + 4 while 1 * 8 == 7 else a0 = 1 * 3

@@ -1,1 +1,0 @@
-if 5 * (9 * 5) then a0 = 6 if 0 + 1 if 9 * 7 * 7 else a0 = 0 == 5 if 5 * 9

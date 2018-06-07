@@ -1,8 +1,0 @@
-while 9
-	if 5 + 0 then a0 = 4 + 0 else a0 = 0 + 6
-if 0 * 5 + 5
-	a0 = 6
-	9 * a0
-else
-	0 == 4
-	5 + 1

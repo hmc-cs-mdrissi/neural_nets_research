@@ -1,1 +1,0 @@
-if 2 then 9 * 3 if 6 else a0 = 9 * 5 + (2 + 9)

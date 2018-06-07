@@ -1,1 +1,0 @@
-if (8 + 2 == 4) * (1 * 4) then 1 == 6 if 8 + 6 if 0 else a0 = 6 if 8 * 3 if 8 * 3 if 5

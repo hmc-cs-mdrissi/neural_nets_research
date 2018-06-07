@@ -1,1 +1,0 @@
-if 6 * (5 + 3) then a0 = 5 while 1 + 4 while (1 == 5) == 3 else a0 = (1 + 5) * (6 + 9)

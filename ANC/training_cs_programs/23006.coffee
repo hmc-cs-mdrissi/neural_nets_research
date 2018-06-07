@@ -1,9 +1,0 @@
-if 7 * 2 then a0 = 2 else a0 = 7
-if 5 == 8
-	8
-if 3 * 3 then a0 = 2 * 4 else 0 + 5
-if (4 == 2) == (0 == 6)
-	if 1 * 3
-		a0 = 9 == 3
-	else
-		a0 = 5 * 2

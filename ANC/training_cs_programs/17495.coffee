@@ -1,1 +1,0 @@
-if 7 then a0 = 0 == 9 if 9 + 4 if 8 * 5 if (9 == 8) * 1 else a0 = 4

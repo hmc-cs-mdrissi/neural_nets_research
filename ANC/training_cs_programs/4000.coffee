@@ -1,1 +1,0 @@
-if 5 * (1 * 3) then a0 = 6 == 7 if 8 * 2 if 6 == 3 if 9 + 1 else a0 = 9

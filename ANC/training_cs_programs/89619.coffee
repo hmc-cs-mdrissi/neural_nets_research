@@ -1,1 +1,0 @@
-if (0 == 0) + 6 + 9 * 7 then 1 else a0 = 7 while (9 + 2) * 5

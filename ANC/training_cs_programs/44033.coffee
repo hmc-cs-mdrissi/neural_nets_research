@@ -1,1 +1,0 @@
-if 5 * 5 * 7 + (8 + 4) then a0 = 2 if 4 * 0 if 6 + 4 if 0 else a0 = 8

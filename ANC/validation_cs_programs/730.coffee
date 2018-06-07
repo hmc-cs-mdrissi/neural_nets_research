@@ -1,1 +1,0 @@
-if 4 * 3 * 3 == 6 + 5 then a0 = 5 * 5 if 4 * 6 if 3 * 9 + 9 else 9 + 0 while 3 while 9 * 1

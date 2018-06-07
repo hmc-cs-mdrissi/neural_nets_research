@@ -1,1 +1,0 @@
-if ((9 == 6) == 2) == 0 then a0 = 0 + 2 while 0 while 6 + 2 while 2 * 3 * 9 else a0 = (6 == 8) * 8

@@ -1,1 +1,0 @@
-if 2 then 3 * 4 while 5 while 2 else 2 if 0 * 1 + 2

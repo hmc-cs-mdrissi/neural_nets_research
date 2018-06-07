@@ -1,8 +1,0 @@
-if (2 * 2 + 2) * (4 * 9)
-	a0 = 5
-	a0 = a0
-	a0 = 1
-else
-	a0 = 9 + 9
-	a1 = a0 * 8
-	if a1 == a1 then a0 = a1 else a0 * 0

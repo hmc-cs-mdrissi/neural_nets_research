@@ -1,8 +1,0 @@
-while ((4 == 1) + (2 + 4)) * ((6 + 2) * (0 + 0))
-	a0 = 2 + 4
-	a1 = 6 + 7
-	if a0 == a0 then a0 == a1 else a1
-	if a1 * 5
-		a2 = a0 * a1
-	else
-		a2 = a0

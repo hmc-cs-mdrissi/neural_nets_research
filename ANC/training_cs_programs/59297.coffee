@@ -1,1 +1,0 @@
-if 9 then a0 = 8 else a0 = 0 * 4 while 3 * 7 while 6 while 8 * 9 == 9

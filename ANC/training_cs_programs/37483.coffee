@@ -1,1 +1,0 @@
-if (2 == 9) * (0 + 1) then a0 = 2 * 2 while 2 * 0 while 0 == 9 while 4 * 3 + 0 else a0 = 2

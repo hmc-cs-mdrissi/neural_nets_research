@@ -1,1 +1,0 @@
-if 1 * (7 + 9) then 3 + 4 while 8 + 1 while 2 while 0 + 5 + 7 else a0 = 7 * 6 while 0 * 0 while 1 * 4 while (6 == 6) == 6

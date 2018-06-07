@@ -1,1 +1,0 @@
-if 4 then a0 = 3 if 7 + 4 if 1 + 9 + 8 else a0 = 2

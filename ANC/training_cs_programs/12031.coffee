@@ -1,1 +1,0 @@
-2 * 6 while 8 == 4 while 1 * 7 while 7 * 8 + (3 + 0) while 2

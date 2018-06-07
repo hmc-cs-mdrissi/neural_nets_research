@@ -1,1 +1,0 @@
-if 5 then a0 = 9 + 5 + 9 * 4 else 4 + 9 while 1 + 2 while (8 + 3) * 8

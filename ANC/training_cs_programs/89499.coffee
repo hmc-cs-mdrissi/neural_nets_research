@@ -1,1 +1,0 @@
-if 1 + 7 + 6 * 0 then a0 = 8 else a0 = 7

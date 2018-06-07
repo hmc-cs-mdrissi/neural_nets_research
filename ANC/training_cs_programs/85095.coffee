@@ -1,1 +1,0 @@
-if 7 * 1 * 4 then a0 = 3 + 0 if 5 + 2 if 0 else a0 = 3

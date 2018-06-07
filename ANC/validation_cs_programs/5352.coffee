@@ -1,7 +1,0 @@
-if 0 + 7 + 7
-	if 0 + 5 then a0 = 8 * 2 else a0 = 4 == 9
-else
-	4 == 5
-	8 + 7
-	while 2 * 9
-		a0 = 7 * 6

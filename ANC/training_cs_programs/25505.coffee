@@ -1,1 +1,0 @@
-if 5 * 8 * 5 + 9 * 7 then 3 else a0 = 3 + 9 if 1 * 2 if 9 if 8 * 9 + 5

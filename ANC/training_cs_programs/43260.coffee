@@ -1,1 +1,0 @@
-if 7 + 0 + 8 + (8 + 9) then 8 + 3 while 3 + 7 while 6 + 8 + 2 else 4 + 0 while 3 * 6 while 8 == 0 while 6 + 1 + 5

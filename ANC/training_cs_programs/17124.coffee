@@ -1,1 +1,0 @@
-if (2 == 3) + 2 * 4 then a0 = 8 + 1 while 1 * 4 while 3 * 1 while 3 == 2 else a0 = 5 + 8 if 7 + 3 + 0

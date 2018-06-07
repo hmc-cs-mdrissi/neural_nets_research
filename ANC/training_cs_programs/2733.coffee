@@ -1,1 +1,0 @@
-if 1 + 2 == 7 * 6 then a0 = 3 * 8 while 6 + 4 + 7 else 2 == 3 while 0 == 1 while 9 + 0 == 3

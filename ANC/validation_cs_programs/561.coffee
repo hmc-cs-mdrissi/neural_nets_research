@@ -1,1 +1,0 @@
-if 2 then a0 = 1 * 0 if 6 if 5 * 2 if (4 + 8) * 7 else a0 = 7 + 2 if 7 + 4 + 5

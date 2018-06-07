@@ -1,1 +1,0 @@
-if 9 + 4 + 9 == 0 then 5 * 9 * (5 + 7) else a0 = 1 == 2 while 1 * 6 while 3

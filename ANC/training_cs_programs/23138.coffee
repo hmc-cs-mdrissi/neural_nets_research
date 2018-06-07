@@ -1,8 +1,0 @@
-9 * 1
-a0 = 4 * 9
-if 1 == a0 then a1 = 3 else a1 = a0
-if 4
-	a1 = 0 + a0
-	a2 = a1 + a1
-while a0 * 9
-	a0 = a0

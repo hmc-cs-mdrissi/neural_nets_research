@@ -1,1 +1,0 @@
-if 4 * 1 then a0 = 2 else a0 = 8 * 3 while 1 + 0 == 7

@@ -1,1 +1,0 @@
-if 4 then 3 * 0 * 0 while 2 else a0 = 3

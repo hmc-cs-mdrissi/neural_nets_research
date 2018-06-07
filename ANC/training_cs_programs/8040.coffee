@@ -1,1 +1,0 @@
-if 8 then a0 = 7 while 7 + 1 else 3

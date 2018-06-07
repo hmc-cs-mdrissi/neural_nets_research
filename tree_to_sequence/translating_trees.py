@@ -166,10 +166,11 @@ def make_tree_lambda_calculus(json, long_base_case=True):
 
 # TODO: All of the make_tree's with pass.
 def make_tree_javascript(json, long_base_case=True):
+    
     check_general_base_cases = general_base_cases(json)
     
     # Ignore these keys completely
-    ignore_words = ["start", "end", "init", "generator", "computed", "sourceType", "kind", "type"]
+    ignore_words = ["start", "end", "init", "generator", "computed", "sourceType", "kind", "type", "operator"]
     
     # Base cases (ints and var names)
     if check_general_base_cases is not None:
@@ -643,7 +644,6 @@ def category_to_child_coffee(num_vars, num_ints, category):
 
     
 class Coffee(IntEnum):
-    ROOT = -1
     VAR = 0
     CONST = 1
     PLUS = 2
@@ -665,6 +665,7 @@ class Coffee(IntEnum):
     SIMPLEWHILE = 18
     WHILECOMPLEX = 19
     SIMPLESTATEMENT = 20
+    ROOT = 21
     
     
 def parent_to_category_coffee(num_vars, num_ints, parent):
@@ -710,12 +711,11 @@ def parent_to_category_coffee(num_vars, num_ints, parent):
     
     # Special case for the root
     if op_index == Coffee.ROOT:
-        return lambda_grammar[Lambda.BLOCK]
+        return [CoffeeGrammar.BLOCK]
     
     # If parent is an int or a variable name, we are done.
     if int(parent) < num_ints + num_vars:
         return []
-    
     return coffee_grammar[op_index]
     
     

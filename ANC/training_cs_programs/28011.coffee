@@ -1,1 +1,0 @@
-9 * 1 while 3 * 6 while 4 + 5 while (2 == 6) + 0 while 2 * 0 * (8 * 0) while 1 * 7 + 8 * 7 == (6 + 8) * 2

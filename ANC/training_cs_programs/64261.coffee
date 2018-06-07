@@ -1,8 +1,0 @@
-if 5 * (4 + 2)
-	while 1 * 1 + 7
-		a0 = 3 * 9
-		a0 == a0
-else
-	a0 = 5 + 2
-	a1 = 0 + 9
-	if a0 then a1 = 9 else a0

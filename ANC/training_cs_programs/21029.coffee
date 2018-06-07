@@ -1,1 +1,0 @@
-5 + 6 while 8 while 6 + 3 while (1 + 7) * 5 while 4 + (9 + 5) while (6 * 8 + (6 + 2)) * 8

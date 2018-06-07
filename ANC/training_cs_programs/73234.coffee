@@ -1,1 +1,0 @@
-if 4 * 5 + (2 + 1) then a0 = 5 + 4 while 3 * 1 while 6 * 9 while (3 == 3) == 4 else a0 = 2 * 4 + 1 * 0

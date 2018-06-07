@@ -1,1 +1,0 @@
-if 8 then 0 * 8 if 4 == 4 if 0 * 7 if (9 == 3) + 7 else 3 * 3 while 9 * 4 while 8 + 3 + 0

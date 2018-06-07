@@ -1,1 +1,0 @@
-if 0 + 5 then a0 = 5 * 2 * (2 * 9) else a0 = 0 if 5

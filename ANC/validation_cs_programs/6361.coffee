@@ -1,1 +1,0 @@
-if 4 == 8 + 0 then a0 = 8 if 0 * 2 * 8 else a0 = 3 * 6 if 9 == 8 if 8 * 1

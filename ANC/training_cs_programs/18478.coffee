@@ -1,1 +1,0 @@
-if (2 == 2) == 7 * 3 then a0 = 5 * (0 * 6) else a0 = 5 + 1 while 1 while 5

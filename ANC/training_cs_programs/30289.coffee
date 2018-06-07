@@ -1,7 +1,0 @@
-3 * 3
-a0 = 8 * 1
-if a0 then a1 = a0 else a1 = a0
-if 1 * 8 == 1
-	a1 = 1 * a0
-	1
-if a0 + 4 then a1 = 4 else a0 * a0 + a0

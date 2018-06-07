@@ -1,1 +1,0 @@
-if 6 + 6 + (3 == 8) then a0 = 9 if 9 else a0 = 4

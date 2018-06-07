@@ -1,3 +1,0 @@
-if 6 * 9 then 3 + 4 else 3
-a0 = (6 == 1) + (1 + 2)
-if a0 * a0 then a0 = 1 * a0 * 0 else a0 = (8 == 7) * a0

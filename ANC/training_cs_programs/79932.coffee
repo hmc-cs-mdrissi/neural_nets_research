@@ -1,1 +1,0 @@
-if 2 then 4 == 2 if 6 + 7 if 7 + 1 if (1 == 7) * 2 else a0 = (2 == 5) * 7 while 9 + 2 == 6

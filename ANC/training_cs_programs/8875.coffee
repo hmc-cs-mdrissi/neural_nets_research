@@ -1,9 +1,0 @@
-if 2 * 4 * (0 * 5)
-	0 == 5
-	a0 = 9 + 1
-	if a0 + a0 then a1 = a0 else a1 = 8
-while 2 * 5 + 7 * 0
-	a0 = 5 * 8
-	4
-	while 5
-		a1 = 5 * a0

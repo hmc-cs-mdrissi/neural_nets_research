@@ -1,1 +1,0 @@
-if (5 == 4) * 2 * 2 then a0 = 1 * 0 * 6 while 8 else a0 = 4

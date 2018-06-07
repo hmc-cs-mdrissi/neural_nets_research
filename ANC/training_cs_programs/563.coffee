@@ -1,8 +1,0 @@
-while 3 * 3 + 4 * 9
-	while 7 == 3
-		6 * 9
-	if 6 + 4
-		a0 = 7
-	else
-		9 == 1
-a0 = 5 while 0 + 3

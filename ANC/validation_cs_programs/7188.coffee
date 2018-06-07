@@ -1,1 +1,0 @@
-if 3 * 9 * 7 == 5 then a0 = 2 + 2 + 2 while (8 + 7) * 2 else 9

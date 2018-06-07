@@ -1,1 +1,0 @@
-if 7 then 0 == 7 if 9 * 8 if 7 + 9 else a0 = 8 == 1 + 3

@@ -1,1 +1,0 @@
-if 4 + 6 + 4 == 0 then a0 = 0 else a0 = 3 * 6 if 9 if 4 + 6 if 4 + 4

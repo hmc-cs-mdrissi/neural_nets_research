@@ -1,1 +1,0 @@
-if 3 then a0 = 0 if 2 + 0 if 3 * 7 if (1 == 2) * 0 else a0 = 9 * 4 if 2 * 3 if 3

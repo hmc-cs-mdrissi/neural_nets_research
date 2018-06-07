@@ -1,1 +1,0 @@
-if 3 then a0 = 6 else a0 = 8 * 6 == 3

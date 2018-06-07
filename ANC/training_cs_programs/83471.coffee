@@ -1,1 +1,0 @@
-if 4 == 2 * 1 then a0 = 6 == 8 while 0 == 3 while 1 else 0

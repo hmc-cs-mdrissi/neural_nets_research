@@ -1,7 +1,0 @@
-if 6
-	a0 = 1 * 9
-	a1 = 5 * 8
-	if a1 + a0
-		a1 = 1 == 1
-else
-	if 6 + 8 then a0 = 7 == 5 else a0 = 4

@@ -1,1 +1,0 @@
-if 2 * 3 + 2 + (1 + 3) then a0 = 5 else a0 = 9 while 6 * 4

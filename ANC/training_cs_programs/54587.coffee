@@ -1,1 +1,0 @@
-if 1 then (5 == 8) * 6 while 8 else a0 = 4 + 2 + (2 + 8)

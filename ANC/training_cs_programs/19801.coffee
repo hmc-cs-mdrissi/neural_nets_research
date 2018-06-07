@@ -1,1 +1,0 @@
-if 0 * 4 + 0 == 6 * 5 then a0 = 3 + 6 == 0 else a0 = 7 while 6 + 1

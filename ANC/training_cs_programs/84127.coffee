@@ -1,1 +1,0 @@
-if 4 + 6 + 0 + 8 * 7 then 7 if 5 * 8 if 9 * 8 else a0 = 3 * 7 == 8 while 3 * 7 == 3

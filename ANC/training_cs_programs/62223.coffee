@@ -1,9 +1,0 @@
-if 1 * 9 * 0
-	a0 = 9 * 7
-	a0 = a0 + a0
-else
-	while 0 + 1
-		7 == 1
-while 0 * (0 * 9)
-	if 6 + 5 then a0 = 4 else 8 * 7
-	a0 = 9 == 7

@@ -1,1 +1,0 @@
-if 3 * (6 * 9) then a0 = 2 * (1 == 2) else a0 = 8 * 4 while 8 * 5 while 3 * 9 while (2 == 7) * 8

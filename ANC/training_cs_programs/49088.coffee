@@ -1,1 +1,0 @@
-if (2 + 2) * 2 + 6 * 4 then a0 = 4 while 6 == 0 while 4 * 5 * 2 else a0 = 1

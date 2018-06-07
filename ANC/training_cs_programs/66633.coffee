@@ -1,1 +1,0 @@
-if (8 * 6 + 2) * (8 + 9) then a0 = 7 == 6 while 1 == 9 while 1 else 2 while (0 == 9) == 1

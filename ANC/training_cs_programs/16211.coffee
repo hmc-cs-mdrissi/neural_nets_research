@@ -1,8 +1,0 @@
-if 8 * 2 + 9 + (8 + 8)
-	a0 = 4 + 4
-	a1 = a0
-	a2 = 5
-else
-	if 4
-		a0 = 7 * 3
-	if 2 * 6 then a0 = 0 else a0 = 9

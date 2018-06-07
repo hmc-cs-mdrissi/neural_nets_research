@@ -1,6 +1,0 @@
-if 1 * 7 + 4 then 4 + 4 + 4 else a0 = 0 * 2 == 3
-while 8
-	a0 = 8
-	a1 = a0 + a0
-	if 4
-		a0 + a1

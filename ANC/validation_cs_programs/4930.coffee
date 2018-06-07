@@ -1,1 +1,0 @@
-if 7 then 3 else a0 = 8 * 9 + 8 * 4

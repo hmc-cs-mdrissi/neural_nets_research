@@ -1,1 +1,0 @@
-if 3 * 2 + 2 * 8 then a0 = 0 if 1 == 2 if 4 else a0 = 6 + 2

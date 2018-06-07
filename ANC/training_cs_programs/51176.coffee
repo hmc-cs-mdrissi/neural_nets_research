@@ -1,1 +1,0 @@
-if 6 + 2 + 3 == (2 == 2) then 6 + 2 while 0 + 9 while (2 == 1) * 4 else a0 = 8 + 8 while 3 * 1 while 6 * 8 while 1 + 9 == 7

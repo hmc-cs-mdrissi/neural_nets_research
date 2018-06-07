@@ -1,1 +1,0 @@
-if ((1 == 3) == 0) + 0 then a0 = 1 * 3 while 4 * 2 while 0 == 6 while 2 * 7 else a0 = 6 + 3 == 4 * 6

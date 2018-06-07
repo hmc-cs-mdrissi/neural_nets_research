@@ -1,1 +1,0 @@
-if 2 + (4 + 9) then a0 = 7 == 1 while 8 + 5 while 0 + 2 while (4 == 8) * 3 else a0 = 4 + 8 == 6 + 6

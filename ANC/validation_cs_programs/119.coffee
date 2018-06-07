@@ -1,1 +1,0 @@
-if (3 * 9 + 7) * (0 + 7) then a0 = 4 * 5 while 5 while 1 + 8 while 1 else a0 = 2 * 3 == 4 while (3 + 2) * 2

@@ -1,1 +1,0 @@
-if 5 == (8 == 0) then a0 = 5 + 3 while 9 * 5 while 0 else a0 = 1 == 5 while 2 + 7 while 5 == 5 while 5 * 4 * 4

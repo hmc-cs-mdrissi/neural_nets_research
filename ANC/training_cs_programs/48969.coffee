@@ -1,9 +1,0 @@
-if 6 + 7
-	a0 = 7 * 1
-else
-	4 + 6
-if (5 == 4) + 5
-	5 + 3
-	a0 = 3 == 1
-while 1
-	if 5 then 6 + 7 else a0 = 1 * 5

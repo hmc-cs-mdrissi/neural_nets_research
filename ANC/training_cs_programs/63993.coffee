@@ -1,1 +1,0 @@
-if 8 then 4 else a0 = 5 == 6 if (2 == 1) * 8

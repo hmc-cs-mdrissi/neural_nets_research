@@ -1,1 +1,0 @@
-if (4 + 9) * (9 * 6) then a0 = 1 else a0 = 2 == 8 while 1 * 9 while 7 * 6 * 6

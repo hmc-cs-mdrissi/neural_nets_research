@@ -1,1 +1,0 @@
-if 7 * 2 + 5 * 7 then 1 + (1 + 2) else a0 = 5 + 5 while 3 * 5

@@ -1,1 +1,0 @@
-if 4 then a0 = 8 * 7 else a0 = 0 * 6 if 7 * 9 * 2

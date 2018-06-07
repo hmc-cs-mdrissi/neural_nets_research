@@ -1,1 +1,0 @@
-if 5 then 1 * 6 if 7 * 1 if 1 + 2 if 5 + 5 else a0 = 8 * 5 + (5 == 2)

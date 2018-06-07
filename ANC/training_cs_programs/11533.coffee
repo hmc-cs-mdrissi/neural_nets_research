@@ -1,9 +1,0 @@
-if 2 * 0
-	a0 = 8 == 6
-else
-	a0 = 4 * 1
-if 0 then 4 + 0 else a0 = 8 * 0
-while 2 * 1 == 0
-	4 + 2
-	a0 = 2
-	a1 = a0 * a0

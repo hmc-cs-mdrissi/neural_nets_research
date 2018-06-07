@@ -1,1 +1,0 @@
-if 1 then a0 = 8 + 5 == 9 else a0 = 4 * 0 while (2 == 2) * 0

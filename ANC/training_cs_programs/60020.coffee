@@ -1,1 +1,0 @@
-if 1 then a0 = 4 + 2 == 6 if 6 + 8 else a0 = 8

@@ -1,9 +1,0 @@
-if (1 == 8) + 5 + 9 * 7
-	a0 = 2
-	a1 = a0
-	while a1 == 0
-		a2 = 0 + a1
-else
-	while 9
-		a0 = 7 + 5
-		a1 = a0 * a0

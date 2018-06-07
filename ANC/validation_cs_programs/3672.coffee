@@ -1,1 +1,0 @@
-if 1 then 9 * 2 while 0 + 3 while 7 + 2 while 0 * 7 + 4 else (6 * 4 + 5) * (2 + 7)
