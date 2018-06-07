@@ -1,0 +1,1 @@
+if (2 + 3) * 7 * (6 * 4) then a0 = 9 == 8 while 5 * 4 while 8 * 0 + 2 else a0 = 0 * 5 * 6 while 1

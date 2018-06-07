@@ -1,0 +1,11 @@
+a0 = 7 == 5
+a1 = a0 + 7
+while 2
+	a1 * 4
+if a1 then a1 + a0 else a2 = a0
+while 6 * 0 + 6 * 9
+	if a0 + a1
+		a0 = 3
+	else
+		a2 = 6
+	if 4 then a2 = a1 else 6 == a0

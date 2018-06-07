@@ -1,0 +1,1 @@
+if 6 + 7 + 2 == 5 + 0 then a0 = 5 + 9 + 3 while 4 + 6 + 7 else a0 = 2 if 5 * 0 if 9

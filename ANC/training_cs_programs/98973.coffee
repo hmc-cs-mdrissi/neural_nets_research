@@ -1,0 +1,12 @@
+a0 = 1 * 6
+a0 = 6
+if a0 * 1
+	a0 = a0
+else
+	a0 = a0
+if a0 == a0
+	a1 = 8 * 6
+	7 + a1
+if a0 * 8 == 8
+	if a0 then a1 = 0 else 6 == a0
+	if a0 == 1 then 4 else a1 = a0

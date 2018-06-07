@@ -1,0 +1,1 @@
+if 2 * 5 then a0 = 3 * 9 if 8 + 0 if 7 * 6 if 8 else a0 = 2 + 5

@@ -1,0 +1,16 @@
+a0 = 6 == 1
+a1 = a0
+if a1 * a1
+	a1 = 5
+else
+	a2 = a0
+if a0 + 6
+	a0 = 4
+else
+	3 == a0
+if (a1 + 2) * 0
+	a2 = a1 + 8
+	9 + 4
+else
+	a2 = a1
+	a3 = a2 == 2

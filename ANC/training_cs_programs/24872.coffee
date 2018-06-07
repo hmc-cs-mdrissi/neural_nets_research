@@ -1,0 +1,1 @@
+if 4 then a0 = 2 if 6 * 9 if 6 else a0 = 6

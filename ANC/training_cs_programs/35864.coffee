@@ -1,0 +1,6 @@
+a0 = 6
+if 2 * a0 then a1 = 9 else a1 = a0
+if 9 + a0
+	a0 = 8 + 2
+	a1 = a0
+a0 = 4 * (a0 + a0) + a0

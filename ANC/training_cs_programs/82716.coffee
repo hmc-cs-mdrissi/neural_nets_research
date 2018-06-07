@@ -1,0 +1,11 @@
+a0 = 6 + 6
+a1 = 1 * 1
+if a0 + a0
+	a2 = 4 + 8
+if a0 == a1 then a2 = 4 + 0 else a1 = 2 + a0
+if a0 * 9
+	a2 = a0 + 1
+	a3 = a0
+else
+	if 0 == a1
+		a2 = a0 * a0

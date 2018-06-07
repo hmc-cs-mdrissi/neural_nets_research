@@ -1,0 +1,13 @@
+if 9
+	if 8 + 0
+		a0 = 5
+	else
+		a0 = 9
+	if 2 * 8
+		a0 = 1
+	else
+		a0 = 2
+else
+	if (3 + 8) * 7
+		a0 = 2 * 5
+		a0 * a0

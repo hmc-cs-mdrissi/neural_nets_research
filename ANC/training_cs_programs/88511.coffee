@@ -1,0 +1,13 @@
+3 * 1
+a0 = 0 * 2
+a1 = a0 + 7
+if a1 * a1
+	a2 = 9
+else
+	a2 = a0
+if 0 + 4 + 2
+	a2 = 2 == 1
+	a1 = a2 * 3
+else
+	while 3 * a0
+		a2 = a0 == a1

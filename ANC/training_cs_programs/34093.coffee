@@ -1,0 +1,1 @@
+if (6 == 5) * 1 * (5 * 5) then 8 while 4 while 5 + 8 == 2 else a0 = 8

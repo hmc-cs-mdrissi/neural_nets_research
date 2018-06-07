@@ -1,0 +1,7 @@
+while 3 * (5 * 7)
+	a0 = 5 * 9
+	a0 = 4
+	while 3 * a0
+		a1 = a0 * a0
+while 9 * 0 * (6 * 1)
+	if 5 + 7 then 0 else a0 = 0 * 0

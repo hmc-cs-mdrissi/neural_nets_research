@@ -1,0 +1,9 @@
+a0 = 7 * 5
+a1 = a0
+while 0 + a0
+	a1 * a1
+while (7 == a0) * 0
+	if 4 * 3 then a1 = a1 else a2 = a1
+if (a1 + a0) * (a0 == a0)
+	if 4 + a1 + a0
+		if a1 * a1 then 7 else a1 = 5

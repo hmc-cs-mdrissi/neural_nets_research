@@ -1,0 +1,1 @@
+if 9 * 4 + 5 * 4 then a0 = 6 + 6 while 6 else a0 = 2 * 3 * (7 + 0)

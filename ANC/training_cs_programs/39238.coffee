@@ -1,0 +1,13 @@
+a0 = 5
+a0 = a0 * a0
+if 4 * a0
+	a1 = 1
+else
+	a1 = a0
+while a0
+	a1 = 8 + 1
+	a1 = a0
+if 4
+	a1 = 5 * a0
+	a1 = a1 * 7
+	a2 = 5

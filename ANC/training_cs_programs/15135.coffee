@@ -1,0 +1,16 @@
+a0 = 7 * 1
+a1 = 3 * 0
+if a1 * 4
+	a2 = 6
+else
+	a2 = 7
+if a1 == 8
+	a2 = a0 + 7
+else
+	a2 = a0
+if a0 * a1 * a1
+	a2 = 0 * a0
+	a3 = 4 * 9
+else
+	if a1 * 3
+		a2 = a0

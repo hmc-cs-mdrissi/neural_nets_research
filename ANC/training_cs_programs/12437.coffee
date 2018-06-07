@@ -1,0 +1,9 @@
+a0 = 7 + 4
+a1 = a0 + 3
+if a0
+	a2 = a0 + a1
+if a1 * a1 then a2 = a0 * a0 else 0 * 4
+if 5 + 7 == 5 * a0
+	if a1 == 8 then a0 = a0 else a2 = 4
+	if a1 * 0
+		a0 = a1 + a1

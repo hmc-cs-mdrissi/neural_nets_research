@@ -1,0 +1,1 @@
+if (8 + 4 + 3) * (5 * 5) then a0 = 0 if 8 else 8 while 6

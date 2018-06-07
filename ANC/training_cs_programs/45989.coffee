@@ -1,0 +1,12 @@
+a0 = 8 + 9
+if a0
+	a1 = 8
+else
+	a1 = 9
+while a0
+	a0 = a0
+	a1 = 9 + 3
+while 7 * 8 * 4
+	a0 = 0
+	a1 = 4 + a0
+	if a0 == 5 then a2 = 0 else a2 = a0

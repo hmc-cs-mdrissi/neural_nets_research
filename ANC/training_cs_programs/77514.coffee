@@ -1,0 +1,1 @@
+if 0 then a0 = 1 * 7 if 4 if 8 == 1 if 2 * 4 * 2 else a0 = 7 + 6 == 6 + 6

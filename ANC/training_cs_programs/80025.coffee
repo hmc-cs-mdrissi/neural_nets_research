@@ -1,0 +1,7 @@
+if 2 then a0 = 8 * 9 else 2 == 9
+while (1 == 5) + 2
+	a0 = 4
+	a0 = a0
+while 4
+	while (1 == 6) == 9
+		6 * 2

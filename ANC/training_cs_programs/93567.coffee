@@ -1,0 +1,15 @@
+a0 = 3 * 7
+a1 = a0 * a0
+if a0 + a1 then a2 = a1 else a2 = 3
+while 7 + a1 + a0
+	if 5 + a0
+		a2 = 5
+	else
+		a2 = a1
+if a1 * a0 == a1 + 8
+	a0 == a1
+	a2 = a0 + a0
+	if a1 * 8
+		a3 = 4
+	else
+		a3 = a2

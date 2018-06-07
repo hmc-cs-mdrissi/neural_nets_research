@@ -1,0 +1,7 @@
+if 3 + 5 then a0 = 7 else 6 * 7
+a0 = 3
+if 7
+	a1 = 7
+	a1 = 4
+	while 5 * a1
+		a1 = a0 * a1

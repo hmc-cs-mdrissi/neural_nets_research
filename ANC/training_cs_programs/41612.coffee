@@ -1,0 +1,8 @@
+a0 = 8 * 4 * (5 * 5)
+while a0 * a0 * a0
+	a1 = a0 * a0
+	a0 = a0
+while a0
+	a1 = a0 == a0
+	a0 = a1 == a0
+	a1 * 4 == a0

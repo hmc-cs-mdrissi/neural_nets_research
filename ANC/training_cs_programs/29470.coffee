@@ -1,0 +1,14 @@
+if (0 == 9) + 5
+	while 9 * 6
+		a0 = 7 * 0
+else
+	2 + 6
+	4 + 6
+if 7 * 4
+	if 8
+		a0 = 3
+	else
+		5 * 3
+else
+	while 3 * 0
+		5 * 4

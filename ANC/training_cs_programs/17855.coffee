@@ -1,0 +1,1 @@
+if (6 == 6) * (2 + 2) then a0 = 1 else 7 + 3 if 1 * 4 if 2 * 7 if 6

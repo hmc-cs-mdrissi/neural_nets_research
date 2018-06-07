@@ -1,0 +1,9 @@
+a0 = 9 + 8
+a1 = a0 + a0
+while a0 == 4
+	a1 = 2 * a1
+if 5 * a1
+	a0 = a0 * 0
+else
+	a2 = 1
+a0 = a1

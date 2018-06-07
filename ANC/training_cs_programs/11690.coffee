@@ -1,0 +1,9 @@
+if 7 * (1 + 6)
+	if 6 * 1
+		a0 = 2 + 0
+	while 0
+		a0 = 2 * 7
+else
+	while 6 * 2
+		6 * 5
+	if 7 then a0 = 4 else a0 = 4

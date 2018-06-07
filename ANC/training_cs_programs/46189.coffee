@@ -1,0 +1,8 @@
+a0 = 9 + 8
+if a0 + 4 then a0 else a1 = a0 * a0
+if 1
+	a1 = a0
+	a1
+else
+	a1 = a0 * a0
+	a2 = 0 + a0

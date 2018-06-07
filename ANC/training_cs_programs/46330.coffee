@@ -1,0 +1,11 @@
+if (5 + 1) * 0 == 9
+	if 4 * 4
+		while 0 + 3
+			1 + 2
+	else
+		a0 = 7
+		a1 = 0
+else
+	while 6
+		a0 = 8 + 6
+		a1 = a0 * a0

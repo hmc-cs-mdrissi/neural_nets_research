@@ -1,0 +1,1 @@
+if 4 * 0 + 3 == 7 + 7 then 1 else a0 = 8 + 8 while 8 == 5 while 0 * 3 while 9 + 5

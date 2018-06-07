@@ -1,0 +1,11 @@
+9 + 7
+a0 = 7 * 5
+if a0 * 1
+	a1 = 7 * a0
+if 1 then a1 = 4 else a1 = 1 + a0
+if (a0 == a0) == 9
+	if a0 == 7
+		if a0
+			a0 = a0
+		else
+			a1 = a0

@@ -1,0 +1,11 @@
+a0 = 9 * 9
+a1 = 6 + 5
+if a0 then a1 = 4 else a2 = a1
+a2 = 1 + 3 if 9 if (a0 + 9) * a0
+if 6 == a1 * a0
+	a2 = 3 * a0
+	a1 = a1 + a0
+	if 4
+		a3 = 4
+	else
+		a3 = a2

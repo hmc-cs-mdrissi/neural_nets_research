@@ -1,0 +1,7 @@
+if 0 + 5
+	if 2 + 8
+		a0 = 3
+else
+	while 3 * 1
+		a0 = 1 + 0
+if 3 * 9 then 9 else a0 = (6 + 4) * 3

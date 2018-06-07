@@ -1,0 +1,13 @@
+0
+a0 = 4 * 3
+if 4 * a0
+	a1 = 3
+else
+	a1 = 0
+(8 == a0) * (0 * a0)
+while 1
+	if a0 then a1 = 8 else a0 * 6
+	if 9
+		a0 = 5
+	else
+		a1 = 5

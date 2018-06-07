@@ -1,0 +1,10 @@
+if (5 == 3) * 8 + 2 * 1
+	a0 = 4 * 6 * 7
+	if 7 + a0 then a0 = 2 else a1 = 6
+else
+	a0 = 4 + 4
+	a1 = a0
+	if a0
+		a1 = 3
+	else
+		5 * 5

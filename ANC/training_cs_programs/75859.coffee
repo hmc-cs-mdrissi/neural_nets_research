@@ -1,0 +1,1 @@
+if 8 then a0 = 2 == 7 if 1 if 8 + 7 if 2 + 8 else a0 = 1 == 2 while 8 + 3 while 4 + 0 while 5 + 7 == 1

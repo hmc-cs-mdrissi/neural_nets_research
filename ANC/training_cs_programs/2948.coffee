@@ -1,0 +1,14 @@
+if 3
+	a0 = 1
+else
+	0
+if 5
+	1 + 1
+else
+	a0 = 4
+if (3 == 6) + 4
+	while 5 + 6
+		a0 = 1 == 9
+else
+	a0 = 0
+	a1 = a0 * 5

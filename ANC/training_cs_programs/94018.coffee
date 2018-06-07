@@ -1,0 +1,7 @@
+if 1 * 8 then a0 = 0 else a0 = 0 == 1
+if (4 == 1) * 0
+	5 == 2
+	a0 = 7
+while 5
+	a0 = 8 if 1 + 9
+	a0 = 4 if 5

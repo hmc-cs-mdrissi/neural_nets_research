@@ -1,0 +1,1 @@
+if (4 + 6) * 7 == 7 + 7 then a0 = 0 == 9 while 1 + 7 while 2 * 1 while 7 else a0 = 2

@@ -1,0 +1,18 @@
+if 2 + 2
+	0 * 6
+else
+	a0 = 9
+if 3
+	a0 = 5
+else
+	a0 = 4
+while (9 == 4) + 6
+	a0 = 9 * 8 while 0 * 2
+if 7 == 4
+	5 + 1
+	a0 = 4
+else
+	if 6 + 5
+		a0 = 3
+	else
+		a0 = 5

@@ -1,0 +1,1 @@
+if 2 * 6 + 9 * 5 then a0 = 2 * 3 + 6 while (1 + 9) * 4 else a0 = (3 == 2) + 5 while 1 + 2 + 2

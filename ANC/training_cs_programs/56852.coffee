@@ -1,0 +1,13 @@
+if 4 * 2 * 2 == 4 * 8
+	if 8 + 9
+		a0 = 7
+		a0 = 9
+	else
+		a0 = 8
+		a1 = 1
+else
+	if 9 + 8
+		a0 = 3
+	else
+		a0 = 4
+	if 2 == 6 then a0 = 6 else 8 + 3

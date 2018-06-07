@@ -1,0 +1,1 @@
+if 6 * (5 * 6) then a0 = 0 * 6 while 9 while 1 * 9 else a0 = (1 + 4) * (8 * 0)

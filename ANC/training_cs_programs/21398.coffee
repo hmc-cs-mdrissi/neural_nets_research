@@ -1,0 +1,1 @@
+if 6 then 8 * 0 + 3 if 3 + 1 == 2 else a0 = 6

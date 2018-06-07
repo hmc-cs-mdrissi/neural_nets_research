@@ -1,0 +1,1 @@
+if (3 + 5 == 9) + 8 * 6 then a0 = 4 while 4 * 2 + 2 else 4

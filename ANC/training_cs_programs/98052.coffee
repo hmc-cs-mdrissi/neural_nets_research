@@ -1,0 +1,8 @@
+if 8 then 9 + 3 + 2 else a0 = 2 * 6
+if 1 * 4 == 1 * 5
+	a0 = 8
+	a1 = a0 == 4
+	if a1
+		a2 = 7
+	else
+		a2 = a1

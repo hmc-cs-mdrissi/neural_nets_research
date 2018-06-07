@@ -1,0 +1,6 @@
+a0 = 9 * 0
+a0 = a0 + a0
+if a0
+	a0 = a0 == 9
+a1 = a0 while a0 while 3 + a0 == 7
+a1 = a0

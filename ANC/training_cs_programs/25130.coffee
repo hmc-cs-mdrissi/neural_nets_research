@@ -1,0 +1,15 @@
+if 0 * 0 + 5
+	a0 = 0 == 3
+	a1 = a0 * a0
+else
+	if 7 + 1
+		a0 = 4
+	else
+		a0 = 8
+if 2
+	a0 = 5 + 9
+	a1 = 3 + a0
+	if a1 == 8
+		a2 = a0
+	else
+		a2 = a0

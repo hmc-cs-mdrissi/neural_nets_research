@@ -1,0 +1,11 @@
+while 3
+	if 5 * 3
+		0 + 3
+	if 4 == 1 then a0 = 6 else a0 = 6
+if 1 + 4 + (8 + 6)
+	a0 = 7 + 0
+	a1 = 1 + a0
+	if a0 == 2
+		a2 = a1
+	else
+		a2 = 0

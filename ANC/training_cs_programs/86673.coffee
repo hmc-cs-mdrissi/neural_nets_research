@@ -1,0 +1,11 @@
+if 1 == 9 + 2
+	a0 = 4 + 0
+	a0 == a0
+	if 9 * 1
+		a1 = a0
+	else
+		a0 == a0
+while 2 * 0 * (7 * 6)
+	a0 = 5 == 9
+	a1 = a0
+	if a1 + 5 then a0 = a1 else a2 = a1

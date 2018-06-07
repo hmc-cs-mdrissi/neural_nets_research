@@ -1,0 +1,12 @@
+5 + 7
+a0 = 0 + 3
+while a0 + a0
+	a0 * 5
+if 7
+	a0
+else
+	a1 = a0
+while (1 == a0) + 1
+	a1 = a0 + a0
+	a2 = 5 * 5
+	a3 = 4 == a0 while a2

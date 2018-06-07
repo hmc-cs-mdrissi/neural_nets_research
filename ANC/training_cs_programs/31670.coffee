@@ -1,0 +1,1 @@
+if 6 then a0 = 6 == 7 else a0 = (5 == 5) == 3 while 0

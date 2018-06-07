@@ -1,0 +1,11 @@
+if 6 * 8 == (6 == 5)
+	a0 = 3 * 1
+	a1 = a0
+	if 1 + a1 then a2 = a1 else a2 = 1
+else
+	a0 = 8 + 8
+	a1 = a0
+	if 1
+		a2 = a1
+	else
+		a2 = a1

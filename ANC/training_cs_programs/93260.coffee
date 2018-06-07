@@ -1,0 +1,12 @@
+if 3 * 1 == 5
+	a0 = 0 * 3
+	a1 = a0
+if 2 + 0 then 1 + 5 else a0 = 0 * 5
+if 0
+	if 9 + 9
+		a0 = 4
+	else
+		a0 = 6
+else
+	a0 = 3 * 7
+	1 + a0

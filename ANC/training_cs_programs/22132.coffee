@@ -1,0 +1,14 @@
+if 6 * 1 + 0
+	while 6
+		8 * 1
+else
+	while 6
+		a0 = 5
+if (1 + 1) * 4
+	a0 = 1 * 5
+	a1 = 2 * 8
+else
+	if 6 == 2
+		4 + 1
+	else
+		a0 = 4

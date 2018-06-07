@@ -1,0 +1,1 @@
+if 2 * 2 + (2 == 8) then a0 = 5 * 7 * 1 else 5 + 7 while 0 while 7 * 6 * 5

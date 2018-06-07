@@ -1,0 +1,11 @@
+a0 = 0 * 7 if 5 + 8
+if 9
+	9 + 3
+if 1 == 6
+	a0 = 5 * 4
+else
+	a0 = 6
+if 1
+	if 6 * 5 then a0 = 6 else a0 = 5
+else
+	if 2 + 9 then a0 = 7 else 5 + 6

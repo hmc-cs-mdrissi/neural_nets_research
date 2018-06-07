@@ -1,0 +1,10 @@
+if 5 * 1
+	9 * 8
+if 2 + 7
+	1
+a0 = 6 * 2 * (3 + 9)
+if a0 * a0 + 1
+	if a0 * 9 then 1 == a0 else a1 = 0
+else
+	if a0
+		a0 * a0

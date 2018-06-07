@@ -1,0 +1,1 @@
+if (6 == 8) * 4 + 6 * 6 then a0 = 4 * 0 while 3 == 3 while 9 else a0 = 6 * 2 * 1 while 5

@@ -1,0 +1,12 @@
+while 2 * 5
+	a0 = 5 + 2
+if 9 * 2
+	a0 = 6
+else
+	2
+a0 = 6 * 9 + (0 + 9)
+while a0
+	a0 * 9
+	a1 = a0 == a0
+	while 1
+		a2 = 2 + 5

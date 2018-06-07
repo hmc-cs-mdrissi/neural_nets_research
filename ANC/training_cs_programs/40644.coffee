@@ -1,0 +1,1 @@
+if 5 then a0 = 2 * 5 else a0 = 6

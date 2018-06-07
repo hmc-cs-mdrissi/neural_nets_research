@@ -1,0 +1,9 @@
+a0 = 3 + 4
+while a0 == a0
+	a1 = 9
+if 6 + 4 then a0 = 1 == a0 else 2 + 3
+while (2 + 1) * (a0 + a0)
+	while 5 * a0
+		a1 = 8 * 6
+	while 5 == a0
+		a0 = 2 * a0

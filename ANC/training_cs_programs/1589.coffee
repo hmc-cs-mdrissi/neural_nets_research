@@ -1,0 +1,13 @@
+if 6 + 5
+	a0 = 5
+else
+	9 * 7
+if 2 then 8 * 2 else 2 + 5
+if 6 + 5 then a0 = 6 + 8 else a0 = 3 == 8
+while 3 + 0 == 5 * 2
+	if 3 == 7
+		6 == 0
+	else
+		a0 = 2
+	if 2 * 7
+		a0 = 5 == 4

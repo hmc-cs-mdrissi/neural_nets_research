@@ -1,0 +1,9 @@
+3
+if 5 + 2
+	a0 = 4 + 4
+else
+	0 * 6
+while 3 * 5 * (3 + 2)
+	if 2 * 5 then a0 = 7 else a0 = 4
+	while 4
+		a0 = 7 == 4

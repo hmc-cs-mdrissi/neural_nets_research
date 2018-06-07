@@ -1,0 +1,9 @@
+a0 = 3 * 0
+a1 = 6 + a0
+a2 = 3 * 6
+a3 = a2 * a1 if a1 + 5 if a1 == a0 if 6
+if 9 == a2
+	a2 == 5
+	a3 = 2 + 8
+	while a2
+		a3

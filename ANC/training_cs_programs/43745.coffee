@@ -1,0 +1,1 @@
+if (3 + 6) * 3 * (6 == 1) then a0 = 9 + 6 while 0 + 9 while 6 + 0 + 0 else a0 = 4

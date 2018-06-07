@@ -1,0 +1,1 @@
+if (4 + 7) * 1 + (0 + 2) then a0 = 0 if 5 * 1 if 4 == 6 else a0 = 9 + 2 while 0 * 0 + 2

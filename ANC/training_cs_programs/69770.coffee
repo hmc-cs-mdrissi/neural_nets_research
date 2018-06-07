@@ -1,0 +1,13 @@
+if 4
+	if 1 == 2
+		a0 = 4
+	else
+		a0 = 5
+	if 0 * 6 then a0 = 5 else a0 = 9
+else
+	if 0 * 6
+		a0 = 2
+		a0 * a0
+	else
+		a0 = 4
+		a1 = 3

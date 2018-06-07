@@ -1,0 +1,13 @@
+a0 = 2 * 2
+a1 = a0 + 3
+while a0
+	a2 = 1
+if 5
+	a2 = a1 * 9
+else
+	a0 = a1 * a0
+if 9 * 4 + a1
+	if 4
+		a1 = 9 == 4
+else
+	if a1 + 5 then a2 = 6 else a2 = 0

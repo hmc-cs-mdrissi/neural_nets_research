@@ -1,0 +1,13 @@
+a0 = 8 * 3
+a1 = 1 * a0
+3 * 0 * 7
+if a1 + a0
+	a2 = a0 * a1
+else
+	a2 = 7
+if 7 + (a1 + 3)
+	if 0 * 1 then a2 = a1 else a1 = 1
+	if 5
+		0 + a1
+	else
+		2 * a0

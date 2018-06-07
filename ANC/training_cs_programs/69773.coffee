@@ -1,0 +1,7 @@
+while 8 + 1 + (9 + 1)
+	while 3 * 5 + 3
+		a0 = 2 + 5
+		a1 = 2 == a0
+while 8 * 1 * (7 == 9)
+	a0 = 2 * 2
+	if a0 == 5 then a1 = 4 else a1 = 3

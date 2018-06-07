@@ -1,0 +1,8 @@
+a0 = 7 * 9
+a0 = 8 + 9
+if a0 then a1 = 4 else a1 = 4
+if 4
+	a1 = a0 + a0
+else
+	a1 = a0 + 4
+a0 = 0 if a0 if a0 == a0 if 5 if 5 + 4 * a0

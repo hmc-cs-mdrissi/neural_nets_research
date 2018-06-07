@@ -1,0 +1,13 @@
+a0 = 3 == 5
+a1 = 8
+while a1 * 8
+	a2 = a1 * 1
+if (9 + a0) * a0
+	if 9 + a1
+		a2 = a0
+	else
+		a0 = a1
+while 8
+	a0 + 3 while a1
+	while a1 * a1
+		a1 = a1

@@ -1,0 +1,10 @@
+a0 = 6 == 8
+a1 = 0 * 5
+while a0
+	a1 = a1
+if a1
+	if 9 == a1
+		a2 = a1
+	else
+		a2 = a1
+a1 = 9 if a1 * (a1 == a1)

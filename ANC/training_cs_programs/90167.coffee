@@ -1,0 +1,8 @@
+a0 = 4 + 0
+a0 = 8
+if 0 then a1 = 2 else a1 = 7
+while (4 == a0) == a0
+	a0 = a0
+	2 * a0
+while 1
+	if a0 then a1 = a0 == 8 else a0 = 8 * 3

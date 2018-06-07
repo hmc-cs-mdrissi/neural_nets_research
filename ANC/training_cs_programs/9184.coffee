@@ -1,0 +1,6 @@
+if (6 * 2 == 9) * 7
+	while 8 + 1
+		if 6 + 0
+			a0 = 3 * 5
+else
+	if 5 + 2 then 4 == 2 else a0 = 0 * 6

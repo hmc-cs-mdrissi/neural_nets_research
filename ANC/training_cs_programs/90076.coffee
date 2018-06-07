@@ -1,0 +1,12 @@
+if 0 + 9
+	a0 = 0 * 8
+if 4 + 5
+	a0 = 7
+else
+	a0 = 7
+a0 = 9 * 9 * (3 + 9)
+if 5
+	while a0 * a0
+		4 * 7
+else
+	a0 * 5 if a0 + a0 if 4 * a0

@@ -1,0 +1,1 @@
+if ((8 == 4) + 7) * 2 then 3 == 3 if 3 + 6 if 9 == 9 if 4 * 5 + 6 else a0 = 6 + 3 while 5 == 3 while 7 while 8 + 4

@@ -1,0 +1,7 @@
+if 8 + 0 then a0 = 5 else 0 == 1
+a0 = 8 * 8
+if a0
+	a1 = 6 * 7
+else
+	a1 = a0 * a0
+a1 = (a0 + 6) * (a0 + a0) if 1

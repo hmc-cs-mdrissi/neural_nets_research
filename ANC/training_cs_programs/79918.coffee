@@ -1,0 +1,11 @@
+a0 = 8 * 5 while 7 * 3
+while 2 + 2
+	a0 = 1 * 4
+if 2 * 9 * 0
+	a0 = 7 + 7
+	a0 + 0
+if 5
+	a0 = 2 * 2
+	a1 = a0
+else
+	if 3 then a0 = 5 else a0 = 2

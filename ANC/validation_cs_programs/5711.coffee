@@ -1,0 +1,1 @@
+if 2 * (1 * 6) then a0 = 5 + (3 + 6) else a0 = 5 + 4 while 7 == 4 while 6 + 7 while (7 == 5) + 6

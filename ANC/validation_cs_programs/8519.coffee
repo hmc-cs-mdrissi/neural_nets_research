@@ -1,0 +1,12 @@
+if 6 * 0 then 4 else a0 = 4
+if 0 then a0 = 0 else a0 = 3
+if 6 + 6
+	a0 = 6 * 1
+else
+	a0 = 5 + 6
+if 6
+	if 1 + 7
+		a0 = 9 == 9
+else
+	3 + 4
+	a0 = 5 * 2

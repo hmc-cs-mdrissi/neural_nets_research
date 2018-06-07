@@ -1,0 +1,5 @@
+while 7 * (7 == 0) + 0
+	if 8 + 7 == 9 * 3
+		a0 = 2 * 1
+		a1 = a0 == a0
+		if a0 then a2 = a1 else a2 = 4

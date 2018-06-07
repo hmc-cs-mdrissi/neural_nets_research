@@ -1,0 +1,11 @@
+a0 = 3 * 3
+a1 = a0 * 4
+if a1 + 0 then a2 = a0 else a1 = a1
+if 3
+	a2 = 0 * a1
+	4 + 2
+if a1 + 2
+	a2 = a1 + a0
+	a3 = a0 * 0
+else
+	(a1 + 6) * 8

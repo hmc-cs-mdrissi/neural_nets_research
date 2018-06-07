@@ -1,0 +1,1 @@
+if 3 + 9 + 3 + (0 == 9) then a0 = 0 * 3 else 3 while 3 * 1 while 4

@@ -1,0 +1,1 @@
+if 2 then a0 = 5 * 9 + 6 while 6 + 0 + 4 else a0 = 9 == 6 while 7 == 2 while 2 * 3 while 2

@@ -1,0 +1,1 @@
+if 6 * 2 * 9 == 6 + 5 then 6 while 5 == 9 while 6 else a0 = (7 == 5) + 7

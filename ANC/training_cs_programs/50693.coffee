@@ -1,0 +1,1 @@
+if 6 + (0 + 9) then a0 = 6 * 8 * 3 if 4 * 9 * 3 else a0 = 2 while 1 * 1 while 7 * 1 while 9 + 6

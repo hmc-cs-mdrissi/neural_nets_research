@@ -1,0 +1,1 @@
+if 5 + 7 + 1 + 7 then a0 = (2 + 4) * (0 * 5) else a0 = 5 == 1 while 3 + 1 while 1 * 3 while 4

@@ -1,0 +1,1 @@
+if 3 * 0 * 2 * (8 + 2) then a0 = 6 * 0 while 3 == 5 while 4 else a0 = 7

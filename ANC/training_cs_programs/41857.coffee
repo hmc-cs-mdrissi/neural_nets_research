@@ -1,0 +1,1 @@
+if 3 * (3 + 7) then a0 = 3 * 6 while 1 * 4 while 3 + 1 while 6 * 1 + 8 else 5 + 6 if 2 + 8 if 8 * 9 if 4 + 1 == 4

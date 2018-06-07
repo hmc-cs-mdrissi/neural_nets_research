@@ -1,0 +1,9 @@
+a0 = 3 * 9
+a1 = 1 + 2
+if 9 * a1 then a1 = 2 else a1 + 0
+if a1 * a1 then a0 + 1 else a2 = 9
+if a0 * 9 * (0 * 6)
+	if a0 + a0
+		a2 = 7
+	else
+		7 * 3

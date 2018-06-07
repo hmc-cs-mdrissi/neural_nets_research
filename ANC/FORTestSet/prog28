@@ -1,5 +1,0 @@
-if a1 == a1 then
-    a2 = a3 + a3 - 4
-else
-    a2 = 5 - a1
-    endif

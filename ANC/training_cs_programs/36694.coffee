@@ -1,0 +1,16 @@
+if (3 + 8) * 2 + 5 * 2
+	if 7 + 6
+		a0 = 4
+	else
+		9
+	if 6 == 7
+		a0 = 0
+	else
+		a0 = 1
+else
+	if 8 * 0
+		a0 = 8
+	if 9 * 4
+		5
+	else
+		a0 = 7

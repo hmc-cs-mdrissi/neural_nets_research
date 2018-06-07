@@ -1,0 +1,1 @@
+if 9 * 5 + 2 == 3 * 0 then a0 = 2 * 9 + 1 while 4 * 2 else 8 * 4 * 5 while 0 + 1 + 2

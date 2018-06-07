@@ -1,0 +1,12 @@
+a0 = 8 + 9
+7 * 9
+a1 = a0 * a0
+if a1
+	while a0 + 3
+		7 * 3
+if (a1 == 5) * (7 == a0)
+	if 9
+		a2 = 3
+	else
+		a2 = a1
+	if 7 + 9 then 7 + a0 else a2 = 1

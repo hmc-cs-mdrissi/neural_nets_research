@@ -1,0 +1,1 @@
+if 3 then a0 = 7 * (5 * 2) else a0 = 2 * 1 if 1 * 9 if 0 if 6 + 4

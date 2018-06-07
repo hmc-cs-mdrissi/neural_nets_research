@@ -1,0 +1,10 @@
+a0 = 6
+a1 = 3 * a0
+while a1
+	5 == 8
+if a1
+	a2 = 6 * 5
+else
+	a2 = 9 + 8
+while a0
+	if a1 + a1 then a0 = 6 + 6 else a0 = a1

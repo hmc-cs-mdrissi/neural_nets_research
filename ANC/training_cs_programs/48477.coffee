@@ -1,0 +1,10 @@
+if 5 == 7 then a0 = 5 + 9 else 2
+while 4
+	if 1 == 6
+		a0 = 0
+	else
+		a0 = 8
+if 1 * 6 * (5 == 8)
+	a0 = 3 * 5
+	a1 = 3 + a0
+	if a0 == 5 then a2 = a0 else a2 = 6

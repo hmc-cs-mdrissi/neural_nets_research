@@ -1,0 +1,8 @@
+a0 = 5 * 5
+a1 = 1 + 8
+a2 = a1 * 7
+if 9 == a2 then a1 = 7 else a3 = 6 + 6
+if a1 * (5 + a2)
+	while 0 * a2
+		a3 = a0 == 7
+	if 8 + a2 then a3 = a2 else a2

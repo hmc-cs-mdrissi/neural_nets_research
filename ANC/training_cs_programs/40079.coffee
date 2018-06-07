@@ -1,0 +1,13 @@
+a0 = 7 == 5
+a1 = a0 == 6
+if a0 * a1
+	a2 = 6
+else
+	a1 = 4
+if (5 + a0) * 4
+	a2 = 0
+while a1
+	a2 = a1 * 3
+	a3 = a2 + a1
+	while a2
+		a1 * 0

@@ -1,0 +1,1 @@
+if 6 then a0 = 3 else a0 = 6

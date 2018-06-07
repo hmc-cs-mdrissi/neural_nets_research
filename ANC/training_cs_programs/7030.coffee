@@ -1,0 +1,12 @@
+a0 = 6 * 8
+a1 = 9 * 5
+a2 = a1 + a0
+while a0
+	a3 = a1 + a2
+	a4 = a2 + a2
+if 7
+	a2 + a0
+	a2 * a2
+else
+	while 4 + 7
+		a3 = a0

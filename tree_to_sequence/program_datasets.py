@@ -72,6 +72,31 @@ lambda_calculus_ops = {
             }
 max_children_lambda_calculus = 3
 
+coffee_ops = {
+    "<VAR>": 0,
+    "<CONST>": 1,
+    "<PLUS>": 2,
+    "<TIMES>": 3,
+    "<EQUAL>": 4,
+    "<ASSIGN>": 5,
+    "<IF>": 6,
+    "<IFSIMPLE>": 7,
+    "<SIMPLEIF>": 8,
+    "<IFELSE>": 9,
+    "<IFTHENELSE>": 10,
+    "<IFCOMPLEX>": 11,
+    "<SIMPLECS>": 12,
+    "<COMPLEXCS>": 13,
+    "<EXPR>": 14,
+    "<SHORTSTATEMENTCS>": 15,
+    "<WHILE>": 16,
+    "<WHILESIMPLE>": 17,
+    "<SIMPLEWHILE>": 18,
+    "<WHILECOMPLEX>": 19,
+    "<SIMPLESTATEMENT>": 20,
+}
+max_children_coffee = 3
+
 class SyntacticProgramDataset(Dataset):
     def __init__(self, input_programs, output_programs, input_ops=None, output_ops=None, 
                          max_children_output=None, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, 
@@ -80,7 +105,7 @@ class SyntacticProgramDataset(Dataset):
             raise ValueError("When the output is a tree and you want end of tree tokens, it is"
                              " necessary that max_children_output is not None.")
         
-        if binarize_input and binarize_output and not output_as_seq and not eos_token: #TODO: There's def some more specific criteria relevant here
+        if binarize_output and not output_as_seq and not eos_token:
             raise ValueError("When the output is a binarized tree, you must have end of tree "
                              "tokens.")
         
@@ -101,7 +126,8 @@ class SyntacticProgramDataset(Dataset):
         
         if eos_token:
             output_programs = map(lambda prog: add_eos(prog, num_children=max_children_output), 
-                                  output_programs)  
+                                  output_programs)
+            
         input_programs = [encode_program(prog, num_vars, num_ints, input_ops, eos_token=eos_token, 
                                          one_hot=one_hot) for prog in input_programs]
         output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token, 
@@ -115,20 +141,29 @@ class SyntacticProgramDataset(Dataset):
         return self.program_pairs[index]
     
 class ForLambdaDataset(SyntacticProgramDataset):
-    def __init__(self, path, num_vars=10, num_ints=11, binarize=False, binarize_input=False, binarize_output=False, eos_token=True, 
+    def __init__(self, path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
                  input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True):
         progs_json = json.load(open(path))
         for_progs = [make_tree_for(prog, long_base_case=long_base_case) for prog in progs_json]
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
-        # Temporary fix since I don't want to open the t2s or t2t notebooks since they're training.
-        if binarize:
-            binarize_input = binarize
-            binarize_output = binarize
+
         max_children_output = 2 if binarize_output else max_children_lambda
         super().__init__(for_progs, lambda_progs, input_ops=for_ops, output_ops=lambda_ops,
                          max_children_output=max_children_output, num_vars=num_vars, 
-                         num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, eos_token=eos_token,  
-                         input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)
+                         num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)
+
+class JsCoffeeDataset(SyntacticProgramDataset):
+    def __init__(self, coffeescript_path, javascript_path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
+                 input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True):
+        coffeescript_progs = [make_tree_coffeescript(prog, long_base_case=long_base_case) for prog in json.load(open(coffeescript_path))]
+        javascript_progs = [make_tree_javascript(prog, long_base_case=long_base_case) for prog in json.load(open(javascript_path))]
+
+        max_children_output = 2 if binarize_output else max_children_coffee
+        super().__init__(coffeescript_progs, javascript_progs, input_ops=for_ops, output_ops=lambda_ops,
+                         max_children_output=max_children_output, num_vars=num_vars, 
+                         num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)        
         
 class SemanticProgramDataset(Dataset):
     def __init__(self, is_lambda_calculus, num_vars=10, num_ints=11, binarize=False, 

@@ -1,0 +1,13 @@
+1 * 4
+a0 = 1 * 9
+if 1 * a0
+	a1 = a0
+else
+	a1 = 4
+a1 = (4 == 1) * a0
+if a0 + (3 == a1)
+	if 5 + 8
+		a1
+	else
+		a2 = a1
+	a2 = 2 + a1 while a0 == 8

@@ -1,0 +1,10 @@
+a0 = 7 == 3
+a1 = 1
+a2 = 4 + 3
+if a1 * a1 then a3 = 3 + a0 else 4 + a0
+if a2
+	if 8 * 5 then a3 = 0 else a2 = a2
+	if 1 * a1
+		a0 = 7
+	else
+		a0 * a1

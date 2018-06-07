@@ -1,0 +1,9 @@
+if (2 + 7) * 9 * (1 == 1)
+	if 6 * 8 then a0 = 1 else a0 = 1
+	if 5 + 1 then a0 = 8 else a0 = 0
+else
+	if 2 + 6
+		a0 = 6
+	else
+		2 + 9
+	if 8 then 4 else a0 = 1

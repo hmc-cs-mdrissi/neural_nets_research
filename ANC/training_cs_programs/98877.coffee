@@ -1,0 +1,10 @@
+if (5 + 1) * 5 * (0 + 8)
+	if 5 + 5
+		a0 = 6
+	else
+		a0 = 2
+	2 * 2
+else
+	a0 = 7 + 6
+	a1 = a0 * a0
+	if 5 * a0 then a2 = a0 else a2 = a0

@@ -1,0 +1,11 @@
+if 8 == 8
+	a0 = 8
+else
+	3 * 3
+while 0
+	a0 = 9 == 1
+if 0 == 8 then a0 = 6 + 3 else 7 + 7
+while 2 * 2 * (2 * 1)
+	a0 = 0
+	a1 = a0 == a0
+	a1 = 9 + a1 while a1 + 4

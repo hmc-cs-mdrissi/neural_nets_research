@@ -1,0 +1,1 @@
+if 8 * (7 + 1) then 8 + 2 if 5 * 8 if 7 + 6 if 0 * 1 == 7 else a0 = 8 + 9 while 2 == 2 while 2 * 8 + 9

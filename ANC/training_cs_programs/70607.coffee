@@ -1,0 +1,6 @@
+while 5 * 2 * 1 == (8 == 0) + 1
+	a0 = 1 * 3
+	a1 = a0 == a0
+	while 8 * 5
+		a2 = 5 * 3
+	if 2 + 8 then a2 = a1 else a2 = a1 + a0

@@ -1,0 +1,1 @@
+if 9 + 6 + 7 + 8 * 2 then a0 = 0 * 8 while 4 + 0 while 2 else 0 * (4 + 4)

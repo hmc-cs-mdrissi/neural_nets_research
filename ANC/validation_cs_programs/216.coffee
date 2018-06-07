@@ -1,0 +1,16 @@
+if 9 * 4 * (0 * 3)
+	if 9
+		6 + 1
+		a0 = 6
+	else
+		if 1 + 9
+			a0 = 7
+else
+	if 8
+		a0 = 6
+	else
+		a0 = 9
+	if 8 * 2
+		a0 = 2
+	else
+		2 + 9

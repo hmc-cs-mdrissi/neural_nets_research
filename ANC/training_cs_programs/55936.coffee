@@ -1,0 +1,1 @@
+if 4 + (9 + 8) then a0 = 1 else (7 == 9) * 3 while 1 * 0 + 6

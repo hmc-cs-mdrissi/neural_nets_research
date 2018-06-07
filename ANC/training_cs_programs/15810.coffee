@@ -1,0 +1,12 @@
+if 8 + 2 then 3 * 9 else 0
+while (5 == 9) * 7
+	a0 = 8 + 7
+	a1 = 1
+if 5 * 3 == 3
+	a0 = 3 + 9
+	a1 = a0
+else
+	if 8
+		a0 = 3
+	else
+		a0 = 2

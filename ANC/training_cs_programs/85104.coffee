@@ -1,0 +1,8 @@
+if 4 * 1 + 6 + 4 * 0
+	while 8 * 3
+		if 7 + 4 then a0 = 2 else a0 = 8
+else
+	if 7 * 9
+		a0 = 3 * 2
+	if 2 * 9
+		a0 = 6 == 6

@@ -1,0 +1,15 @@
+a0 = 9 + 3
+if a0
+	a1 = a0
+else
+	a0 == 0
+while 5 + 7 + 3
+	if 6
+		a1 = a0 + 2
+while 3
+	if a0 == a0
+		a0
+	else
+		a1 = 0
+	while a0
+		a1 = 3 + a0

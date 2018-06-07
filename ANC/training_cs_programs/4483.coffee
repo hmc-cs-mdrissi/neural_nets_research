@@ -1,0 +1,9 @@
+if (0 * 6 + 9) * (9 == 0)
+	a0 = 9
+	a1 = a0 == 5
+	while 5 + 3
+		a2 = a1 + 7
+else
+	a0 = 2 == 0
+	a1 = a0 * a0
+	if 6 + 5 then a0 = 2 else a2 = 3

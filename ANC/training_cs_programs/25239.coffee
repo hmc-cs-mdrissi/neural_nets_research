@@ -1,0 +1,13 @@
+a0 = 7 * 8
+4 + a0
+if 6
+	a1 = 6
+else
+	a0 = 9
+if (a0 + 2) * 0
+	6 + 1
+	a1 = 2 == 6
+while a0 * a0 + a0 * 9
+	a1 = a0
+	a0 = a1 + a1
+	if a1 + 6 then 0 + 6 else a2 = 0

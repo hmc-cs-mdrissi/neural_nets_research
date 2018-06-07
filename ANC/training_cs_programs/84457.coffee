@@ -1,0 +1,1 @@
+if 9 * 6 + 7 == 0 * 9 then a0 = 3 else 7 while 2 * 3 while 2 * 1 while 0 * 3

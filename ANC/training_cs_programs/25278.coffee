@@ -1,0 +1,1 @@
+if 5 * 1 + 8 == 4 + 1 then a0 = 6 + 4 while 1 * 8 while 7 * 5 + 8 else a0 = (8 + 3) * (4 * 4)

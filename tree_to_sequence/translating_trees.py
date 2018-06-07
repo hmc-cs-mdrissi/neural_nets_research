@@ -79,6 +79,9 @@ def make_tree_for(json, long_base_case=True):
     return parentNode
     
 def make_tree_lambda(json, long_base_case=True):
+    return make_tree_lambda_coffee(json, long_base_case=long_base_case)
+    
+def make_tree_lambda_coffee(json, long_base_case=True):
     check_general_base_cases = general_base_cases(json)
     
     if check_general_base_cases is not None:
@@ -163,19 +166,112 @@ def make_tree_lambda_calculus(json, long_base_case=True):
 
 # TODO: All of the make_tree's with pass.
 def make_tree_javascript(json, long_base_case=True):
-    pass
+    check_general_base_cases = general_base_cases(json)
+    
+    # Ignore these keys completely
+    ignore_words = ["start", "end", "init", "generator", "computed", "sourceType", "kind", "type"]
+    
+    # Base cases (ints and var names)
+    if check_general_base_cases is not None:
+        return check_general_base_cases
+    
+    # Set node's value
+    tag = "<" + json["type"].upper() + ">"
+    parentNode = Node(tag)
+    
+    # Handle special cases
+        
+    # Variable names
+    if tag == "<IDENTIFIER>":
+        if long_base_case:
+            parentNode.children.append(Node(json["name"]))
+            return parentNode
+        else: 
+            return Node(json["name"])
+
+    # Literal
+    if tag == "<LITERAL>":
+        if long_base_case:
+            parentNode.children.append(Node(json["value"]))
+            return parentNode
+        else:
+            return Node(json["value"])
+
+    # Binary expression
+    if tag == "<BINARYEXPRESSION>":
+        parentNode = Node(json["operator"]) #Alternatively the operator could be a child of this node
+
+    for key in json.keys():
+        if not key in ignore_words:
+
+            children = json[key]
+            if isinstance(children, list):
+                parentNode.children.extend(map(lambda child: make_tree_javascript(child, long_base_case=long_base_case), children))
+            # Chop out null/false branches #TODO: check that false is actually ignore-able
+            elif children:
+                parentNode.children.append(make_tree_javascript(children, long_base_case=long_base_case))
+    return parentNode 
 
 def make_tree_coffeescript(json, long_base_case=True):
-    pass
+    return make_tree_lambda_coffee(json, long_base_case=long_base_case)
 
 def make_tree_java(json):
     pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 def make_tree_csharp(json, long_base_case=True):
-    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+    print(json)
+    
+    if general_base_cases(json) is not None:
+        return general_base_cases(json)
+    
+    # There should really only be one
+    for key in json.keys():
+        
+        tag = "<" + key.upper() + ">"
+        verbose_tokens = ["<CHARACTERLITERALEXPRESSION>", "<NUMERICLITERALEXPRESSION>", "<STRINGLITERALEXPRESSION>", "<IDENTIFIERNAME>"]
+        if not long_base_case and tag in verbose_tokens:
+            return make_tree_csharp(json[key])
+        else:
+            parentNode = Node(tag)
+            children = json[key]
+            if type(children) is list:
+                parentNode.children.extend(map(lambda child: 
+                                       make_tree_csharp(child, long_base_case=long_base_case), 
+                                       children))
+            else:
+                parentNode.children.append(make_tree_csharp(children, long_base_case=long_base_case))
+    return parentNode 
 
 def canonicalize_csharp(tree):
-    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+    num_names = {}
+    var_names = {}
+    char_names = {}
+    string_names = {}
+    
+    def make_generic(node, dict, symbol):
+        if node.value in dict:
+            node.value = dict[node.value]
+        else:
+            new_symbol = symbol + str(len(dict) + 1)
+            dict[node.value] = new_symbol
+            node.value = new_symbol
+
+    
+    def canonicalize_csharp_helper(tree):
+        if tree.value == "<NUMERICLITERALEXPRESSION>":
+            make_generic(tree.children[0], num_names, "n")
+        elif tree.value == "<CHARACTERLITERALEXPRESSION>":
+            make_generic(tree.children[0], var_names, "c")
+        elif tree.value == "<STRINGLITERALEXPRESSION>":
+            make_generic(tree.children[0], string_names, "s")
+        elif tree.value == "<IDENTIFIERNAME>":
+            make_generic(tree.children[0], var_names, "v") #TODO: deal with argumentlist
+        else:
+            for child in tree.children:
+                canonicalize_csharp_helper(child)
+                
+    canonicalize_csharp_helper(tree)
+    return tree
 
 # TODO: Canonicalizing trees for java/csharp.
 def canonicalize_java(tree):
@@ -238,7 +334,7 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
-        index = int(val[1:]) + num_ints #TODO: subtract 1 because we start with var a1?
+        index = int(val[1:]) % num_vars + num_ints
     else:
         index = num_ints + num_vars + ops[val]
 
@@ -505,6 +601,124 @@ def tree_to_list(tree):
         :return a list of values of the tree
     """
     return [tree.value] + list(itertools.chain.from_iterable(map(tree_to_list, tree.children)))
+
+
+class CoffeeGrammar(IntEnum):
+    INT = 0
+    VAR_NAME = 1
+    TERMINAL = 2
+    EXPR = 3
+    SIMPLE = 4
+    IF_TYPE = 5
+    WHILE_TYPE = 6
+    BLOCK = 7
+    SHORT_STATEMENT = 8
+    STATEMENT = 9
+    
+    
+def category_to_child_coffee(num_vars, num_ints, category):
+    """
+    Take a category of output, and return a list of new tokens which can be its children in the For 
+    language.
+    
+    :param num_vars: number of variables a program can use
+    :param num_ints: number of ints a program can use
+    :param category: category of output generated next
+    """
+    n = num_ints + num_vars
+    coffee_grammar = {
+        CoffeeGrammar.INT: range(num_ints),
+        CoffeeGrammar.VAR_NAME: range(num_ints, n),
+        CoffeeGrammar.EXPR: [x + n for x in [Coffee.PLUS, Coffee.TIMES, Coffee.EQUAL, Coffee.VAR, Coffee.CONST]],
+        CoffeeGrammar.TERMINAL: [x + n for x in [Coffee.VAR, Coffee.CONST]],
+        CoffeeGrammar.SIMPLE: [x + n for x in [Coffee.ASSIGN, Coffee.EXPR]],
+        CoffeeGrammar.IF_TYPE: [x + n for x in [Coffee.IFSIMPLE, Coffee.IFCOMPLEX]],
+        CoffeeGrammar.WHILE_TYPE: [x + n for x in [Coffee.WHILESIMPLE, Coffee.WHILECOMPLEX]],
+        CoffeeGrammar.BLOCK: [x + n for x in [Coffee.SIMPLECS, Coffee.COMPLEXCS]],
+        CoffeeGrammar.SHORT_STATEMENT: [x + n for x in [Coffee.SIMPLESTATEMENT, Coffee.SIMPLEIF, Coffee.SIMPLEWHILE]],
+        CoffeeGrammar.STATEMENT: [x + n for x in [Coffee.SHORTSTATEMENTCS, Coffee.IFTHENELSE, Coffee.IFELSE, Coffee.WHILE, Coffee.IF]],
+    }
+    
+    return coffee_grammar[category]
+
+    
+class Coffee(IntEnum):
+    ROOT = -1
+    VAR = 0
+    CONST = 1
+    PLUS = 2
+    TIMES = 3
+    EQUAL = 4
+    ASSIGN = 5
+    IF = 6
+    IFSIMPLE = 7
+    SIMPLEIF = 8
+    IFELSE = 9
+    IFTHENELSE = 10
+    IFCOMPLEX = 11
+    SIMPLECS = 12
+    COMPLEXCS = 13
+    EXPR = 14
+    SHORTSTATEMENTCS = 15
+    WHILE = 16
+    WHILESIMPLE = 17
+    SIMPLEWHILE = 18
+    WHILECOMPLEX = 19
+    SIMPLESTATEMENT = 20
+    
+    
+def parent_to_category_coffee(num_vars, num_ints, parent):
+    """
+    Return the categories of output which can be produced by a certain parent node.
+    
+    :param num_vars: number of variables a program can use
+    :param num_ints: number of ints a program can use
+    :param parent: int, the value of the parent node 
+    """
+    
+    # If parent is an int or a variable name, we are done.
+    if int(parent) in range(num_ints + num_vars):
+        return []
+    
+    # If parent is an op, return the class of outputs it can return
+    op_index = int(parent) - num_vars - num_ints
+    coffee_grammar = { 
+        Coffee.VAR: [CoffeeGrammar.VAR_NAME],
+        Coffee.CONST: [CoffeeGrammar.INT],
+        Coffee.PLUS: [CoffeeGrammar.EXPR, CoffeeGrammar.EXPR],
+        Coffee.TIMES: [CoffeeGrammar.EXPR, CoffeeGrammar.EXPR],
+        Coffee.EQUAL: [CoffeeGrammar.EXPR, CoffeeGrammar.EXPR],
+        Coffee.ASSIGN: [CoffeeGrammar.VAR_NAME, CoffeeGrammar.EXPR],
+        Coffee.IF: [CoffeeGrammar.EXPR, CoffeeGrammar.BLOCK],
+        Coffee.IFSIMPLE: [CoffeeGrammar.SIMPLE, CoffeeGrammar.EXPR],
+        Coffee.SIMPLEIF: [CoffeeGrammar.IF_TYPE],
+        Coffee.IFELSE: [CoffeeGrammar.EXPR, CoffeeGrammar.BLOCK, CoffeeGrammar.BLOCK],
+        Coffee.IFTHENELSE: [CoffeeGrammar.EXPR, CoffeeGrammar.SHORT_STATEMENT, CoffeeGrammar.SHORT_STATEMENT],
+        Coffee.IFCOMPLEX: [CoffeeGrammar.IF_TYPE, CoffeeGrammar.EXPR],
+        Coffee.SIMPLECS: [CoffeeGrammar.STATEMENT],
+        Coffee.COMPLEXCS: [CoffeeGrammar.BLOCK, CoffeeGrammar.STATEMENT],
+        Coffee.EXPR: [CoffeeGrammar.EXPR],
+        Coffee.SHORTSTATEMENTCS: [CoffeeGrammar.SHORT_STATEMENT],
+        Coffee.WHILE: [CoffeeGrammar.EXPR, CoffeeGrammar.BLOCK],
+        Coffee.WHILESIMPLE: [CoffeeGrammar.SIMPLE, CoffeeGrammar.EXPR],
+        Coffee.SIMPLEWHILE: [CoffeeGrammar.WHILE_TYPE],
+        Coffee.WHILECOMPLEX: [CoffeeGrammar.WHILE_TYPE, CoffeeGrammar.EXPR],
+        Coffee.SIMPLESTATEMENT: [CoffeeGrammar.SIMPLE],
+    }
+    
+    op_index = int(parent) - num_vars - num_ints
+    
+    # Special case for the root
+    if op_index == Coffee.ROOT:
+        return lambda_grammar[Lambda.BLOCK]
+    
+    # If parent is an int or a variable name, we are done.
+    if int(parent) < num_ints + num_vars:
+        return []
+    
+    return coffee_grammar[op_index]
+    
+    
 
 class LambdaGrammar(IntEnum):
     INT = 0

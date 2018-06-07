@@ -1,0 +1,8 @@
+while (8 + 7) * 7
+	while 6 + 5
+		a0 = 2 + 3
+a0 = (2 == 4) * (8 + 8)
+if (5 + 0) * (a0 * a0)
+	while 4 + a0
+		a0 = a0 * 4
+	if a0 + a0 then a1 = a0 else 2

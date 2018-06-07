@@ -1,0 +1,14 @@
+if 1
+	5 + 8
+else
+	a0 = 0
+if 3 * 3 then a0 = 3 else a0 = 8
+a0 = 3 + 3 if 1
+if (1 + 8) * 0
+	if 1 * 6
+		a0 = 4
+	else
+		a0 = 2
+else
+	7 == 3
+	3 == 7

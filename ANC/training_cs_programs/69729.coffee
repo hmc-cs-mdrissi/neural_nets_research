@@ -1,0 +1,11 @@
+while 4
+	if 1 + 1
+		a0 = 0 * 6
+	else
+		8 * 7
+if (6 == 9) * 2
+	while 8
+		a0 = 8 * 8
+else
+	9
+	a0 = 3 + 2

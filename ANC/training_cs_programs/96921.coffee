@@ -1,0 +1,7 @@
+if 7 * (3 + 4) * ((5 == 0) * (6 + 5))
+	a0 = 8 + 1
+	if a0 * a0
+		a1 = 6
+	else
+		0 * a0
+	if a0 then a1 = a0 + a0 else a1 = 5 * a0

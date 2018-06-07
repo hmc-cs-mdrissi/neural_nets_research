@@ -1,0 +1,1 @@
+if 3 + 4 == 8 + 9 then a0 = 9 * 5 + 8 while 1 else a0 = 5 + 0 + 1 * 5

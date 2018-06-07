@@ -1,0 +1,11 @@
+while 9
+	while 3
+		a0 = 2 + 5
+	if 3 == 9
+		a0 = 3
+	else
+		a0 = 0
+	if 6
+		2 + 2
+	else
+		a0 = 5 + 0

@@ -1,0 +1,11 @@
+if 0
+	while 2 * 5
+		a0 = 1 == 8
+if 4 then a0 = 8 * 7 else 8
+while 4 + 0 + 4 * 0
+	a0 = 5 + 1
+	7 * 5
+	if a0 * 1
+		5 * a0
+	else
+		a1 = 2

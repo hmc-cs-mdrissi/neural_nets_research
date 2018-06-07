@@ -1,0 +1,4 @@
+while 9 + 9
+	if 4 * 7 then a0 = 4 else a0 = 2
+	a0 = 9
+	a0 = a0 * 2 + 0 * a0

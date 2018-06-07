@@ -1,0 +1,9 @@
+if 1
+	a0 = 4 == 4
+	a0 = a0 * 5
+	if 0 * a0
+		a1 = a0
+	else
+		a1 = a0
+else
+	if 4 + 1 then a0 = 5 + 8 else 6 + 4

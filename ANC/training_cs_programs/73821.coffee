@@ -1,0 +1,15 @@
+if 5 + 2
+	a0 = 9
+else
+	a0 = 3
+if 0
+	a0 = 3
+else
+	5 + 8
+while 3
+	a0 = 7 * 4
+	a1 = 3
+if 2 + 1 + (8 + 1)
+	if 3
+		a0 = 9 + 7
+	if 5 == 5 then a0 = 7 else a0 = 9

@@ -1,0 +1,16 @@
+if 1 + 8 + 2 == (0 == 5)
+	if 9 == 0
+		a0 = 4
+	else
+		a0 = 2
+	if 2
+		a0 = 4
+	else
+		a0 = 8
+else
+	if 4 * 8
+		a0 = 9
+		a1 = 4
+	else
+		a0 = 0
+		a0 * a0

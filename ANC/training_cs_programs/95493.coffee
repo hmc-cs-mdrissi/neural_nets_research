@@ -1,0 +1,12 @@
+a0 = 0
+a0
+while a0 * a0
+	a0 = 2 * 9
+while a0
+	a1 = a0 == a0
+	a2 = a0 + a0
+while a0
+	2 + 3
+	2 + 7
+	while a0 + a0
+		a1 = 6

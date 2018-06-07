@@ -1,9 +1,0 @@
-if a1 == a2 then
-    if a1 == 3 then
-        a2 = 2
-    else
-        a1 = 2
-    endif
-else
-    a2 = a1 + a1
-    endif

@@ -1,0 +1,1 @@
+if (2 + 4 + 9) * 4 then a0 = 0 * 2 if 9 + 2 if 0 * 6 if 4 else 5

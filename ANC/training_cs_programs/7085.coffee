@@ -1,0 +1,12 @@
+if 3
+	9 + 4
+else
+	a0 = 9
+if 1 * 3 then a0 = 7 else 5 * 2
+if 2 + 3 then a0 = 3 * 7 else a0 = 5 * 8
+if (4 == 7) * 8
+	a0 = 6 == 2
+	a0 = a0 + a0
+else
+	1 + 6
+	a0 = 5 == 7

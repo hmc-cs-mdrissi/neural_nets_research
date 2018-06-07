@@ -1,0 +1,1 @@
+if (3 + 7) * 2 * (2 + 5) then 8 if 7 == 6 if 3 + 5 if 1 * 3 + 1 else a0 = 1 if 7

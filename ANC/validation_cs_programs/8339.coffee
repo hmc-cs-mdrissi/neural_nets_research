@@ -1,0 +1,1 @@
+if 4 * 7 * (2 * 6) then 4 else a0 = 1 == 7 while 9 + 3 while 8 + 2 == 2

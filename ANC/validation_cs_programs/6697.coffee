@@ -1,0 +1,8 @@
+a0 = 4 + 7
+6 * a0
+if a0 + 2 then a1 = 6 else a0 = 9
+if 4 + a0
+	a1 = a0 + 5
+else
+	a1 = 4 == a0
+a1 = (a0 == a0) == a0 + a0 if a0 + (3 + a0)

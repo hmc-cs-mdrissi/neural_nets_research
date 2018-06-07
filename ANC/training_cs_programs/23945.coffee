@@ -1,0 +1,9 @@
+if 3 * (4 + 0)
+	a0 = 6 if 4
+	if 4 + 7 then a0 = 7 else a0 = 8
+if 4
+	if (0 == 6) == 8
+		if 4 + 4
+			a0 = 8
+		else
+			4 * 0

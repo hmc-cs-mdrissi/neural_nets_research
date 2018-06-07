@@ -1,0 +1,5 @@
+a0 = 4
+a1 = 5
+if 9 * a1 then a2 = 7 else a2 = a1
+if 4 * a1 then a2 = 9 == 6 else a0 = a1
+if (a1 == a0) * 3 then a2 = a1 * a0 == 3 else a2 = a0 * a1 * 1

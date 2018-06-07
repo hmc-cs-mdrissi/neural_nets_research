@@ -1,0 +1,1 @@
+if 6 then a0 = 1 + 1 if 5 + 2 if (3 + 1) * 5 else 3 * 0 if 4 * 3 if 8 == 3

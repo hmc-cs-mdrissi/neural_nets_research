@@ -1,0 +1,13 @@
+a0 = 2 == 2
+a0
+while 6
+	a1 = a0
+while 0 * a0 + a0
+	a1 = 9 == 2
+	a2 = a1
+if a0
+	a1 = 6 + 7
+	a2 = a0
+else
+	a0 = a0 == a0
+	a1 = a0

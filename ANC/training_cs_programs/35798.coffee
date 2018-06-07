@@ -1,0 +1,11 @@
+if 9
+	3 == 7
+	a0 = 2 * 9
+else
+	a0 = 1 + 5
+	a0 = 1 + 6
+if 9
+	if 6 + 0 then a0 = 5 else a0 = 1
+else
+	while 9 + 2
+		7 == 4

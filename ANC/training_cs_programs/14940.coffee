@@ -1,0 +1,1 @@
+if 1 + 0 then a0 = 8 else a0 = 7 + 1 if 0 + 9 if 1 + 4 if 6

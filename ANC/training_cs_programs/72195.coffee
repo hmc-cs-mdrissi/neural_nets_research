@@ -1,0 +1,7 @@
+a0 = 8 + 9
+a0 * a0
+a1 = a0 + 7
+0
+if a1 + (a0 + a1)
+	if a0 then a1 = a0 else a2 = a0
+	if a0 + 4 then a2 = 7 else 9 * a1

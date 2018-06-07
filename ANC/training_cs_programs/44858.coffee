@@ -1,0 +1,11 @@
+a0 = 7 + 7
+a1 = 5 * a0
+if a0 + 8
+	a2 = 7
+else
+	a2 = 0
+if 9 == 0 then 0 * a1 else a1 = a0 * 3
+while 2
+	while (a1 == a1) * 1
+		a1 * a1
+		a1 * a0

@@ -1,0 +1,6 @@
+while 9 * 4 * (2 + 4)
+	if 3 * 6 then a0 = 3 + 7 else a0 = 2 == 7
+while 2 + 7 + (1 + 2)
+	while 5 + 7 + 1
+		a0 = 4 * 3
+		a0 + 1

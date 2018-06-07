@@ -1,0 +1,5 @@
+if 7 + (7 == 2) * (1 + 6)
+	if 2 + 9 then 9 + 5 else 7 + 7
+	if 1
+		a0 = 0
+	if 9 + 3 then a0 = 0 + 5 else a0 = 0 * 5

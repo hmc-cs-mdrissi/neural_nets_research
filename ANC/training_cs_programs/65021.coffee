@@ -1,0 +1,1 @@
+if 1 + 7 * 4 then a0 = (6 == 9) + 3 while 8 + 2 + 6 else a0 = 8 if 2 * 4

@@ -1,0 +1,10 @@
+if 0 * 4 + 1
+	if 0 == 6 then 5 + 2 else a0 = 9
+else
+	a0 = 3 * 0
+	a1 = a0 * a0
+while 4 * 9 == 8 + 1
+	if 8 + 2
+		a0 = 7 + 4
+	else
+		a0 = 1 * 1

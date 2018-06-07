@@ -1,0 +1,10 @@
+a0 = 1 == 5
+if 6 + a0
+	a1 = a0
+else
+	9 + 0
+a1 = 4 + 1 + (a0 + 8)
+while 4
+	while a0 + a1
+		a0
+	if 9 == a0 then a1 = a0 else a2 = a1

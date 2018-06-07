@@ -1,0 +1,14 @@
+a0 = 7
+a1 = a0
+if a1 == 6
+	a2 = a0
+if 9 == a0 then a1 = 6 * 4 else a2 = 3 * a0
+if (1 + 8) * (1 * a1)
+	if 8 + 3
+		a1 + a1
+	else
+		a0
+	if 7 == 9
+		a1 = 6
+	else
+		a2 = 2

@@ -1,0 +1,15 @@
+if 9 * 1
+	if 5 * 0
+		a0 = 3
+	else
+		a0 = 0
+else
+	if 1 * 1
+		a0 = 3 + 1
+while 8
+	a0 = 9 == 3
+	a1 = a0
+	if a0
+		a2 = a1
+	else
+		a2 = 5

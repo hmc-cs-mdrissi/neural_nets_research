@@ -1,0 +1,1 @@
+if 1 then a0 = 5 + 0 + 5 if 1 * 9 + 1 else a0 = 3 if 9

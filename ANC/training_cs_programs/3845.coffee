@@ -1,0 +1,1 @@
+if (7 + 2) * 5 == 2 then 1 * 2 while 2 * 0 while 3 == 5 while 9 + 6 == 1 else 6 == 8 if 0 + 2 if 8 * 0 == 7

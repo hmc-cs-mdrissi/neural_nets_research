@@ -1,0 +1,1 @@
+if (6 + 5) * 1 == 7 + 2 then a0 = 1 + 5 while 6 == 1 while 9 else a0 = 0 + 0 if (8 == 1) == 3

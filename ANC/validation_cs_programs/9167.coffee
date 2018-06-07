@@ -1,0 +1,1 @@
+if 5 * 4 * 4 + 8 * 5 then a0 = (5 == 4) == 8 else a0 = 1 + 8 while 7 + 1 while 2 while 4 * 5 * 3

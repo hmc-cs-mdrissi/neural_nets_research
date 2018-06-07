@@ -1,0 +1,1 @@
+if (2 * 9 == 2) * (1 * 4) then a0 = 1 + 7 while 7 * 2 while 3 * 6 while 2 + 3 + 1 else a0 = 9

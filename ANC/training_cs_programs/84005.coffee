@@ -1,0 +1,13 @@
+a0 = 8 == 2
+a1 = a0 * a0
+while 1 * 3
+	a0 = 8 * 8
+if a1 * a1
+	a2 = a1 == 1
+else
+	4 + 1
+while 1 * a0 + (5 + 8)
+	if a1 + a0
+		a2 = 4
+	else
+		a2 = 6 * a1

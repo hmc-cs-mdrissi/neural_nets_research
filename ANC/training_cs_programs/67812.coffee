@@ -1,0 +1,1 @@
+if (5 * 5 + 7) * (6 * 2) then a0 = 4 * (6 + 8) else a0 = 0 while 3 * 4 while 6 * 4 + 7

@@ -1,0 +1,7 @@
+a0 = 7
+a1 = a0 + a0
+if a1 then a0 = a1 else a2 = 3
+if a1 * a1 * 7
+	8 + 7
+	a2 = a0 + a1
+a2 = a1 == a0

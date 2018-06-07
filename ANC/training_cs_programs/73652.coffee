@@ -1,0 +1,1 @@
+if 3 + 8 * 1 then a0 = 0 else a0 = 7 + 0 + 8 while 1 * 2

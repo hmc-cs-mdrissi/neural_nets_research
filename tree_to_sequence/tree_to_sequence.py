@@ -12,21 +12,19 @@ class TreeToSequence(nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
-        # nclass + 2 to include end of sequence and trash
-        self.output_log_odds = nn.Linear(hidden_size, nclass+2)
+        # nclass + 1 to include end of sequence.
+        self.output_log_odds = nn.Linear(hidden_size, nclass+1)
         self.softmax = nn.Softmax(dim=0)
         self.log_softmax = nn.LogSoftmax(dim=0)
 
-        self.register_buffer('SOS_token', torch.LongTensor([[nclass+2]]))
-        self.EOS_value = nclass + 1
+        self.register_buffer('SOS_token', torch.LongTensor([[nclass+1]]))
+        self.EOS_value = nclass
 
-        # nclass + 3 to include start of sequence, end of sequence, and trash.
-        # n + 2 - start of sequence, end of sequence - n + 1, trash - n.
+        # nclass + 2 to include start of sequence and end of sequence.
+        # n + 1 - start of sequence, end of sequence - n.
         # The first n correspond to the alphabet in order.
-        self.embedding = nn.Embedding(nclass+3, embedding_size)
-
-        # nclass is the trash category to avoid penalties after target's EOS token
-        self.loss_func = nn.CrossEntropyLoss(ignore_index=nclass)
+        self.embedding = nn.Embedding(nclass+2, embedding_size)
+        self.loss_func = nn.CrossEntropyLoss()
 
     """
         input: The output of the encoder for the input should be a pair. The first part

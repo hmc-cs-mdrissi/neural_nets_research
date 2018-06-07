@@ -1,0 +1,6 @@
+a0 = 0 * 3 if 2 + 4 if 7 if 9 == 3 if 0 * (8 + 3)
+while 9 + 7 == 4
+	a0 = 9 * 3
+	a0 == a0
+	while a0
+		a1 = a0
