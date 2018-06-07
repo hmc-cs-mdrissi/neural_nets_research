@@ -33,9 +33,7 @@ class TreeToTreeAttention(nn.Module):
         elif align_type == 1:
             self.attention_hidden = nn.Linear(hidden_size, hidden_size)
             
-        self.register_buffer('et', torch.zeros(1, hidden_size))
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
-        
         self.embedding = nn.Embedding(nclass + 1, embedding_size)  
 
     def forward_train(self, input_tree, target_tree, teacher_forcing=True):

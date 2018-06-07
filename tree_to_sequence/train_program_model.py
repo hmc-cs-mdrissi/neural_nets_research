@@ -55,8 +55,9 @@ parser.add_argument('--num_ints', type=int, default=11, help='Number of possible
 parser.add_argument('--one_hot', action='store_true', help='Use one hot vectors instead of embeddings.')
 parser.add_argument('--binarize_input', action='store_true', help="Binarize the input. Default is not to.")
 parser.add_argument('--binarize_output', action='store_true', help="Binarize the output. Default is not to.")
-parser.add_argument('--long_base_case', action='store_false', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
+parser.add_argument('--no_long_base_case', action='store_false', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
 parser.add_argument('--lr', type=float, default=0.005, help='learning rate for model using adam, default=0.005')
+parser.add_argument('--dropout', type=float, default=False, help='Dropout probability. The default is not to use dropout.')
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
 parser.add_argument('--no_cuda', action='store_true', help='Disables cuda')
 opt = parser.parse_args()
@@ -73,7 +74,7 @@ one_hot = opt.one_hot
 binarize_input = opt.binarize_input
 binarize_output = opt.binarize_output
 eos_token = (decoder_type != "grammar")
-long_base_case = opt.long_base_case
+long_base_case = opt.no_long_base_case
 input_as_seq = False
 output_as_seq = (decoder_type == "sequence")
 
@@ -139,8 +140,8 @@ if opt.problem_number == 0:
     parent_to_category = partial(parent_to_category_LAMBDA, num_vars, num_ints)
     category_to_child = partial(category_to_child_LAMBDA, num_vars, num_ints)
 else:
-    encoder_input_size = num_vars + num_ints + len(for_ops)
-    nclass = num_vars + num_ints + len(lambda_ops)
+    encoder_input_size = num_vars + num_ints + len(javascript_ops)
+    nclass = num_vars + num_ints + len(coffee_ops)
     num_categories = len(CoffeeGrammar)
     num_possible_parents = len(Coffee)
     max_num_children = 2 if binarize_output else 3

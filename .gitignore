@@ -1,6 +1,7 @@
 */__pycache__
 .ipynb*
 ANC/For/Datasets*
+ANC/MainProgramDatasets
 test_various_models*
 ANC/AdditionalForDatasets*
 ANC/adaptive-neural-compilation*
