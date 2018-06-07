@@ -219,10 +219,59 @@ def make_tree_java(json):
     pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
 
 def make_tree_csharp(json, long_base_case=True):
-    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+    print(json)
+    
+    if general_base_cases(json) is not None:
+        return general_base_cases(json)
+    
+    # There should really only be one
+    for key in json.keys():
+        
+        tag = "<" + key.upper() + ">"
+        verbose_tokens = ["<CHARACTERLITERALEXPRESSION>", "<NUMERICLITERALEXPRESSION>", "<STRINGLITERALEXPRESSION>", "<IDENTIFIERNAME>"]
+        if not long_base_case and tag in verbose_tokens:
+            return make_tree_csharp(json[key])
+        else:
+            parentNode = Node(tag)
+            children = json[key]
+            if type(children) is list:
+                parentNode.children.extend(map(lambda child: 
+                                       make_tree_csharp(child, long_base_case=long_base_case), 
+                                       children))
+            else:
+                parentNode.children.append(make_tree_csharp(children, long_base_case=long_base_case))
+    return parentNode 
 
 def canonicalize_csharp(tree):
-    pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
+    num_names = {}
+    var_names = {}
+    char_names = {}
+    string_names = {}
+    
+    def make_generic(node, dict, symbol):
+        if node.value in dict:
+            node.value = dict[node.value]
+        else:
+            new_symbol = symbol + str(len(dict) + 1)
+            dict[node.value] = new_symbol
+            node.value = new_symbol
+
+    
+    def canonicalize_csharp_helper(tree):
+        if tree.value == "<NUMERICLITERALEXPRESSION>":
+            make_generic(tree.children[0], num_names, "n")
+        elif tree.value == "<CHARACTERLITERALEXPRESSION>":
+            make_generic(tree.children[0], var_names, "c")
+        elif tree.value == "<STRINGLITERALEXPRESSION>":
+            make_generic(tree.children[0], string_names, "s")
+        elif tree.value == "<IDENTIFIERNAME>":
+            make_generic(tree.children[0], var_names, "v") #TODO: deal with argumentlist
+        else:
+            for child in tree.children:
+                canonicalize_csharp_helper(child)
+                
+    canonicalize_csharp_helper(tree)
+    return tree
 
 # TODO: Canonicalizing trees for java/csharp.
 def canonicalize_java(tree):
