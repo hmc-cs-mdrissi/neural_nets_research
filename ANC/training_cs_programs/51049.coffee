@@ -1,0 +1,13 @@
+while 6 * (4 + 8)
+	0 + 4
+	0 * 2
+	if 2 + 2 then a0 = 7 else 6 + 3
+if 1 + 1 == 5 + 3
+	if 0 + 3
+		a0 = 1
+	else
+		4 + 8
+	if 1 * 6
+		a0 = 1
+	else
+		a0 = 9

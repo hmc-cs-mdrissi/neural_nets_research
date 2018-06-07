@@ -1,0 +1,1 @@
+if 0 then a0 = 4 * 5 * 1 while 0 else a0 = 4

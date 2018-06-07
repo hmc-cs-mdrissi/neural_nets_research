@@ -1,0 +1,1 @@
+if 8 then a0 = 0 + 8 + 6 while 4 == 1 else a0 = 3

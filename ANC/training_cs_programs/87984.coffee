@@ -1,0 +1,16 @@
+a0 = 6 + 7
+a1 = a0 + a0
+while 8 + 8
+	a2 = 4 + a0
+if a1
+	a2 = 3
+else
+	a2 = 1 + 3
+if 0
+	if a0 + 9
+		a2 = 4
+	else
+		a1
+else
+	a2 = a1 + 4
+	a3 = a0

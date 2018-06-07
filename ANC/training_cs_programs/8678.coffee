@@ -1,0 +1,1 @@
+if 5 * (8 * 2) then a0 = 6 if 0 if 8 if 3 + 9 + 3 else a0 = 5 * 9 * 8 if (1 == 5) * 7

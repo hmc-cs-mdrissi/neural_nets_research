@@ -1,0 +1,14 @@
+if 7 * 3
+	a0 = 4
+else
+	a0 = 4
+a0 = 3 * 3
+while a0 * a0
+	a0 = 2 + 5
+	a0 = 5 * a0
+if 2
+	a1 = a0 + a0
+	a2 = 3
+else
+	a1 = a0 + 6
+	a2 = 8

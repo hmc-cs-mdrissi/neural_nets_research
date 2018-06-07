@@ -1,0 +1,11 @@
+if 4 * 1 == 1
+	a0 = 2 + 9
+	a0 = a0 == a0
+else
+	if 8 * 7 then a0 = 3 else a0 = 1
+if 7 * 9 == 2
+	a0 = 2 + 0
+	a1 = a0 + 7
+else
+	4 == 8
+	a0 = 2

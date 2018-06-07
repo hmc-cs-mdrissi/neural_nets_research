@@ -1,0 +1,9 @@
+a0 = 2 + 1
+a1 = 1 * a0
+if 7 + a1
+	a2 = 0 * 2
+if 8 * 2
+	a2 = a0
+else
+	a1 = a0
+if 2 then a0 * 7 if a1 if 8 + 0 else a2 = a0 + a1 while a0 == a1

@@ -1,0 +1,1 @@
+a0 = 0 * 2 while 5 while 5 + 1 + 7 while 0 + 9 + (0 == 6) while 1

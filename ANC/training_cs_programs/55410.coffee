@@ -1,0 +1,1 @@
+if (4 + 9 + 0) * (5 + 9) then a0 = (4 == 9) * 6 while 0 else 4 + 9 if 1 + 6 if 7

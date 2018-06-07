@@ -1,0 +1,1 @@
+if 3 then a0 = 8 * 7 if 1 + 6 if 4 == 1 if 1 * 5 else (8 == 2) * 5 while 7

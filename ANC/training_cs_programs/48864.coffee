@@ -1,0 +1,1 @@
+if (5 * 8 == 4) * (1 == 1) then a0 = 0 while 5 + 2 while 1 * 0 * 2 else a0 = 9

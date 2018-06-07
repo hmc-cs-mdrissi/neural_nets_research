@@ -1,0 +1,7 @@
+while 0 + (8 + 0)
+	a0 = 5 * 9
+	a1 = a0 + a0 while 5 + a0
+if 1 + 3
+	if 6 + 7
+		while 6 + 1
+			a0 = 5 + 7

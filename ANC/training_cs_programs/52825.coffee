@@ -1,0 +1,1 @@
+if 5 + 6 + 0 == 5 + 5 then a0 = 2 while 1 + 4 + 3 else a0 = 8 + 4 + 3

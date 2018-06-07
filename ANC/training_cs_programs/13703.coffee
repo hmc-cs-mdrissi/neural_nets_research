@@ -1,0 +1,1 @@
+if 9 * (3 + 9) then a0 = (4 + 5) * 1 while 4 * 7 else a0 = 0

@@ -1,0 +1,7 @@
+if (4 == 7) + 0 == 2
+	0
+	a0 = 7 + 4
+	while 4 == 9
+		a0 = 8 * a0
+else
+	if 5 + 5 then 2 + 8 else a0 = 7 + 4

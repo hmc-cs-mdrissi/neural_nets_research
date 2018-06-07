@@ -1,0 +1,15 @@
+a0 = 3 == 4
+a1 = 5 == 9
+if 2
+	4 + a0
+else
+	a1 = 9
+if 4 * 0
+	a1 = 8 * 5
+else
+	a0 = 6 * a1
+while 0 + 1 + a0 * a1
+	if a1 * a0
+		a0 = 2 + 9
+	else
+		a0 = a1 + 4

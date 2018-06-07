@@ -1,0 +1,6 @@
+a0 = (4 + 9) * (9 + 2) + 7
+while a0
+	while 2
+		a0 * a0
+	while a0
+		4 * 4

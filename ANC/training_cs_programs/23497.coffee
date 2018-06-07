@@ -1,0 +1,3 @@
+5 while 8 + 3
+a0 = 3 == 6 * 5
+if 9 + a0 + 2 then a0 = a0 + 2 while a0 else a1 = (a0 + 7) * a0

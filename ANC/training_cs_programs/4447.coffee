@@ -1,0 +1,1 @@
+if 1 * 2 * 5 == 8 + 5 then a0 = 2 else 7 + 7 while (8 + 4) * 5

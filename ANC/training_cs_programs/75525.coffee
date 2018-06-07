@@ -1,0 +1,1 @@
+if 2 + 4 * 0 then a0 = 3 while 0 * 4 while 3 + 6 while (4 + 2) * 3 else a0 = 3 if 6 * 5

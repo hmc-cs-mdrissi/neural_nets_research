@@ -1,0 +1,1 @@
+if 4 + 3 + 8 + 1 then a0 = 8 else 2 * 5 if 0 * 4 if 2 + 9 if 8

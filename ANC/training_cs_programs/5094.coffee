@@ -1,0 +1,9 @@
+if 5
+	if 8 * 6 then 9 == 8 else a0 = 9 == 6
+else
+	if 3
+		a0 = 0
+	else
+		a0 = 9
+	while 5 * 0
+		a0 = 4 == 4

@@ -1,0 +1,1 @@
+if 9 then a0 = 3 * 0 * 7 if 7 + 5 + 2 else a0 = 9 + 0 + 6 while 1 * 4 * 0

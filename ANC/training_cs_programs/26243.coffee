@@ -1,0 +1,1 @@
+if (8 + 6 == 4) * (0 * 4) then 4 * (1 * 8) else a0 = 4 + 2 while 8 + 8 while 6 + 3 + 0

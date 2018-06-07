@@ -1,0 +1,15 @@
+if 5 == 5
+	a0 = 7
+else
+	a0 = 5
+if 3 + 0
+	a0 = 7 + 0
+if 1 + 9 then 2 == 2 else 6 + 9
+if 8
+	if 4 + 6
+		3 * 9
+	else
+		a0 = 6
+else
+	a0 = 3 * 0
+	a1 = a0 * a0

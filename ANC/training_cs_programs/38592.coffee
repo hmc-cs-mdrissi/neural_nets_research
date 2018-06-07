@@ -1,0 +1,10 @@
+while 7 * 5 == 3 + 4
+	a0 = 9 * 2
+	a1 = 0
+	if 5 + 1 then a2 = 6 else a2 = a1
+if 9 * 1 * 9
+	a0 = 0
+	6
+else
+	6 * 2
+	a0 = 7

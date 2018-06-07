@@ -1,0 +1,11 @@
+a0 = 1 * 2
+a1 = a0 + 1
+if 8 then a2 = a1 else a1 + 5
+if 0
+	while 8 == 3
+		4 + 1
+if (a1 == a1) + 7 * 6
+	a0 = a1 + 3
+	1 + a0
+	if 7
+		a2 = 7 + a1

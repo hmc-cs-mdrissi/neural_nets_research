@@ -1,0 +1,1 @@
+if (4 == 4) * (9 == 6) then a0 = 1 else 6 + 2 while 0 == 4 while 7 * 1 while (9 == 0) == 3

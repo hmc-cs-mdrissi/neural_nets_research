@@ -1,0 +1,1 @@
+if 6 then (8 + 0) * 2 while 8 == 9 else a0 = 6 if 5 + 1 + 8

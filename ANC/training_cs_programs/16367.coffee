@@ -1,0 +1,8 @@
+if 7 * (4 + 7)
+	a0 = 3 * 6 + 4
+	while 2 + 7
+		a0 = 0 == a0
+else
+	a0 = 5 * 7
+	a1 = a0 + 6
+	if 4 * a1 then a2 = a0 else 3 * a1

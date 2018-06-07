@@ -1,0 +1,1 @@
+if 0 then a0 = 3 while 1 * 2 * 5 else a0 = (6 + 1) * (1 + 0)

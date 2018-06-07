@@ -1,0 +1,8 @@
+if 1 + 8
+	a0 = 0
+else
+	a0 = 4
+while 4 + 4
+	3 == 8
+if 3 + 8 then a0 = 3 + 1 else a0 = 2 * 3
+a0 = 9

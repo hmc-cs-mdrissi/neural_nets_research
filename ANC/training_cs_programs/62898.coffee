@@ -1,0 +1,1 @@
+if 4 then a0 = 2 + 9 == 1 * 8 else a0 = 9 if 5 * 9 if 9 * 3 == 6

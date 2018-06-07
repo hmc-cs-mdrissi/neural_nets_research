@@ -1,0 +1,8 @@
+a0 = 5 == 2
+a0 = a0
+if a0 + 0
+	a1 = a0
+else
+	a1 = 1
+a1 = 4
+if a1 + 6 + 4 then a2 = a0 * a1 == 3 else a2 = 9

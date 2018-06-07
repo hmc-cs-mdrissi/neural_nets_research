@@ -1,0 +1,6 @@
+if 2 * 4 * 6 then 5 * 5 == 1 else a0 = (6 == 9) == 1
+if 9 + 9 + 3
+	a0 = 8 + 8
+	a1 = a0 == a0
+else
+	if 4 then a0 = 1 else a0 = 2

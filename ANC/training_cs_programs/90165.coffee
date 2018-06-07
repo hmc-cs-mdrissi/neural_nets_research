@@ -1,0 +1,19 @@
+if 8 * 8
+	a0 = 8
+else
+	a0 = 2
+if 1 * 3
+	a0 = 2
+else
+	a0 = 9
+while (6 == 9) == 7
+	a0 = 6 + 7
+	a0
+if 2 == 9
+	if 1 * 8
+		a0 = 7
+	else
+		a0 = 6
+else
+	a0 = 5 + 1
+	a1 = a0 * a0

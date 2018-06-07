@@ -1,0 +1,11 @@
+a0 = 3
+3 * 2
+if 2
+	a1 = 4
+if a0 + a0 then a0 == 8 else a1 = a0 * a0
+if 4
+	if a0 * 2 + 7
+		if 7 + a0
+			a1 = 8
+		else
+			a1 = a0

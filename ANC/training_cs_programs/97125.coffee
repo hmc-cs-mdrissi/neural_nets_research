@@ -1,0 +1,1 @@
+if 4 + 7 * 6 then a0 = 5 while 9 else a0 = 6

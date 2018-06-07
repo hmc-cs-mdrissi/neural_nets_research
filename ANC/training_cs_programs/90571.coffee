@@ -1,0 +1,1 @@
+if 7 * 2 + 9 * 1 then a0 = 4 else a0 = 3 + 4 if 5 * 8 if 0 * 5 if 6 + 9

@@ -1,0 +1,11 @@
+if 4 * 1 * (4 * 8)
+	if 0 == 6
+		a0 = 6
+	else
+		a0 = 8
+	while 3 + 7
+		a0 = 1 + 6
+else
+	while (3 + 8) * 4
+		a0 = 9
+		a0 = a0

@@ -1,0 +1,1 @@
+if 2 + 6 + 7 + (3 + 6) then a0 = 2 * 5 while 4 + 1 while 4 else a0 = 1

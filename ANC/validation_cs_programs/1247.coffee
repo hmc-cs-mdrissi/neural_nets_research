@@ -1,0 +1,8 @@
+a0 = 5 * 0
+a1 = 1 * a0
+a2 = a1 * 6 if a1 + 3
+if 4
+	a2 = 3
+else
+	a1 * 9
+if 9 * 5 then a1 = 1 + 4 else (a1 + a1) * 9

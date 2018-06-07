@@ -1,0 +1,1 @@
+if 6 then a0 = 7 == 8 * 1 else a0 = 5

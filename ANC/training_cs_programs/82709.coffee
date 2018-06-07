@@ -1,0 +1,1 @@
+if 5 * 3 * 1 + 2 then a0 = 8 while 5 * 3 else a0 = 0 + 1 + 9 while (3 + 5) * 1

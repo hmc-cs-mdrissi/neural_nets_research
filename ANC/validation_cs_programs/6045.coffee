@@ -1,0 +1,10 @@
+if 5 + 3
+	9 + 2
+else
+	a0 = 9
+a0 = 1 == 4
+if 6 + a0
+	a1 = 6 == a0
+else
+	a1 = a0 + a0
+a0 * a0 * (7 == a0) while 3 * a0

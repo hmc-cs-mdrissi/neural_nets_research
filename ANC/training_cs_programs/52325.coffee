@@ -1,0 +1,10 @@
+if 0 * 2 == 1
+	if 0 + 1
+		5 + 0
+while 1
+	a0 = 7 + 0
+	a0 = a0 == a0
+while 4 * 4 + (2 == 8)
+	a0 = 4 + 8
+	a1 = a0
+	if 4 + 1 then a0 = a0 else a2 = a1

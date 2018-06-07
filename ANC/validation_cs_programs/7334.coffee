@@ -1,0 +1,1 @@
+if 8 * 6 * 9 * 3 then a0 = 9 + 3 while 8 + 2 while 3 + 4 + 5 else a0 = 6 * 3 * (5 * 3)

@@ -1,0 +1,1 @@
+if (3 * 5 + 0) * (5 * 9) then a0 = 3 if 7 * 3 == 3 else a0 = 2 * 1 * 7 while 5

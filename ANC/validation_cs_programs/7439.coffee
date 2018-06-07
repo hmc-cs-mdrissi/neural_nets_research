@@ -1,0 +1,12 @@
+a0 = 3 == 4
+a1 = 9
+if 5 * 6
+	a2 = a0 * 5
+while a1 * a0 * a1
+	a1 = 8 == 7
+while a1 * (a1 * a1)
+	if a1 * 1
+		a2 = a1
+	else
+		a0 = a1
+	a2 = 6 * 4

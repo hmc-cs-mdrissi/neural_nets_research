@@ -1,0 +1,9 @@
+if 4 * 1 + (8 + 3)
+	a0 = 0
+	a1 = 3 * 1
+	if a0 + a1 then 2 else a2 = 4
+else
+	a0 = 0 == 0
+	a0 = 6
+	while a0
+		a1 = 2 == 2

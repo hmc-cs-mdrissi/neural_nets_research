@@ -1,0 +1,11 @@
+while 3 + 6
+	9 + 5
+	a0 = 5 == 8
+if 0 * 1
+	a0 = 4 + 6
+else
+	a0 = 3 * 1
+while 7
+	if 1 + 6 then a0 = 5 else 5 == 1
+	if 8
+		9 + 4

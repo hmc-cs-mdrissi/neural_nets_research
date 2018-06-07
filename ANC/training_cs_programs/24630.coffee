@@ -1,0 +1,9 @@
+if 2 * 7 then 1 + 4 else a0 = 9
+while (8 + 0) * 5
+	if 3 + 2 then a0 = 9 else 6 + 0
+if 8 + 5
+	a0 = 3 + 4
+	a0 = 5 + 5
+else
+	a0 = 7 * 0
+	a1 = 9 + a0

@@ -1,0 +1,1 @@
+if 0 then a0 = 8 + 6 + 5 * 5 else a0 = 6

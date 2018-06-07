@@ -1,0 +1,1 @@
+if (2 + 0 + 2) * 0 then 3 if 6 else a0 = (8 + 8) * 7 while 1

@@ -1,0 +1,11 @@
+if 6
+	if 5 * 9 then a0 = 8 else a0 = 4
+if 0 + 1 + 0
+	a0 = 9 == 9
+	a1 = a0
+if 0 * 6 * 0
+	while 1 == 4
+		a0 = 0 + 4
+else
+	while 2 + 1
+		a0 = 9 + 2

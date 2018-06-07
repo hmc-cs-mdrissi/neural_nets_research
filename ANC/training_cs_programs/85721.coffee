@@ -1,0 +1,12 @@
+3 * 8 + 8
+if 6
+	a0 = 2 * 3
+if 2 + 7
+	a0 = 4 + 5
+else
+	a0 = 6 == 1
+if 3 * 9 + 0
+	while 0 * 6
+		6 * 5
+else
+	if 0 + 2 then 9 else 5 * 0

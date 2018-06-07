@@ -1,0 +1,8 @@
+while 2
+	if 4 * 5 * 2
+		if 6 then a0 = 4 else a0 = 2
+while 8 * (8 == 5)
+	a0 = 3 == 5
+	a1 = 4 * a0
+	while 3 * 4
+		a0 = 2 * a0

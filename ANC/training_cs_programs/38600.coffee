@@ -1,0 +1,1 @@
+if 9 + 7 + 4 == 9 + 7 then a0 = (6 + 7) * 2 while 4 + 9 else 1 * 8 if 5 if 1 + 7

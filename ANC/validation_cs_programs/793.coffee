@@ -1,0 +1,12 @@
+if 3 + 2 + 0
+	a0 = 3 * 7
+	a0 = 4
+else
+	if 5
+		a0 = 1
+	else
+		a0 = 0
+while 2
+	a0 = 9 == 3
+	8
+	if 8 == a0 then a0 == 7 else a0 = 4

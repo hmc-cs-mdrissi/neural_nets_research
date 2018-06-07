@@ -1,0 +1,10 @@
+if 5 * 1 * 4
+	a0 = 9 + 0
+	a0 = a0 + 6
+else
+	if 2 * 5 then 7 + 2 else a0 = 5
+if 8 + 4
+	if 9 * 5 then a0 = 7 else a0 = 6
+else
+	if 5 * 1
+		a0 = 8 * 3

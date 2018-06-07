@@ -1,0 +1,1 @@
+if 3 then a0 = 8 * 5 while 0 + 1 while (5 + 1) * 2 else a0 = (8 + 2) * (9 * 4)

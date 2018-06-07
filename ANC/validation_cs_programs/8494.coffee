@@ -1,0 +1,1 @@
+if 2 * (1 + 2) then a0 = 7 else 1 == 6 while 1 while 6 * 9 while (8 == 0) == 9

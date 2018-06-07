@@ -1,0 +1,8 @@
+while 1 * 0
+	a0 = 1 + 7
+a0 = 3 * 6 while 1
+if 3 * 5
+	a0 = 9 == 9
+	a0 = 4 * a0
+while (7 + 1) * (1 + 1)
+	if 2 * 9 then a0 = 2 == 0 else a0 = 7 * 8

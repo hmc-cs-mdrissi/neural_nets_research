@@ -1,0 +1,1 @@
+if (9 * 8 == 3) * (9 * 7) then 7 * 7 while 6 while 4 else 3

@@ -1,0 +1,7 @@
+a0 = 8
+a0 = a0
+if 2
+	a1 = 8 + a0
+a0 * a0 while 3 + 8
+while 3
+	a1 = a0 * 9

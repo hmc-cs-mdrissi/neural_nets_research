@@ -1,0 +1,10 @@
+a0 = 6 while 1
+while 5 + 3
+	a0 = 7 * 9
+if 3 * 1
+	a0 = 7 * 4
+else
+	a0 = 8 * 5
+if 2 + 2 + (9 == 5)
+	1 * 5 == 6
+	if 3 == 3 then a0 = 6 else 5

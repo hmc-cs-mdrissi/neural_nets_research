@@ -1,0 +1,15 @@
+if 6
+	if 5 + 2
+		if 4 * 9
+			2 * 9
+		else
+			a0 = 2
+	else
+		a0 = 8 * 3
+else
+	2 + 9
+	a0 = 4 + 5
+	if a0 * 0
+		a1 = a0
+	else
+		a0 = 6

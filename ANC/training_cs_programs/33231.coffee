@@ -1,0 +1,8 @@
+if 0 + 5 + 5 + (5 * 8 + 7)
+	while 6 + 8 + 2
+		if 8 * 2
+			9 * 6
+		else
+			6 + 4
+	while (8 + 2) * 5
+		if 7 + 8 then a0 = 4 else a0 = 2

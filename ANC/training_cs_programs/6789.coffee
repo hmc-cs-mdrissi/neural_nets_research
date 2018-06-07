@@ -1,0 +1,11 @@
+if 2 * 6
+	a0 = 8
+else
+	a0 = 6
+if 2 == 7
+	2 + 8
+else
+	a0 = 3
+8 * 4 + (3 + 7)
+while 6 == 4 * 4
+	if 7 * 8 then a0 = 2 * 5 else a0 = 1

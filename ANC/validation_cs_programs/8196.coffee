@@ -1,0 +1,14 @@
+if 8 * 8 then a0 = 8 else a0 = 3
+if 8 == 1 then a0 = 6 else a0 = 5
+while 3 * 0 + 7
+	if 4 + 0
+		4 + 9
+	else
+		3 + 4
+if 9 * 2 == 7 * 1
+	if 6 + 1
+		a0 = 1
+	else
+		a0 = 3
+	if 8 + 0
+		a0 = 3 == 0

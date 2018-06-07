@@ -1,0 +1,7 @@
+if 3 + 8 + 4
+	(6 + 4) * 4
+if 7 * 4 then a0 = 2 == 6 else 2 == 9
+while 1 * 1 * (9 == 3)
+	a0 = 0 == 2
+	a1 = 1
+	if 8 then a2 = 1 else a2 = 5

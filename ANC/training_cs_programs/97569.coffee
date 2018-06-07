@@ -1,0 +1,16 @@
+while 9 + 8
+	a0 = 7
+if 7 + 2
+	a0 = 0
+else
+	a0 = 8
+while 6
+	9 + 8
+	a0 = 8
+while (5 + 3) * (5 == 0)
+	a0 = 7 == 6
+	a1 = a0 * a0
+	if 0
+		a2 = 6
+	else
+		a2 = 0

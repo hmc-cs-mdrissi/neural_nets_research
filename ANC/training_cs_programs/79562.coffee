@@ -1,0 +1,8 @@
+a0 = 7 == 6
+a1 = 1 * a0
+if a0 then 0 + 0 else a2 = 4
+if a1
+	a2 = a1 * 6
+else
+	a0 = a1 * 4
+a2 = 9

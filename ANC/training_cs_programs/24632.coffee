@@ -1,0 +1,1 @@
+if 0 * 4 + 4 * 6 then 6 == 6 while 5 + 3 while 8 while 2 + 6 + 1 else 1 * 5 * 9 if 8 * 5 == 5

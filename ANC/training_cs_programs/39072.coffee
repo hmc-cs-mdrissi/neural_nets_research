@@ -1,0 +1,6 @@
+if 3 * 0 * 1 then a0 = 3 == 9 while 2 + 2 else a0 = 6 * 4 * 7
+while 3
+	if 6
+		a0 = 3
+	else
+		a0 = 8 * 2

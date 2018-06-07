@@ -1,0 +1,1 @@
+if (3 * 2 + 5) * (6 == 5) then a0 = 5 * 0 while 5 * 1 while 5 * 6 + 6 else 1 + 0 == 9

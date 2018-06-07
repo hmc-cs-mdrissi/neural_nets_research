@@ -1,0 +1,1 @@
+if 4 * (4 == 2) then a0 = (3 == 6) + 3 if 8 + 3 + 2 else 1 while 2 * 1 while 6 + 1 while 3 * 6 + 3

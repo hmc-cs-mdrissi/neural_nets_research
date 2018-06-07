@@ -1,0 +1,1 @@
+if 2 + 2 * 6 then a0 = 2 else a0 = (1 + 6) * 1 while (6 == 0) + 2

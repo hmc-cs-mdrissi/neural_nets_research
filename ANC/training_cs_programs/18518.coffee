@@ -1,0 +1,11 @@
+a0 = 4 + 0
+a1 = 1 == 1
+while 4 * 4
+	a2 = a0 + a1
+a0 * 5 if a0
+if (a0 + a1) * 7
+	while 9
+		a2 = 6 + a0
+else
+	a2 = a1 == a1
+	a2 = a1

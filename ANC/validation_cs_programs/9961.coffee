@@ -1,0 +1,1 @@
+if 8 * 9 * 3 == 4 * 4 then a0 = 8 + 9 while 9 + 3 while 2 * 9 while (1 == 0) * 4 else ((3 == 4) == 4) + 7 * 3

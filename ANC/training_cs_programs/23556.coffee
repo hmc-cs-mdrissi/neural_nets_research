@@ -1,0 +1,9 @@
+a0 = 9 == 3
+a1 = 0
+if a0
+	a2 = a0
+if a0 == a0
+	a2 = 9
+else
+	a2 = 3
+a2 = 5 * a0 if 8 == a0 if a1 if 4 * a0 * a1 if (5 == a0) + 4 * a0

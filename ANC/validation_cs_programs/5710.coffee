@@ -1,0 +1,1 @@
+if 5 == 4 * 0 then a0 = 8 while (4 + 1) * 2 else a0 = 6 == 3 * 0

@@ -1,0 +1,1 @@
+if 3 + 6 * 1 then a0 = 0 else a0 = 5 if 4 * 3

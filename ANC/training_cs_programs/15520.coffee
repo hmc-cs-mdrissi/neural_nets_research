@@ -1,0 +1,14 @@
+if 8 == 9
+	a0 = 6
+else
+	7 == 2
+if 2
+	0 + 7
+else
+	a0 = 7 * 2
+while (8 + 5) * 0
+	if 7 == 9 then a0 = 1 else a0 = 3
+	if 6 * 3
+		7 * 2
+	else
+		a0 = 6

@@ -1,0 +1,7 @@
+if 4 * 7
+	if 7 + 1
+		5 * 4
+else
+	a0 = 7 == 5
+	a1 = 5
+if 9 then 0 * 5 * 5 else a0 = 5 + 3 if 7 * 5

@@ -1,0 +1,11 @@
+a0 = 8 + 0
+a0 = a0
+a1 = a0 + 3 if 1 + 6 if 5 + a0
+while 4
+	a1 = 4 + 6
+	a0 = a0 + a1
+if (a0 == 5) + a0
+	a1 = a0 * a0
+	2 * 1
+else
+	if a0 * a0 then a0 = 5 else a1 = a0

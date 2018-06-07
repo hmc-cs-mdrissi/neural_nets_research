@@ -1,0 +1,9 @@
+if 7 * 7 * (6 * 7)
+	a0 = 0 * 3
+	a1 = 5 * 6
+	if a1 + a1 then a1 = a1 else a2 = a1
+else
+	while 6 * 9
+		1 == 8
+	while 4 == 9
+		a0 = 9 == 1

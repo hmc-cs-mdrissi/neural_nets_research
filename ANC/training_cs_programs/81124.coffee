@@ -1,0 +1,13 @@
+if 1
+	a0 = 1
+else
+	a0 = 1
+while 9 + 1
+	a0 = 0 + 7
+while 6
+	a0 = 4 + 5
+	a0 * a0
+if 4 == 5 + 6
+	a0 = 2 while 6 + 0
+	if 8 + 7
+		a0 = 3 * 7

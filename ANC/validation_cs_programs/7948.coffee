@@ -1,0 +1,6 @@
+while 7 * 2
+	a0 = 5 == 7
+	a1 = 3 == a0
+	while a0 + a1
+		0 * a1
+if 5 * 8 + 4 then a0 = (7 == 4) * 1 else a0 = 0

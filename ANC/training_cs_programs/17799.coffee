@@ -1,0 +1,1 @@
+7 + 9 while 8 * 1 while 9 + 5 while 9 * 6 == 3 while 2 + 7 + 3 while 7 * (2 + 9) * ((4 + 2) * (6 + 0))

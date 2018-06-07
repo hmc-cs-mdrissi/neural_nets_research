@@ -1,0 +1,14 @@
+a0 = 9 * 8
+if a0 + 1
+	a1 = 1
+else
+	1 + a0
+a0 = a0 + 8 + (a0 + a0)
+if 3 * a0 + a0
+	if 2
+		a1 = a0
+	else
+		a1 = a0
+else
+	a1 = a0 == 8
+	a2 = a1 == 9

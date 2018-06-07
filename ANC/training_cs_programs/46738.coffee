@@ -1,0 +1,12 @@
+8 * 4
+a0 = 1
+a1 = a0 == 5
+if 4 then a0 = 7 * a0 else a2 = 3 + 5
+if a1 * 2
+	a2 = a1 == a1
+	a3 = 3
+else
+	if a0 * a1
+		a2 = a1
+	else
+		a2 = a1

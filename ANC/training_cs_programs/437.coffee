@@ -1,0 +1,12 @@
+a0 = 8 + 2
+a1 = a0
+a0 = 9 + a1 while 3 * 2 while a0 * 0
+if a1 * a1 * a0
+	a0 = 0 + 0
+	a2 = 9
+if 0 + a1 + 0
+	a2 = a1
+	a0 = 2 + a2
+else
+	a2 = 2 * 0
+	a3 = 3 + 9

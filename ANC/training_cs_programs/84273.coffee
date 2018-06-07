@@ -1,0 +1,1 @@
+a0 = 6 + 8 while 1 == 4 while (2 == 2) + 7 while 4 == 5 + 3 while 4

@@ -1,0 +1,14 @@
+if (2 + 6 == 6) + (5 + 1)
+	if 8 * 8
+		while 2 + 9
+			a0 = 7
+	else
+		while 6 * 5
+			a0 = 8
+else
+	a0 = 5 == 8
+	a1 = 5 * 1
+	if a0 == a1
+		a2 = 4
+	else
+		a2 = 0

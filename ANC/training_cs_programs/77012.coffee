@@ -1,0 +1,12 @@
+a0 = 2 + 7
+a0 = a0 == 8
+a1 = 7 + 1 if 0 + a0 if a0 == 8
+if 5 * a0 * 0
+	while a0 * 6
+		a1 = a0 + 9
+if a0 * 7 * 4
+	a0 = a0 + a0
+	a0 + 2
+else
+	a0 = a0 + a0
+	a1 = a0

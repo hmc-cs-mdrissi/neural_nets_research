@@ -1,0 +1,1 @@
+if 5 + 4 + 7 == 5 + 0 then a0 = 4 + 1 while 4 * 3 while 8 + 5 else a0 = 8 == 1 + 4

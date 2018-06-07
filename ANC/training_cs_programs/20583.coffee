@@ -1,0 +1,1 @@
+if 4 * 2 * 5 == 2 + 7 then 7 + 0 == 2 while 8 + 3 else 9 * 8 * 0 if 6

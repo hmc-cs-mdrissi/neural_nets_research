@@ -1,0 +1,1 @@
+if ((7 == 8) == 1) + (4 + 1) then a0 = 1 == 1 if 5 * 4 if 8 + 1 if 2 else 8 * 0 * 2 while 8

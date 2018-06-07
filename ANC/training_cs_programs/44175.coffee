@@ -1,0 +1,1 @@
+if 4 * 4 * 8 + (8 == 7) then a0 = 7 + 2 == (7 == 8) else 7 while 9 while (7 + 8) * 0

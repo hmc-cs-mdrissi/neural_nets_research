@@ -1,0 +1,14 @@
+while 7 + 4
+	a0 = 2 == 5
+if 9 + 1
+	a0 = 3
+else
+	a0 = 7
+a0 = 4
+while a0 * (1 + a0)
+	a0 = 1 + a0
+	a1 = 9
+	if a1 + 0
+		a2 = a1
+	else
+		a0 = a1

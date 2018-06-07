@@ -1,0 +1,10 @@
+a0 = 0 == 4
+a1 = a0 + a0
+a2 = 0
+while (7 == a2) + 5
+	a3 = a1
+	a4 = a0 * a2
+if 1 * a1 + 1
+	if 0 * a1 then a3 = 8 else a3 = 6
+else
+	if a1 + 3 then 6 * a1 else a2 = a0

@@ -1,0 +1,1 @@
+if (4 * 5 == 9) * (6 + 5) then a0 = 1 + 0 while 4 + 4 while 5 while 4 * 5 + 7 else a0 = (2 + 1) * 4 if 7 * 4 + 4

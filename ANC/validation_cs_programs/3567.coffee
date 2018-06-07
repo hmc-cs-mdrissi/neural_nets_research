@@ -1,0 +1,9 @@
+a0 = 4 * 0
+a0
+if 6 + 8
+	a0 * a0
+if a0
+	a1 = 1 * 8
+else
+	a1 = a0
+if 5 * a0 + 5 then (a0 == a0) * 8 else a0 = 0 * 7 if a0

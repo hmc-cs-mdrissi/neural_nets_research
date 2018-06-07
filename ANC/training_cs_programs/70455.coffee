@@ -1,0 +1,14 @@
+if 0
+	a0 = 2 * 0
+	a0 = 2 + 5
+	while 3 + a0
+		a0 == a0
+else
+	if 9 + 7
+		5 * 1
+	else
+		a0 = 3
+	if 1 == 3
+		7 + 0
+	else
+		a0 = 3

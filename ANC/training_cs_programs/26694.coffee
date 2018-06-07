@@ -1,0 +1,10 @@
+a0 = 7 + 6
+a1 = 1 == 1
+if 6 * 6
+	a2 = 8 == a1
+if a1 == a1
+	a2 = 7 + 7
+else
+	a2 = a0 == 9
+if 6 + 2 + 6 * a1
+	if 3 * 8 then a1 * 1 else a2 = a1

@@ -1,0 +1,1 @@
+if (6 == 1) + 1 == 8 then a0 = 8 * 6 while 1 * 1 while 0 + 6 else (1 == 8) + 6 if (4 + 8) * 6

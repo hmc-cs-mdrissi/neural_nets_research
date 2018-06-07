@@ -1,0 +1,1 @@
+if 2 + 1 then a0 = 7 + 8 + 6 while 0 + 9 else a0 = 8 + 9 + 6 * 9

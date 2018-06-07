@@ -1,0 +1,12 @@
+a0 = 6 == 1
+a1 = 2 == a0
+a2 = a0
+while 3 + a1 + a2
+	while a0 * a0
+		a3 = 4 + 1
+if 0 * 6 + a2
+	4 * a2
+	a3 = 6 == 3
+else
+	a1
+	a1 = a0 + 5

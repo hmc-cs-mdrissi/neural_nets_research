@@ -1,0 +1,1 @@
+if 2 * 7 + (4 == 7) then a0 = 9 + 1 if 8 * 5 if 2 else 8 * 3 if 2 + 4 if 8 * 4 if 7 * 8 + 7

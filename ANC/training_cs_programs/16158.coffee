@@ -1,0 +1,1 @@
+if (8 + 7) * 9 * (4 + 3) then a0 = 1 + 1 + 2 while 1 else a0 = 3 * 3 if 7 == 6 if 4 * 2

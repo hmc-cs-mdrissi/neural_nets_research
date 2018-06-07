@@ -1,0 +1,15 @@
+1 + 6
+a0 = 7
+if a0 * 6
+	a1 = a0
+else
+	a1 = 7
+if a0 * a0 then a0 = 3 + 4 else a1 = 0 + a0
+if 4 * a0 * 2
+	while a0 + 0
+		a1 = 3 * 3
+else
+	if 5 * a0
+		4 + 9
+	else
+		a1 = a0

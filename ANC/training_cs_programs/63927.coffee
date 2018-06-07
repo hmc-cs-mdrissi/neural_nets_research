@@ -1,0 +1,1 @@
+if 1 * 4 * 4 + 5 * 0 then a0 = 5 * 2 if 6 * 5 if 3 if (1 + 4) * 3 else 2 + 8 while (6 == 5) + 2

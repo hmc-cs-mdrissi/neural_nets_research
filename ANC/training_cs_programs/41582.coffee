@@ -1,0 +1,1 @@
+if 4 then a0 = 6 + 0 if 4 == 1 if 6 * 0 == 2 else a0 = 0

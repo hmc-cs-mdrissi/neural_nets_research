@@ -1,0 +1,10 @@
+a0 = 2 * 0
+a1 = 7 * a0
+while 4 + 7
+	a2 = 8 * 5
+while 6
+	a2 = 4 + 3
+while 8
+	a2 = a0 + a0
+	a1 == a2
+	a0 = a1

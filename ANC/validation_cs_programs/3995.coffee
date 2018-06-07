@@ -1,0 +1,1 @@
+if 0 * 6 then a0 = 3 * 6 * 9 else a0 = 1

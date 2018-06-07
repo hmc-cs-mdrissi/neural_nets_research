@@ -1,0 +1,11 @@
+if 6 * 2 * 4 + (5 + 1)
+	if 8 + 1
+		if 2 + 9
+			a0 = 5
+		else
+			a0 = 3
+	else
+		a0 = 9
+		a1 = a0
+else
+	if 5 + 7 then 6 == 3 else a0 = 7 + 5

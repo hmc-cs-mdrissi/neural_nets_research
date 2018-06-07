@@ -1,0 +1,1 @@
+if 5 + 6 * 8 then 1 else a0 = (0 == 2) * 0 while 9

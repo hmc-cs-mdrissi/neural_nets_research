@@ -1,0 +1,1 @@
+if 0 then a0 = 0 if 8 * 4 if 2 if 3 * 8 + 8 else a0 = 4

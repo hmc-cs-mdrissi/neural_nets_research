@@ -1,0 +1,15 @@
+a0 = 4 + 7
+a1 = 7 + a0
+2 + 1 if a1
+if 4
+	a0
+	a2 = a1
+while 9
+	if 5 + a1
+		a2 = a1
+	else
+		a0 = a0
+	if a1
+		a2 = 3
+	else
+		a2 = a1

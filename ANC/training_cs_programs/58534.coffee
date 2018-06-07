@@ -1,0 +1,1 @@
+if (4 == 9) + 4 * 9 then a0 = 7 else 9 if 8

@@ -1,0 +1,8 @@
+if 6 * 2 then a0 = 1 else 2 * 5
+if 6 + 5
+	a0 = 6 * 3
+a0 = 3 + 2
+if (a0 + 0) * (a0 + a0)
+	if 2 then a1 = 0 else a1 = 4
+	while 1 + a0
+		a1 = 6 == 7

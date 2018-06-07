@@ -1,0 +1,1 @@
+if 5 then a0 = 1 * 1 + 3 if 6 * 7 else a0 = (8 + 5) * 5 while 1 == 1

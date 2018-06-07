@@ -1,0 +1,1 @@
+if 0 * 6 * 6 * (6 * 8) then a0 = 3 + 3 == 1 while 0 * 9 else a0 = 6

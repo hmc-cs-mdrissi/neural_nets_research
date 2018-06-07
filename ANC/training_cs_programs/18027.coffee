@@ -1,0 +1,10 @@
+a0 = 5
+a1 = a0
+while a1
+	a2 = a1 + 9
+if 2 + a0 then 8 * 1 else a0
+if 7 + a1
+	if a1
+		a1 = a1
+	if 7 * a0
+		a0 = a0 == a1

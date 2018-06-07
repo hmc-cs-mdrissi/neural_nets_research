@@ -1,0 +1,1 @@
+if 5 then a0 = 3 == 1 * 2 else a0 = 1

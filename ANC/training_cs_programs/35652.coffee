@@ -1,0 +1,9 @@
+if 0 * 2 + 8 + (1 == 8)
+	a0 = 7 == 2 + 4
+else
+	if 4
+		while 9 + 1
+			6 * 7
+	else
+		while 2 * 7
+			a0 = 9

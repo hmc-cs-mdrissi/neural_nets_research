@@ -1,0 +1,11 @@
+while 2
+	if 5 + 0
+		a0 = 5
+	else
+		5
+while 5
+	a0 = 1
+	a1 = a0
+while 6 * 1 + (0 + 0)
+	if 2 + 2 then a0 = 5 else a0 = 6
+	if 4 == 4 then a0 = 3 else a0 = 4

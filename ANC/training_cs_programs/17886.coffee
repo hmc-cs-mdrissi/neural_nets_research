@@ -1,0 +1,1 @@
+if (5 + 0 + 7) * 2 then a0 = 0 * 2 while 9 + 5 while 5 while 0 * 2 else a0 = 2

@@ -1,0 +1,1 @@
+if (6 + 5 == 5) * (2 == 2) then a0 = 2 * 4 while 4 * 6 while 2 + 6 + 3 else (5 == 9) * 5 while (6 == 5) + 1

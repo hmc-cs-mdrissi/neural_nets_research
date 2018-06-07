@@ -1,0 +1,9 @@
+if 4
+	a0 = 4
+else
+	a0 = 2 == 5
+if 1 + 2
+	0 == 5
+else
+	a0 = 7 * 7
+if 0 * 0 + 4 then a0 = 4 + 9 if 2 * 6 else a0 = (1 + 2) * 0

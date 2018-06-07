@@ -1,0 +1,1 @@
+a0 = 6 * 6 while 0 while 1

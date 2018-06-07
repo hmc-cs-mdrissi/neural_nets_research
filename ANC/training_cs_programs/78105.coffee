@@ -1,0 +1,7 @@
+a0 = 3 * 2
+a1 = 0 + 4
+if a1 * a0
+	a2 = 9 == a0
+if 2 == a0
+	a2 = 9 * 2 if 2
+if a0 + 7 + 2 then a0 if a0 * a1 if a0 else a2 = a1 + 2 if 3 * a0

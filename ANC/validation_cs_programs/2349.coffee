@@ -1,0 +1,1 @@
+if 4 * (1 == 1) then a0 = (0 == 3) * 0 while 6 * 4 else a0 = 4

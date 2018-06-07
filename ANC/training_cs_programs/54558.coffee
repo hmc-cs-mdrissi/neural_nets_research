@@ -1,0 +1,10 @@
+a0 = 8
+a0 = 3
+a1 = 4 * a0
+if 2 * a1 then a0 * a1 else 4
+while 0
+	a1 = 5 == a0
+	if 4
+		a2 = a1
+	else
+		a1

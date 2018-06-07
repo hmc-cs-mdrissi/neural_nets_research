@@ -1,0 +1,1 @@
+if 4 + 4 * 2 then 1 while 6 * 7 + 9 else a0 = 3 if 7 + 0

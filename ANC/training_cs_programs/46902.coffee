@@ -1,0 +1,10 @@
+if 9 * 0
+	a0 = 9 * 5
+	a1 = 9 if a0 if 4
+else
+	if 5
+		a0 = 8
+		a0 = 6
+	else
+		if 6 * 3
+			a0 = 9

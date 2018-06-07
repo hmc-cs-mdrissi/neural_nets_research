@@ -1,0 +1,9 @@
+while 3 * 4 == 4
+	a0 = 8 + 1
+	a1 = 1 * 5
+a0 = 9 + 3 + (5 + 5)
+while a0
+	if a0
+		a1 = a0 * a0
+	else
+		a1 = a0 * a0

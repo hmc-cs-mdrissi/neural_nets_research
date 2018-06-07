@@ -1,0 +1,10 @@
+if 2 + 3
+	if 1
+		a0 = 0 + 0
+else
+	3 * 0
+	a0 = 2 == 5
+while 1
+	a0 = 1 + 2
+	a0 = a0
+	if 1 + a0 then a1 = 5 else a1 = a0

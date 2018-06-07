@@ -1,0 +1,1 @@
+if 2 * (2 + 8) then a0 = 8 + 6 + 9 if 0 * 9 + 5 else a0 = 5 + 9 while 8 + 5 + 1

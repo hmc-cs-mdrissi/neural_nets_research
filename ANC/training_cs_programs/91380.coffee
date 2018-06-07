@@ -1,0 +1,10 @@
+a0 = 7 == 2
+a1 = 4
+a0
+if a0 then a2 = a1 * a0 else a2 = 1
+if a0 * a0
+	6
+	a2 = 8 * a1
+else
+	a2 = 6 * 7
+	a1 = a1 * 5

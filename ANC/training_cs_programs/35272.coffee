@@ -1,0 +1,1 @@
+if (0 + 6 + 9) * (7 * 6) then 1 else a0 = 0 * 4 while 6 == 1 while 1
