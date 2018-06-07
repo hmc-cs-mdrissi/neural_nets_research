@@ -69,7 +69,7 @@ class TreeToTreeAttention(nn.Module):
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
-#             # Calculate loss
+            # Calculate loss
             loss += self.decoder.calculate_loss(parent_val, child_index, et, targetNode.value)
             
             # If we have an EOS, there are no children to generate

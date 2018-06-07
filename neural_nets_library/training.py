@@ -620,14 +620,18 @@ def train_model_tree_to_tree(model,
                 train_running_print_accuracy += validation_loss
                 if validation_dset:
                     input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
+                    if use_cuda:
+                        input_val, target_val = input_val.cuda(), target_val.cuda()
                     output_val = model.forward_prediction(input_val)
-                    train_running_plot_accuracy += validation_criterion(output_val, target_val)
+                    val_running_plot_accuracy += validation_criterion(output_val, target_val)
                 
             # statistics
             epoch_running_loss += float(iteration_loss)
             running_train_plot_loss += float(iteration_loss)
             if validation_dset:
                 input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
+                if use_cuda:
+                    input_val, target_val = input_val.cuda(), target_val.cuda()
                 running_val_plot_loss += float(model.forward_train(input_val, target_val))
             running_train_print_loss += float(iteration_loss)
 
@@ -641,12 +645,12 @@ def train_model_tree_to_tree(model,
                 running_train_print_loss = 0.0
                 
                 if validation_criterion is not None:
-                    curr_validation_loss = running_validation_print_loss / print_every
+                    curr_validation_loss = train_running_print_accuracy / print_every
                     print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
                     epoch, current_batch, curr_validation_loss))
-#                     print('Example output:')
+                    print('Example output:')
 #                     model.print_example(input_tree, target_tree)
-                    running_validation_print_loss = 0.0
+                    train_running_print_accuracy = 0.0
                 
             if total_batch_number % plot_every == 0:
                 train_plot_losses.append(running_train_plot_loss / plot_every)
@@ -670,37 +674,36 @@ def train_model_tree_to_tree(model,
                     
             if save_file and save_folder and total_batch_number % save_every == 0:
                 # Save losses
-                with open(save_folder + "/" + save_file + "_loss.txt", "a") as file:
+                with open(save_folder + "/" + save_file + "_train_loss.txt", "a") as file:
                     for val in curr_train_plot_losses:
                         file.write(str(val) + ",")
                 curr_train_plot_losses = []
                 # Save accuracies
-                with open(save_folder + "/" + save_file + "_accuracy.txt", "a") as file:
-                    for val in curr_plot_accuracies:
+                with open(save_folder + "/" + save_file + "_train_accuracy.txt", "a") as file:
+                    for val in curr_train_plot_accuracies:
                         file.write(str(val) + ",")
-                curr_plot_accuracies = []
+                curr_train_plot_accuracies = []
                 if validation_dset:
                     # Save losses
-                    with open(save_folder + "/" + save_file + "_loss.txt", "a") as file:
-                        for val in val_curr_val_plot_losses:
+                    with open(save_folder + "/" + save_file + "_val_loss.txt", "a") as file:
+                        for val in curr_val_plot_losses:
                             file.write(str(val) + ",")
-                    val_curr_val_plot_losses = []
+                    curr_val_plot_losses = []
                     # Save accuracies
-                    with open(save_folder + "/" + save_file + "_accuracy.txt", "a") as file:
-                        for val in val_curr_plot_accuracies:
+                    with open(save_folder + "/" + save_file + "_val_accuracy.txt", "a") as file:
+                        for val in curr_val_plot_accuracies:
                             file.write(str(val) + ",")
-                    val_curr_plot_accuracies = []
+                    curr_val_plot_accuracies = []
                     
     
 
         # deep copy the model
         if epoch_running_loss < best_loss / len(dset_loader):
             best_loss = epoch_running_loss / len(dset_loader)
-            if deep_copy_desired:
-                best_model = copy.deepcopy(model)
-                # Save model
-                if save_file and save_folder:
-                    torch.save(best_model, save_folder + "/" + save_file + "_model")
+            best_model = copy.deepcopy(model)
+            # Save model
+            if save_file and save_folder:
+                torch.save(best_model, save_folder + "/" + save_file + "_model")
 
     print()
 
@@ -735,7 +738,7 @@ def test_model(model, dset_loader):
 
     return running_corrects/(len(dset_loader) * dset_loader.batch_size)
 
-def test_model_tree_to_tree(model, dset_loader, metric):
+def test_model_tree_to_tree(model, dset_loader, metric, use_cuda=False):
     """
     Tests a model on a given data set and returns the accuracy of the model
     on the set.
@@ -745,6 +748,9 @@ def test_model_tree_to_tree(model, dset_loader, metric):
     running_corrects = 0
 
     for inputs, labels in dset_loader:
+        if use_cuda:
+            inputs, labels = inputs.cuda(), labels.cuda()
+        
         # forward
         output = model.forward_prediction(inputs)
         running_corrects += metric(output, labels)
