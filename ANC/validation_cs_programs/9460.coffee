@@ -1,6 +1,0 @@
-a0 = 7
-a0 = 0
-if 1
-	a0 = a0 * 9
-a1 = a0 + a0 if a0 * a0
-if 2 + 5 + a0 then a0 = a0 == a0 while 4 else 9 * 2

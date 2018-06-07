@@ -1,1 +1,0 @@
-if 2 == 0 + 0 then a0 = 0 + 5 while 3 * 0 while 8 * 3 + 0 else a0 = (0 + 1) * (0 * 3)

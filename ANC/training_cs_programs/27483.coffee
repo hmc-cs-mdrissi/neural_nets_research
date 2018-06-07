@@ -1,1 +1,0 @@
-a0 = 2 while 5 == 5 while 8

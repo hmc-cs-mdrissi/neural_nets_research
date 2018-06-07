@@ -1,9 +1,0 @@
-if 4 + 2 == 2 + 6
-	a0 = 7 + 0
-	a1 = 4
-	if 8 == 4 then a0 = 6 else a1 = 3
-else
-	while 2 + 7
-		a0 = 9 == 9
-	while 4 * 4
-		a0 = 1 * 0

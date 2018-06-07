@@ -1,1 +1,0 @@
-if (8 + 3) * 3 == 0 * 2 then 1 * 8 while 8 == 0 while 8 + 4 else a0 = 2 * 7 + (1 + 2)

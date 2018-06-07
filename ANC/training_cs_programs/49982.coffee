@@ -1,1 +1,0 @@
-if 6 * 7 * 2 * (8 == 2) then a0 = 1 + 4 if 2 + 2 if 8 if 7 else a0 = (0 + 1) * 0 if 2

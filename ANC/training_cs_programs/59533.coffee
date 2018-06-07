@@ -1,1 +1,0 @@
-if 3 + 1 * 1 then a0 = 8 == 0 while 7 while 0 * 7 + 1 else 3 + (5 == 6)

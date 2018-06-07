@@ -1,1 +1,0 @@
-if 7 + 1 + 0 == 2 + 7 then 0 + 3 while 2 * 2 * 4 else 5 * 0 while 5 * 3 while 6 * 0 while 7

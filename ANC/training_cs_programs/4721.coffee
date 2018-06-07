@@ -1,1 +1,0 @@
-if (7 == 0) * 3 == 6 + 7 then a0 = 3 if 2 * 0 if 6 else a0 = 6 if 2 + 7 if 8 * 9 + 6

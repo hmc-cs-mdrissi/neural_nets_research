@@ -1,8 +1,0 @@
-if (8 + 1) * (5 + 3)
-	a0 = 3 == 1
-	while a0 * a0
-		a1 = a0
-if 8 * 6 + 8 * 5
-	0 + 0
-	a0 = 7 * 4
-	if a0 * 3 then a0 = a0 else a1 = a0

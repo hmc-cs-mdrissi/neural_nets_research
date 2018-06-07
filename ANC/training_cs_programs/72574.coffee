@@ -1,1 +1,0 @@
-if 5 + (1 == 7) then a0 = 9 else a0 = 1 + 6 while 8 * 3 while 3 while 9 + 3

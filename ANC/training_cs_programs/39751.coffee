@@ -1,1 +1,0 @@
-if ((2 == 1) + 2) * (3 == 1) then a0 = 2 if 9 else a0 = 2 while 1 + 8 while 6 * 6 * 2

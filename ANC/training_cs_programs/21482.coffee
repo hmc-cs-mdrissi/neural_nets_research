@@ -1,1 +1,0 @@
-if 2 then a0 = 0 else a0 = 8 * 0 if 6 + 7 if 7

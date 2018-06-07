@@ -1,1 +1,0 @@
-if 9 + 6 * 3 then a0 = 5 + 1 while 5 + 9 while 6 == 3 else a0 = 5

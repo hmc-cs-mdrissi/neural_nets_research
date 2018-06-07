@@ -1,9 +1,0 @@
-a0 = 6 + 7
-a1 = 9 + a0
-if 3 * a1
-	a1
-else
-	a2 = 1
-if (a0 == 5) * a0
-	if 1 + 9 then a0 = a0 else a2 = a0
-(a0 + a0) * (6 * a1 + a0)

@@ -1,1 +1,0 @@
-if 5 * 1 + 9 then a0 = 7 + 1 while 1 * 2 while 5 + 1 + 3 else a0 = 2 == 4 while 3 + 0 while 7 + 3 while (3 == 6) + 3

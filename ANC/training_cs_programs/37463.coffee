@@ -1,8 +1,0 @@
-a0 = 0 * 0
-a1 = 0 * a0
-while 5 * a0
-	a2 = 9 * 9
-if 9 * a1 * a1
-	a2 = 6
-	a2 = a1 + a0
-if a1 then a0 = 7 else a2 = (a1 == 7) * 9

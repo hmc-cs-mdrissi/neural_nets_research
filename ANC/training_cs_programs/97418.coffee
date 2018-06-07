@@ -1,1 +1,0 @@
-if 2 + 5 + 4 + (3 + 5) then a0 = 2 * 8 while 3 * 4 while 6 * 6 while 9 else a0 = (8 + 7) * 0 if 5 + 5 + 0

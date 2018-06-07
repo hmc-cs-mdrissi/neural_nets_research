@@ -1,9 +1,0 @@
-if (6 + 3 == 5) == 4
-	a0 = 1 + 2
-	a1 = 7 * a0
-	if 0 == a1 then 2 else a2 = a0
-else
-	a0 = 4
-	0 + a0
-	while 7 == a0
-		a0 = a0 == 6

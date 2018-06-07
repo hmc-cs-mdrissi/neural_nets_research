@@ -1,1 +1,0 @@
-if (3 == 4) + 1 + 9 * 4 then a0 = 3 + 4 while 0 while 8 * 6 while 4 * 5 * 7 else a0 = 0 if 9 == 8 if 0 == 4 if 8

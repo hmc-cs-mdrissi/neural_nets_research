@@ -1,8 +1,0 @@
-while 9 + 3
-	a0 = 8 * 2
-if 4 == 8 then a0 = 3 else a0 = 2
-if 2
-	3 + 3
-	8 == 4
-while 8
-	9 + 3 + 0 while 8

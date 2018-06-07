@@ -1,1 +1,0 @@
-if 6 * 5 + 3 == 6 * 8 then a0 = 1 while 6 == 9 while 0 == 6 while 1 + 8 + 0 else a0 = 6 + 2 == 6 + 5

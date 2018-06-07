@@ -1,6 +1,0 @@
-6 + (5 + 7) == 3
-if 1 + 0 == 8
-	while 3 == 3
-		a0 = 0 == 2
-else
-	if 3 * 0 then a0 = 3 else a0 = 2

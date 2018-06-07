@@ -1,8 +1,0 @@
-if 5 + 4
-	a0 = 4 + 8
-else
-	7 * 2
-if 8 + 5 then 1 else a0 = 9 == 5
-while 7
-	while 4 * 2 + 2
-		a0 = 6 == 3

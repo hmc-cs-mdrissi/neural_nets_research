@@ -1,1 +1,0 @@
-if 6 * 9 + 6 + 4 * 9 then a0 = 9 * 1 if 5 * 1 + 5 else 5 + 2 if 6 if 6 + 2 if 5

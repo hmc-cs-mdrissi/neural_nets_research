@@ -1,1 +1,0 @@
-if 0 * (2 == 3) then a0 = 6 else a0 = 0 * 0 while 6 while (4 == 4) == 6

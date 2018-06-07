@@ -1,1 +1,0 @@
-if 3 then a0 = 5 * 8 * 5 else 8 if 8 * 5 * 4

@@ -1,1 +1,0 @@
-if 7 then (2 == 2) == 9 while 6 + 9 == 3 else a0 = 3 if 5 * 9 * 1

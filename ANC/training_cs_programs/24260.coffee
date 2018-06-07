@@ -1,1 +1,0 @@
-if 9 * 7 * 8 == 4 + 4 then 7 * (7 + 9) else 2 * 2 while 3 == 4 while 7

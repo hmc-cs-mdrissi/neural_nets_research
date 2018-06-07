@@ -1,1 +1,0 @@
-if 8 then 8 else a0 = 2 * 7 + 5 if 9 + 0

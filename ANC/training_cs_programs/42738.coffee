@@ -1,1 +1,0 @@
-if 6 * 6 * 2 * 7 then 0 else 8 + 2 if 2 * 9 if 5 * 5

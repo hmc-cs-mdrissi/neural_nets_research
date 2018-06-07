@@ -1,1 +1,0 @@
-if 2 + 1 then a0 = 3 + 9 + 1 if 3 else a0 = 9 + 8 while 1 while 3 * 1 while (8 + 4) * 0

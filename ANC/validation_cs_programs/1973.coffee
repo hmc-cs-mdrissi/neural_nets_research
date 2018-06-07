@@ -1,8 +1,0 @@
-a0 = 4 + 1
-a1 = 1 + 0
-if 0 * 8 then 1 else 1 + a0
-if 2 * a1
-	a0 = 8 == a1
-else
-	a1 = 2
-a0 + a0 + 8 * 5 while 6 + 6 == 2 + a0

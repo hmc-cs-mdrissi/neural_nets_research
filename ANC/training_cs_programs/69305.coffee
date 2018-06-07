@@ -1,1 +1,0 @@
-if 5 == 5 * 2 then a0 = 8 * 9 if 5 if 8 + 0 if 1 else a0 = 3 * 1 while 9 == 3 while 8 * 1 * 9

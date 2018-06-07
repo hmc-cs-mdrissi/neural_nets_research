@@ -1,9 +1,0 @@
-a0 = (6 == 6) + 3 * 6
-while 6
-	a1 = a0
-	a1 == 0
-while a0
-	if 0 == 1
-		a1 = 6 == a0
-	while 6
-		a1 = 1 + a0

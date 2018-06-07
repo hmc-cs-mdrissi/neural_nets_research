@@ -1,1 +1,0 @@
-if 6 then a0 = (0 == 7) * (9 == 8) else 2 while 3 + 0 + 3

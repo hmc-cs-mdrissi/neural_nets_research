@@ -1,7 +1,0 @@
-while (9 == 1) == (5 == 6)
-	2
-	a0 = 3 + 1
-	while a0 + 7
-		a1 = 0
-while 5
-	if 0 + 8 then 7 == 5 else a0 = 8 + 7

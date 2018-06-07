@@ -1,1 +1,0 @@
-if 2 + 5 == (3 == 5) then (2 == 0) + 7 else 1 + 7 while 5 * 8 while 2 * 8 + 2

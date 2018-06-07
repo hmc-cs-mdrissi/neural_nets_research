@@ -1,1 +1,0 @@
-if 4 * 1 * 3 * (6 * 8) then 2 else a0 = 5 * 1 + 2 while 7 * 7

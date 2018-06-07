@@ -1,1 +1,0 @@
-if 5 * 5 + 4 + 4 * 0 then 8 while 5 while 5 else a0 = (0 + 2) * (0 + 0)

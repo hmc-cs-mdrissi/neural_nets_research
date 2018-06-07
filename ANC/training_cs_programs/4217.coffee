@@ -1,9 +1,0 @@
-if 8
-	if 5 * 1 then 8 + 8 else a0 = 8
-	while 8
-		a0 = 5
-else
-	while 6 + 6
-		a0 = 2 + 3
-	if 2 + 4
-		2 == 7

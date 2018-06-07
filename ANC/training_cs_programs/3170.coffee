@@ -1,1 +1,0 @@
-if (1 + 0 + 2) * (3 * 2) then a0 = (2 + 5) * (2 + 5) else a0 = 1 while 3 while 2

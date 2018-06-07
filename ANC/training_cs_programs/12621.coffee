@@ -1,6 +1,0 @@
-if 2 + 6 == 7 then a0 = (5 + 4) * 4 else a0 = (1 == 5) + 5
-while 0 + 3 + 9
-	while 9 * 0
-		5 * 6
-	while 4 * 7
-		a0 = 2 * 3

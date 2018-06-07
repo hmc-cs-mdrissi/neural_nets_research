@@ -1,1 +1,0 @@
-if 7 == 3 * 3 then 1 else a0 = 9

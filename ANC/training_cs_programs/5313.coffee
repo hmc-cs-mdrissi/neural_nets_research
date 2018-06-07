@@ -1,1 +1,0 @@
-if 2 then a0 = (2 == 1) * (1 * 6) else a0 = 3 if 6 if 9 * 3 if 7

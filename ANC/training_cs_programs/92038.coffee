@@ -1,6 +1,0 @@
-a0 = 6
-a0 = 4 * a0
-if 5 then a0 = a0 else a0 = a0
-while 7 + 7
-	if a0 == a0 then a0 == 9 else a0 + a0
-2 + a0 == a0 while (a0 + 5) * (a0 * a0)

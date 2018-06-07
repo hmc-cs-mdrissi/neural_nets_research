@@ -1,1 +1,0 @@
-if 5 * 6 * 3 * (3 == 3) then a0 = 6 else a0 = 7 + 2 while 2 + 4 while (4 + 4) * 9

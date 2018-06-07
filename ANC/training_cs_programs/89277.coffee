@@ -1,1 +1,0 @@
-if 8 == (9 == 7) then a0 = 8 else a0 = 8 == 5 while 5 + 0 == 5

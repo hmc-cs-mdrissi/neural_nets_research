@@ -1,8 +1,0 @@
-while 0
-	while (0 == 2) * 3
-		4
-		a0 = 6
-if 4 * 7 * (8 + 1)
-	7 * 8
-	a0 = 6 + 2
-	if 6 + 2 then 1 * a0 else a1 = 6

@@ -1,8 +1,0 @@
-8 * 4 * 8
-a0 = 0 * 1
-if a0 * a0 then a0 = a0 * 6 else a0 == 1
-while a0 * 3 * 6
-	a1 = 8 == a0
-	1
-	while 0
-		a2 = a0 == a1

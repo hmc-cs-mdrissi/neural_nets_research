@@ -1,1 +1,0 @@
-if (6 == 6) + 2 + 1 then 4 * 9 while 3 + 6 while 1 == 2 while 5 + 0 == 7 else 0 + 1 + 0 == 6 * 5

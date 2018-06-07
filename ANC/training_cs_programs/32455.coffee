@@ -1,1 +1,0 @@
-if ((3 == 2) == 5) == (7 == 1) then a0 = 6 while 1 == 1 while 0 * 9 while 1 + 4 == 3 else (5 == 2) + 5 while 5

@@ -1,7 +1,0 @@
-a0 = 0 * 8
-a1 = 0 == 1
-if a1
-	a1 = a0
-if 0 + 3 then a0 = a0 * a1 else a2 = a0 + a0
-while a1
-	a2 = a0 * a1 if 3 + a0 + 1

@@ -1,8 +1,0 @@
-a0 = 7
-2 + 2
-if a0 then a1 = a0 else a1 = 2
-if 1 * a0 then a0 = 4 + a0 else a1 = 4 * 1
-while 6
-	while a0 + a0
-		a1 = 3
-	if a0 then 1 else a0 = a0

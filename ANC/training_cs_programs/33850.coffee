@@ -1,8 +1,0 @@
-while 5 == 8
-	while (4 + 4) * 3
-		while 2 * 3
-			a0 = 8
-if 7
-	while (9 == 5) == 7
-		3 * 4
-		a0 = 6

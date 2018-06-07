@@ -1,9 +1,0 @@
-if 1
-	a0 = 8 + 0
-	a1 = a0 * a0
-	if a0 * 2 then a2 = a1 else a1 = a1
-if 7
-	a0 = 5 * 0
-	a1 = 5 + 4
-else
-	if 2 then 1 == 2 else a0 = 9

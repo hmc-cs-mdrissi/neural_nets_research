@@ -1,9 +1,0 @@
-while (1 + 9) * 4
-	a0 = 0 + 0
-	a1 = a0
-if 6 then a0 = 8 else a0 = 3 + 7
-if 4 + 1 + 5 * 0
-	if 4 * 3
-		a0 = 8 + 9
-	else
-		a0 = 5 + 6

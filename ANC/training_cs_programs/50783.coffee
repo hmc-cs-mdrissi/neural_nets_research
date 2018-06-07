@@ -1,8 +1,0 @@
-while 7 + 2 == 4 + 7
-	2 * 1 * 3
-	while 7 + 7
-		a0 = 5 * 0
-while (7 + 2) * (6 * 0)
-	a0 = 3 + 5
-	a1 = 4 * a0
-	if a1 * 3 then a2 = 0 else 2

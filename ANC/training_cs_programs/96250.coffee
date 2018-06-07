@@ -1,5 +1,0 @@
-if 8 + 8 then a0 = 5 else a0 = 3
-(9 == 1) * 0
-a0 = (4 + 8) * 7
-if 8 + 1 + 1 * a0
-	a0 * 6 if a0 + a0 if a0 if 8 == a0

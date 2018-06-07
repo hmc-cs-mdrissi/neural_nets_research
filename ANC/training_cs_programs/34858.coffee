@@ -1,1 +1,0 @@
-if 3 + 8 * 2 then a0 = 6 + 4 == 8 + 0 else a0 = 3 while 1 * 5 == 6

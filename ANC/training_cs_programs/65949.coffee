@@ -1,1 +1,0 @@
-if 0 * 4 + 2 == 9 * 6 then 3 + 9 == (1 == 4) else a0 = 4 + 4 while 6 + 6 while 2 + 0 while 3

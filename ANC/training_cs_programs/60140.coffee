@@ -1,1 +1,0 @@
-if 4 * 6 * 3 then 4 else a0 = 7

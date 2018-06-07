@@ -1,7 +1,0 @@
-if 4 * 8 + 4 then a0 = 1 + 1 == 1 else a0 = 3
-while 5 * 2 + (8 == 4)
-	if 8 * 0 + 8
-		if 1 * 3
-			a0 = 4
-		else
-			a0 = 0

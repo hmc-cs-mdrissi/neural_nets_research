@@ -1,5 +1,0 @@
-a0 = 3 * 1
-a1 = 0 + 2
-if a1 + 3 then a0 == 7 else 6 + 1
-if 3 + a0 then a0 = a1 == 8 else a2 = 0 * 7
-a2 = a0 * 1

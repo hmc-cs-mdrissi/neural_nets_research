@@ -1,9 +1,0 @@
-if 0 * (5 + 3)
-	9 * 5
-	a0 = 2
-	if 2 * a0
-		a0 = 1
-else
-	if 9 * 1
-		3 + 6
-	if 7 * 0 then a0 = 0 else a0 = 7

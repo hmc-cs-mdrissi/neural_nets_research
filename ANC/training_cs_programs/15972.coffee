@@ -1,1 +1,0 @@
-if (1 * 7 + 9) * (9 * 1) then a0 = 1 + 5 while 2 * 9 while 2 else a0 = 1

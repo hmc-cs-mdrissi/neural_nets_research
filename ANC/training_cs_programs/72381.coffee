@@ -1,1 +1,0 @@
-if 7 * 7 * 1 * (4 * 2) then a0 = (1 == 3) == 8 else 3 + 0 while 4 while 0 + 7 while (4 + 4) * 7

@@ -1,1 +1,0 @@
-if (1 * 4 == 4) * (0 + 3) then a0 = 3 + 4 while 5 * 4 while 4 * 9 + 5 else a0 = 3

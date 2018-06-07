@@ -1,8 +1,0 @@
-while 4 * 6 + 5
-	while 5
-		a0 = 1
-while (6 == 7) * (9 * 0)
-	a0 = 3 + 0
-	a0 = 4 + a0
-	while 9 == 3
-		a1 = a0

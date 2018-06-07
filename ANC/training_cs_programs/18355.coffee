@@ -1,1 +1,0 @@
-if (3 + 2) * 1 + 2 then a0 = 6 + (9 + 1) else a0 = 0 == 8 while 6 == 4 while 8 * 6 + 4

@@ -1,1 +1,0 @@
-if 8 + 2 + 6 + 6 then a0 = 2 else a0 = 3

@@ -1,1 +1,0 @@
-if 0 then 1 else a0 = 9 == 7 * 6

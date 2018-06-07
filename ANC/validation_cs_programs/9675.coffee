@@ -1,1 +1,0 @@
-if 2 then a0 = 2 + (0 + 9) else (6 + 7) * 3 while 2

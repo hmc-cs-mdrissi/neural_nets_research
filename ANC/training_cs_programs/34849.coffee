@@ -1,1 +1,0 @@
-if 7 then a0 = 4 + 9 == 0 + 6 else 2 == 4 if 2 + 7 if 9 + 1 if 4

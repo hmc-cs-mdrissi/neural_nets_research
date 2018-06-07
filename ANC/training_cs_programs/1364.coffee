@@ -1,1 +1,0 @@
-if 1 * 6 * 2 * (1 + 2) then a0 = 3 + 0 + 4 * 7 else 3 while 6 while (2 == 2) * 3

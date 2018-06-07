@@ -1,1 +1,0 @@
-if 8 * 6 * 5 == 5 * 3 then 4 else 7 + 6 while 7 + 2 while 0 * 4 + 2

@@ -1,1 +1,0 @@
-if 4 * (9 + 1) then 2 else a0 = 8

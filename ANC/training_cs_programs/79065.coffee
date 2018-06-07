@@ -1,1 +1,0 @@
-if 3 * (2 * 4) then 3 == 0 while 8 * 0 while 1 == 8 while 7 + 4 + 8 else a0 = 1 + 7 while 9 * 9 while 8 while 6

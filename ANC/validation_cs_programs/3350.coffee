@@ -1,1 +1,0 @@
-if 7 + 6 * 7 then a0 = 0 else a0 = 1 while 5 + 7 while 0 == 1

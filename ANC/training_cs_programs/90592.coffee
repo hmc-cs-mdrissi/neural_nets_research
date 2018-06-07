@@ -1,1 +1,0 @@
-if (6 + 5 == 9) + (7 + 9) then a0 = 5 + 0 while 2 + 2 while 7 + 1 else a0 = 7 == 3 while 9 + 0 + 4

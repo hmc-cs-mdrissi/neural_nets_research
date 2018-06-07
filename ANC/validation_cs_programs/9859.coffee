@@ -1,1 +1,0 @@
-if 0 + 1 + 8 then a0 = 0 else a0 = 8 + 6 + 4 while 8 + 4 == 7

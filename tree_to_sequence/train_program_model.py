@@ -59,7 +59,7 @@ parser.add_argument('--binarize_output', action='store_true', help="Binarize the
 parser.add_argument('--long_base_case', action='store_false', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
 parser.add_argument('--lr', type=float, default=0.005, help='learning rate for model using adam, default=0.005')
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
-parser.add_argument('--no_cuda', action='store_false', help='Disables cuda')
+parser.add_argument('--no_cuda', action='store_true', help='Disables cuda')
 opt = parser.parse_args()
 
 decoder_type = opt.decoder_type
@@ -80,7 +80,7 @@ output_as_seq = (decoder_type == "sequence")
 
 if opt.problem_number == 0:
     # Make dataset
-    dset_train = ForLambdaDataset("ANC/training_For.json",
+    dset_train = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/training_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
@@ -88,7 +88,7 @@ if opt.problem_number == 0:
                                        input_as_seq=input_as_seq, 
                                        output_as_seq=output_as_seq)
 
-    dset_val = ForLambdaDataset("ANC/validation_For.json",
+    dset_val = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/validation_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
@@ -96,7 +96,7 @@ if opt.problem_number == 0:
                                        input_as_seq=input_as_seq, 
                                        output_as_seq=output_as_seq)
 
-    dset_test = ForLambdaDataset("ANC/test_For.json",
+    dset_test = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/test_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
@@ -104,17 +104,18 @@ if opt.problem_number == 0:
                                        input_as_seq=input_as_seq, 
                                        output_as_seq=output_as_seq)
 elif opt.problem_number == 1:
-    dset_train = JsCoffeeDataset("ANC/training_CS.json", "ANC/training_JS.json",
+    dset_train = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/training_CS.json", 
+                                 "ANC/MainProgramDatasets/CoffeeJavascirpt/training_JS.json",
                                   binarize_input=binarize_input, binarize_output=binarize_output, 
                                   eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                   long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)
 
-    dset_val = JsCoffeeDataset("ANC/training_CS.json", "ANC/training_JS.json",
+    dset_val = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/validation_CS.json", "ANC/MainProgramDatasets/CoffeeJavascript/validation_JS.json",
                                 binarize_input=binarize_input, binarize_output=binarize_output, 
                                 eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                 long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)
 
-    dset_test = JsCoffeeDataset("ANC/training_CS.json", "ANC/training_JS.json",
+    dset_test = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/test_CS.json", "ANC/MainProgramDatasets/CoffeeJavascript/test_JS.json",
                                  binarize_input=binarize_input, binarize_output=binarize_output, 
                                  eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                  long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)

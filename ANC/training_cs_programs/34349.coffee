@@ -1,8 +1,0 @@
-while 6
-	a0 = 3 * 7
-	a1 = 8 + a0
-	a2 = 3
-if 8
-	a0 = 5 == 8
-	a1 = a0 == 8
-	if a1 then a0 + a1 else a2 = 8

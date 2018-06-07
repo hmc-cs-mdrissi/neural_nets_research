@@ -1,9 +1,0 @@
-if 2 * 7 * 3
-	if 2 + 3
-		a0 = 0
-	else
-		a0 = 8
-else
-	while 1 + 7
-		a0 = 6 * 9
-a0 = 0

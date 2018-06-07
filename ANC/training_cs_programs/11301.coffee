@@ -1,8 +1,0 @@
-9 + 2 if 1 == 1 if 8 + 5
-while 6 == 1
-	a0 = 1 * 5
-if 9 + 9 then a0 = 6 * 2 else a0 = 3 == 5
-while 1 * (2 * 1)
-	while 7 + 4
-		a0 = 9 + 3
-	if 6 * 3 then 6 * 4 else a0 = 6

@@ -1,1 +1,0 @@
-if 7 * 8 + 6 + (9 + 1) then a0 = 8 == 0 while 9 * 4 while 9 * 4 else a0 = 1 * 1 * (9 + 9)

@@ -1,1 +1,0 @@
-if (0 + 1) * 5 * 2 then a0 = 0 * 5 + 8 while 0 * 2 + 1 else 0

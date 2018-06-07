@@ -1,1 +1,0 @@
-if 5 * 7 * (0 + 2) then a0 = 6 while (3 + 0) * 0 else a0 = 0 + 3 if 4 * 7 if 6

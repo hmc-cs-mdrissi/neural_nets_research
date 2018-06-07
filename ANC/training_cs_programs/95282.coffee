@@ -1,1 +1,0 @@
-if 9 then a0 = 9 + 3 == 6 * 3 else a0 = 5 * 0 if 6 if 2 + 5 if 1 * 2 == 1

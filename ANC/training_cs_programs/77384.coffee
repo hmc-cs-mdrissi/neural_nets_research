@@ -1,7 +1,0 @@
-if 5 * 9 + 3 then a0 = 4 else a0 = 5 * 1 * 4
-if 6
-	if 1 * 6
-		a0 = 6 * 3
-else
-	a0 = 7 + 3
-	a0 = 5 * a0

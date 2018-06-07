@@ -1,1 +1,0 @@
-a0 = 2 while 6 * 4 while 8 + 3 while (3 == 8) + 5 while 3 + 9 == 5 + 3 while (9 == (3 == 4)) * 9

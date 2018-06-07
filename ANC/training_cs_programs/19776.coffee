@@ -1,5 +1,0 @@
-a0 = 3 * 3
-6
-if 7 * a0 then a0 = 1 else a0 = a0
-a0 if 6 + a0 if 9 * 8 * 4
-if 5 * a0 then a0 = a0 * a0 * a0 else 1 + 5 == a0

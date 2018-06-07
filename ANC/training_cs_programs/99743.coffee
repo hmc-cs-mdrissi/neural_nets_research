@@ -1,1 +1,0 @@
-if 1 * (4 == 2) then a0 = 7 else a0 = 2 * 0 == 9 while 0

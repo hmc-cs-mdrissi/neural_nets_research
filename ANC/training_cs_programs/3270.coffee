@@ -1,1 +1,0 @@
-if 9 == (2 == 7) then a0 = 1 if 4 + 9 if 0 + 5 if 6 + 3 + 8 else 0

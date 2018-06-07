@@ -1,1 +1,0 @@
-if 7 * 1 then 1 else a0 = 0 == 7 while 8 + 3 while 8 * 1 while 7

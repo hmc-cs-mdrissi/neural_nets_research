@@ -1,6 +1,0 @@
-if 2 * 6
-	a0 = 0 + 1
-	7 == a0
-while 5 + 1 + 9
-	if 3 * 7 then a0 = 1 else 1
-if 5 * 9 * 9 then a0 = 5 * 9 + 6 else a0 = 1 * 3 while 8

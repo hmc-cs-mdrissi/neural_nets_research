@@ -1,4 +1,0 @@
-if 4 == 5 then a0 = 8 else a0 = 2
-a0 = 5 * 6 == (2 == 1)
-while 4 * 3 + (8 == 2)
-	if a0 == a0 then a1 = a0 * 4 else a1 = a0 + a0
