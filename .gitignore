@@ -7,4 +7,5 @@ ANC/adaptive-neural-compilation*
 *.o
 *.pth
 *.pyc
+*.json
 */.idea

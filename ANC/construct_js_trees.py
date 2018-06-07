@@ -2,23 +2,31 @@ import subprocess
 import glob
 from natsort import natsorted
 
-path_names = natsorted(glob.glob("validation_js_programs/*"))
+processed_files = set()
+num_processed_files = 0
+list_of_jsons = []
 
-result = "["
+while num_processed_files != 100000:
+    path_names = natsorted(glob.glob("*.js"))
 
-for i, path_name in enumerate(path_names):
-    if i % 100 == 0:
-        print(i)
+    for path_name in path_names:
+        if path_name in processed_files:
+            continue
 
-    proc = subprocess.Popen(['acorn', path_name], stdout=subprocess.PIPE)
-    output = proc.stdout.read().decode('ascii')
+        path_number = int(path_name[:-3])
 
-    result += output
+        proc = subprocess.Popen(['acorn', path_name], stdout=subprocess.PIPE)
+        output = proc.stdout.read().decode('ascii')
 
-    if path_names[-1] != path_name:
-        result += ", "
+        list_of_jsons.append((path_number, output))
 
-result += "]"
+        if num_processed_files % 100 == 0:
+            print(num_processed_files)
 
-with open("validation_JS.json", "w") as f:
+        num_processed_files += 1
+        processed_files.add(path_name)
+
+result = "[" + ", ".join(map(lambda pair: pair[1], sorted(list_of_jsons, key=lambda pair: pair[0]))) + "]"
+
+with open("../training_JS.json", "w") as f:
     f.write(result)
