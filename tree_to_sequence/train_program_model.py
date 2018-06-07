@@ -135,15 +135,15 @@ if opt.problem_number == 0:
     nclass = num_vars + num_ints + len(lambda_ops)
     num_categories = len(LambdaGrammar)
     num_possible_parents = len(Lambda)
-    max_num_children = 2 if binarize else 4
+    max_num_children = 2 if binarize_output else 4
     parent_to_category = partial(parent_to_category_LAMBDA, num_vars, num_ints)
     category_to_child = partial(category_to_child_LAMBDA, num_vars, num_ints)
 else:
     encoder_input_size = num_vars + num_ints + len(for_ops)
     nclass = num_vars + num_ints + len(lambda_ops)
-    num_categories = len(LambdaGrammar)
-    num_possible_parents = len(Lambda)
-    max_num_children = 2 if binarize else 4
+    num_categories = len(CoffeeGrammar)
+    num_possible_parents = len(Coffee)
+    max_num_children = 2 if binarize_output else 3
     parent_to_category = partial(parent_to_category_coffee, num_vars, num_ints)
     category_to_child = partial(category_to_child_coffee, num_vars, num_ints)
 
