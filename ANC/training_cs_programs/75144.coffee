@@ -1,1 +1,0 @@
-if 8 + (8 + 7) then a0 = 7 while 4 while 3 * 9 while 7 + 9 == 1 else a0 = 4 if 4 if 1 + 2 if (4 == 0) + 5

@@ -1,1 +1,0 @@
-if (4 + 5 + 2) * 4 then a0 = (9 + 4) * (4 + 4) else 9 + 3 while 6 + 6 while 0

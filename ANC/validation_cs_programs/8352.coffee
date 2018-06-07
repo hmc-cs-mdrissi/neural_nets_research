@@ -1,1 +1,0 @@
-if 4 then a0 = 3 * 3 == 1 else a0 = 8 + 9 if 7 * 2 if 4 + 0 if 8 + 9 == 1

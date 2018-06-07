@@ -1,1 +1,0 @@
-if 5 then a0 = 9 else a0 = 8 if (4 + 9) * 6

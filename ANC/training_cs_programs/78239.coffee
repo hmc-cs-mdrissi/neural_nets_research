@@ -1,1 +1,0 @@
-if 8 + (4 + 6) then (4 == 5) == 3 while 7 * 3 == 5 else 8 * 3 while 6 == 1 while 0 + 0 while 0 * 2

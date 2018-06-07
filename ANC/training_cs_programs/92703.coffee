@@ -1,1 +1,0 @@
-if 9 then a0 = 0 * 5 if 5 else 4 * 3 + 4 * 1

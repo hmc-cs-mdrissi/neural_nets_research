@@ -1,1 +1,0 @@
-if (5 + 0 + 7) * (2 + 2) then a0 = 1 while 6 == 0 while 7 + 5 while 2 else a0 = 8 + 4 + (2 == 6)

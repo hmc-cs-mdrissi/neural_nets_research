@@ -1,9 +1,0 @@
-a0 = 8 * 4
-a1 = a0 + 0
-a0
-if a0 * a1 then a2 = 4 * a0 else a2 = a0 * 2
-while (4 == a1) + (a0 == a0)
-	a2 = 0 * a1
-	a3 = a1
-	if a0 + a3
-		a4 = a3 * 1

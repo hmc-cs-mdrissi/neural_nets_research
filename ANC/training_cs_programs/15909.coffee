@@ -1,9 +1,0 @@
-a0 = 1 + 5
-a1 = a0
-while a1 + 9
-	2 + a1
-a2 = a1 + a0 if 2 == a0 if a1 + a0 if 5 * a0
-while a1 * 6 + (a1 + 4)
-	while a0 + a0 + 3
-		a2 = 4
-		a1 = a0

@@ -1,1 +1,0 @@
-if (9 + 7) * (3 * 0) then a0 = 7 + 7 if 4 if 3 else a0 = 2 == 5 if 5 * 7 if 1 + 1 + 9

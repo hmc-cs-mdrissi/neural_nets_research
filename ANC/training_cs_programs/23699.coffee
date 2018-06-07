@@ -1,1 +1,0 @@
-if 5 * (2 * 8) then a0 = 3 while 0 + 0 while 1 * 8 while 2 else a0 = 1

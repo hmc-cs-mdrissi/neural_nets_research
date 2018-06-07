@@ -1,9 +1,0 @@
-a0 = 6 == 3
-a1 = 6 * 7
-if 0
-	a2 = 7
-else
-	a1
-while 8
-	a2 = a1 * a1
-a2 = 8 + a0 if a0 + a0 + a1 if a0 * a0 + a0

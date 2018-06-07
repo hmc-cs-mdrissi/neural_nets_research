@@ -1,1 +1,0 @@
-if 1 * 5 * 6 == 6 then a0 = 4 * 0 * (6 * 1) else 6 + 3 while 0 + 5 while 2 * 3 while 7

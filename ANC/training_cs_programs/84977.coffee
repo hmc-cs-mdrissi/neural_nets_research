@@ -1,1 +1,0 @@
-a0 = 2 == 6 while 3 while 7 * 0 while 2 + 6 == 4 while 6 + 7 + 0 * 6 while (5 + 7 == 8 + 8) + (3 * 7 == 2)

@@ -1,1 +1,0 @@
-if 1 + 6 + 2 == 6 + 7 then 2 == 4 while 6 * 3 while 6 + 5 while 8 * 2 + 6 else a0 = (4 == 5) == 8 if 7 * 8

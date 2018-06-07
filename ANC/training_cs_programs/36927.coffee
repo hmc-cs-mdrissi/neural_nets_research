@@ -1,1 +1,0 @@
-if (2 + 4) * 8 then a0 = 6 if 2 * 9 if 0 * 8 if 1 * 0 * 4 else 4 + 2 if 5 + 9 if 5 * 8 + 1

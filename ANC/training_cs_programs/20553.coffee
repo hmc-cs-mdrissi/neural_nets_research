@@ -1,1 +1,0 @@
-if 5 + 8 * 9 then 3 while 5 + 8 == 3 else a0 = 7 + 7 == 6 * 7

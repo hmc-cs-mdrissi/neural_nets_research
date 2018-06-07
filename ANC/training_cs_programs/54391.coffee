@@ -1,9 +1,0 @@
-a0 = 5 * 2
-a1 = a0 + 0
-if a0 * 1 then a2 = a0 else a0 == a0
-if a0 * 1 then a2 = 8 == a0 else a1 + 1
-if a1
-	if a0 + a1
-		a2 = 4 * a0
-	else
-		a2 = 4

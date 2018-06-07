@@ -1,1 +1,0 @@
-if 2 * 8 * 8 * (4 * 1) then a0 = 2 while 0 while 1 while (2 == 1) * 3 else a0 = 0 + 0 == (7 == 8)

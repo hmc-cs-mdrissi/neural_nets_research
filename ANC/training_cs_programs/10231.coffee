@@ -1,1 +1,0 @@
-if (0 + 7 + 2) * 1 then a0 = 5 * 0 * (9 + 4) else 8 + 7 while 7 * 1 while (9 + 6) * 8

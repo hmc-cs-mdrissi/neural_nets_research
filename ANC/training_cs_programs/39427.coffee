@@ -1,1 +1,0 @@
-if 6 * (2 + 4) then a0 = 6 * 2 while 1 * 3 + 5 else a0 = 6 + 3 + 3

@@ -1,1 +1,0 @@
-if (8 == 1) * (5 * 0) then 5 + 0 == 9 while 1 == 5 else (3 == 8) + 2 while 7

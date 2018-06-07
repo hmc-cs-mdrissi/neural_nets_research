@@ -1,8 +1,0 @@
-a0 = 5 * 7 * 1
-if a0
-	a1 = a0 * a0
-	a2 = 2 * a1
-if (7 + 3) * (9 * 2)
-	if a0 == a0
-		a1 = a0 + 4
-	if 6 then a1 = 0 else 1 * a0

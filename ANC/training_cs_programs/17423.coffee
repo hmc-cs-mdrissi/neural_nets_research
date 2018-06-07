@@ -1,1 +1,0 @@
-if 1 * 4 == 1 then 7 * 9 * 2 if 8 else a0 = 6 + 6 if 1 + 6 if 6 + 0 + 2

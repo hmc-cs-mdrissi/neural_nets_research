@@ -1,1 +1,0 @@
-if (7 + 2) * 2 * 1 then a0 = (9 + 3) * 1 while (3 + 2) * 2 else a0 = 3 while 2 * 7

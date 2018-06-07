@@ -1,1 +1,0 @@
-if 0 then a0 = 3 * 3 while 1 * 2 while 2 * 2 else 7 while 7 + 2 while 1 * 9 * 6

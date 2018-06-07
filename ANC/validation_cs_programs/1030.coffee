@@ -1,1 +1,0 @@
-if 5 * 9 + 2 == 1 * 1 then 7 if 8 * 8 if 3 else a0 = 6 if 3 + 7 == 2

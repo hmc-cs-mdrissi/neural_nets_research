@@ -1,1 +1,0 @@
-if 2 * 0 + 3 + (6 + 8) then a0 = 1 == 9 while 4 + 5 else a0 = 8 == 0 while 0 + 0 while 8

@@ -1,1 +1,0 @@
-if 2 + 4 + 8 == 9 + 2 then 9 * 0 if 5 == 3 if 2 else a0 = 0 == 8 while 9 * 8 while 0 == 2 while 8 * 5 * 9

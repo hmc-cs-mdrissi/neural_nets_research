@@ -1,1 +1,0 @@
-if 6 then a0 = (2 == 5) * 0 if 2 + 1 == 8 else 0 if 6 * 0 if 3 + 6 if 7 + 8 + 7

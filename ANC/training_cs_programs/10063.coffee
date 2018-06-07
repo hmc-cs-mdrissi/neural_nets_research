@@ -1,1 +1,0 @@
-if 3 * 9 + 7 * 5 then 4 * 9 * 4 while (3 + 6) * 7 else 2 + 9 while 7 + 3 while 2 * 7 while 0 + 2 == 1

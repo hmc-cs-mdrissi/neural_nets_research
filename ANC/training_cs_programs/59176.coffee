@@ -1,7 +1,0 @@
-if 4 * 3 * (8 + 0) + (4 * 5 == 8 * 3)
-	a0 = 0
-	a1 = 5 + a0
-	if a1 * a1 then 5 + 4 else a2 = a0
-	while a0 + a1 + 0
-		while 7 == a1
-			a2 = 0

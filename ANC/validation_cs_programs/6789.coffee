@@ -1,1 +1,0 @@
-if (2 * 0 + 5) * 3 then 2 * 6 * 8 if 4 * 4 * 8 else 4 + 2 while 7 * 3 while 8 + 0 while 1 * 8 * 0

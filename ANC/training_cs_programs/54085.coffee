@@ -1,1 +1,0 @@
-if 6 then a0 = (6 == 1) * 0 else 0 + 2 while 4 while 7 + 7

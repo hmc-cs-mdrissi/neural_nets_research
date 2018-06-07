@@ -1,1 +1,0 @@
-if 6 * (4 + 1) then 6 * 2 while 4 while 8 else 6 * (2 + 1)

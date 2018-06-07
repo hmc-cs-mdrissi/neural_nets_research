@@ -1,1 +1,0 @@
-if 4 + 2 + 6 + (9 + 5) then a0 = 6 if 3 if 4 * 5 == 9 else a0 = 4 if 4

@@ -1,1 +1,0 @@
-if 0 then a0 = 3 while 0 else 9

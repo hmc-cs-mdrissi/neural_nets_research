@@ -1,1 +1,0 @@
-if 5 * 4 + 0 + 9 then a0 = 2 * 1 if 9 if 1 if 5 else a0 = 3 + 4 + (2 == 1)

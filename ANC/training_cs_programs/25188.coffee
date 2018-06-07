@@ -1,8 +1,0 @@
-a0 = 2 + 1
-a0 + 0
-while 8 + a0
-	a0 = 9
-while (a0 == 4) + 9
-	a1 = a0 * a0
-	a1 + a1
-a1 = (a0 == 2) * a0 while (2 == a0) + a0

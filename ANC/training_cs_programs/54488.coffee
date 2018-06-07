@@ -1,1 +1,0 @@
-if 8 then a0 = (5 + 0) * (1 + 3) else a0 = 7 + 3 while 3 + 6 while 2 + 3

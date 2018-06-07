@@ -97,6 +97,37 @@ coffee_ops = {
 }
 max_children_coffee = 3
 
+javascript_ops = {
+    '<IFSTATEMENT>': 0,
+    '<VARIABLEDECLARATOR>': 1, 
+    '<ASSIGNMENTEXPRESSION>': 2, 
+    '<LITERAL>': 3, 
+    '+': 4,
+    'results2': 5, 
+    'call': 6, 
+    '<IDENTIFIER>': 7, 
+    '<PROGRAM>': 8, 
+    '<RETURNSTATEMENT>': 9, 
+    '<VARIABLEDECLARATION>': 10, 
+    '<THISEXPRESSION>': 11, 
+    'results3': 12, 
+    '<FUNCTIONEXPRESSION>': 13, 
+    '===': 14, 
+    '*': 15, 
+    '<ARRAYEXPRESSION>': 16, 
+    'results': 17, 
+    '<BLOCKSTATEMENT>': 18, 
+    '<EXPRESSIONSTATEMENT>': 19, 
+    '=': 20, 
+    '<MEMBEREXPRESSION>': 21, 
+    '<CALLEXPRESSION>': 22, 
+    'results1': 23, 
+    '<WHILESTATEMENT>': 24, 
+    'push': 25,    
+}
+
+
+
 class SyntacticProgramDataset(Dataset):
     def __init__(self, input_programs, output_programs, input_ops=None, output_ops=None, 
                          max_children_output=None, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, 
@@ -160,10 +191,10 @@ class JsCoffeeDataset(SyntacticProgramDataset):
         javascript_progs = [make_tree_javascript(prog, long_base_case=long_base_case) for prog in json.load(open(javascript_path))]
 
         max_children_output = 2 if binarize_output else max_children_coffee
-        super().__init__(coffeescript_progs, javascript_progs, input_ops=for_ops, output_ops=lambda_ops,
+        super().__init__(javascript_progs, coffeescript_progs, input_ops=javascript_ops, output_ops=coffee_ops,
                          max_children_output=max_children_output, num_vars=num_vars, 
                          num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
-                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)        
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)         
         
 class SemanticProgramDataset(Dataset):
     def __init__(self, is_lambda_calculus, num_vars=10, num_ints=11, binarize=False, 

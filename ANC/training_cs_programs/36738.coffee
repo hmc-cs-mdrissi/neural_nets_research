@@ -1,1 +1,0 @@
-if 3 then a0 = 5 + 2 == 2 while 6 * 6 + 4 else a0 = 3 * (4 + 6)

@@ -1,1 +1,0 @@
-a0 = 5 * 5 while 4 while (6 == 9) + (0 == 5) while 5 == 7

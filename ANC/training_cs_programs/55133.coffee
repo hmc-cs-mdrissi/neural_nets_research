@@ -1,1 +1,0 @@
-if (5 * 5 + 3) * 3 then a0 = 1 while 8 + 7 while 8 + 3 while 1 * 2 == 1 else a0 = (2 == 2) + 2 if (1 + 1) * 4

@@ -1,7 +1,0 @@
-if 6 + 5
-	a0 = 3
-	4 + a0
-	if 4 * a0 then a1 = a0 else a0 = a0
-	while 7 == 6
-		a1 = a0 * a0
-		a1 == a0

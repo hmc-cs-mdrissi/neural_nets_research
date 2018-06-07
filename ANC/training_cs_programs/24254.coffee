@@ -1,1 +1,0 @@
-if 0 then a0 = 1 * 2 * 3 if 2 + 7 + 9 else 9 + 6 if 0 * 5 if 9 if 0 * 4 + 8

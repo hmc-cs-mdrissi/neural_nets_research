@@ -1,1 +1,0 @@
-if (2 == 7) + 6 == 2 * 5 then a0 = 0 * 5 if 0 * 1 if 5 else 8 if 7

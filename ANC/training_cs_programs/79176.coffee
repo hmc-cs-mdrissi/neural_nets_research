@@ -1,1 +1,0 @@
-if 2 + 2 + 6 + 8 then a0 = 5 while 8 + 2 == 6 else a0 = 3

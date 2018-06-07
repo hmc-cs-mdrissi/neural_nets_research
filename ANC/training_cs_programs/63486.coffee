@@ -1,1 +1,0 @@
-if ((6 == 1) == 4) == 1 * 4 then 3 == 1 if 0 * 6 if 9 + 4 + 0 else 8 == 5 while 4 + 9 while 7 + 6 while (7 == 2) * 6

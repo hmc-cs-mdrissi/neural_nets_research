@@ -1,1 +1,0 @@
-4 while 7 * 5 * 2 while 6 == 5 * 8 while 5

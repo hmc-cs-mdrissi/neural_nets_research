@@ -1,1 +1,0 @@
-if (0 * 1 + 6) * (6 + 3) then a0 = 6 * 4 if 4 == 3 if 4 + 4 else a0 = 2 if 4 if 4 == 1 if 6

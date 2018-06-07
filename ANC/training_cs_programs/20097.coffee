@@ -1,1 +1,0 @@
-if 6 then a0 = (3 == 0) == 8 + 9 else a0 = 4 + 3 while 3 * 5 while 8 while 5 + 9 == 2

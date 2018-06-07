@@ -1,8 +1,0 @@
-if 0 then a0 = 7 == 2 else a0 = 3 + 7
-a0 = 2 + 8 + (3 + 0)
-if 5
-	a0 == a0
-	8 == a0
-else
-	a0 + a0
-	a1 = a0 * a0

@@ -1,3 +1,0 @@
-while (7 + 4) * (2 + 2) + 2
-	a0 = 5
-	if 7 + 0 then a0 = 2 + a0 else a0

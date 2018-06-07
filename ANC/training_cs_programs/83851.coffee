@@ -1,1 +1,0 @@
-if (2 + 6) * 9 * (8 == 3) then (2 + 4) * 7 if 0 == 6 else 6 + 2 while 8 while 7 * 8 == 8

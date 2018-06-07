@@ -1,1 +1,0 @@
-if (1 + 9) * 2 + (7 + 7) then a0 = 1 * (3 + 0) else a0 = 2 * 5 while 0 * 7 while 7 + 2 while 0

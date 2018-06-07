@@ -1,1 +1,0 @@
-if (1 * 9 + 1) * (4 * 7) then 0 * 9 while 8 * 3 while 5 == 6 while (5 == 6) * 1 else 8 while 4 + 6 + 6

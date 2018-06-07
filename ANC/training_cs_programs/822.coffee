@@ -1,1 +1,0 @@
-if (6 * 3 + 6) * 5 then 2 + 2 if 3 + 5 if 9 * 4 if 9 + 1 + 5 else a0 = 2 if 8 if 0 if 9 + 5

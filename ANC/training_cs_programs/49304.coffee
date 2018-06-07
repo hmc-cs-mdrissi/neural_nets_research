@@ -1,1 +1,0 @@
-if (7 * 3 == 9) + 1 * 2 then a0 = 7 + 3 while 1 * 8 while 4 + 0 while 2 else a0 = 2 * 4 if 2 * 4 if 4 + 0 if 5 + 0

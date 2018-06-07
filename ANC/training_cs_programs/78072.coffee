@@ -1,1 +1,0 @@
-if 8 == (7 == 7) then a0 = 8 == 4 while 5 + 9 == 1 else a0 = 7 * 2 if 8 if 5 * 7 if 0

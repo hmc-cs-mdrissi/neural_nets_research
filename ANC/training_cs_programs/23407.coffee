@@ -1,1 +1,0 @@
-a0 = 1 while 0 * 3 * 2 while 1 while 1

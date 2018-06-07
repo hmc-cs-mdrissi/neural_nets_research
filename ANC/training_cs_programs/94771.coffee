@@ -1,1 +1,0 @@
-if 9 * 9 * 1 + 1 * 7 then 3 + 3 while 6 + 5 + 6 else a0 = 2 + 1 + 6 while (8 == 6) + 7

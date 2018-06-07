@@ -1,9 +1,0 @@
-if 5 == 0 then a0 = 9 + 9 else a0 = 6 * 1
-a0 = (1 == 6) * (0 * 8)
-while (a0 == a0) + 1
-	9
-	a1 = 9 + a0
-	if 3
-		a0 = 1
-	else
-		a2 = a1

@@ -1,1 +1,0 @@
-if (3 + 4) * 2 == 5 then a0 = 0 * 2 if 7 if 4 * 0 if 5 else a0 = 0 if 8 * 3 if (7 + 0) * 0

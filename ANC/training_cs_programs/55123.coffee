@@ -1,1 +1,0 @@
-if 4 + (6 + 5) then a0 = 0 while 8 * 4 + 4 else 3 * 4 while 9 + 2 while 9 + 1 while 6 * 6 + 2

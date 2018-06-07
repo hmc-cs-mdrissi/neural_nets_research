@@ -1,1 +1,0 @@
-if 6 * (6 + 2) then a0 = 8 else 3 + 2 while 6

@@ -1,4 +1,0 @@
-if 3 == 6 then a0 = 1 else 8 == 7
-a0 = 1 while 3 * 1
-if 8 * 1 then a0 = 6 == 7 else 9 + 3
-(9 + 0 + 3 * 0) * (6 * (0 * 6))

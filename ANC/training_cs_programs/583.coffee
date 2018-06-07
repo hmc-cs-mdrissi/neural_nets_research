@@ -1,1 +1,0 @@
-4 + 4 while 5 * 2 while 2 + 4 == 3 while (5 == 2) + (9 == 6) while 8 + 2

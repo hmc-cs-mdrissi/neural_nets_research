@@ -1,1 +1,0 @@
-if 3 * 2 * 8 * (6 * 5) then 7 * 2 while 7 else a0 = 0

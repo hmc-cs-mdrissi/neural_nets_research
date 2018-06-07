@@ -1,7 +1,0 @@
-a0 = 1 * 1
-a1 = 3 + 4
-if 7
-	a2 = a0 * 3
-if (3 + 4) * a1
-	if a1 then 3 * 5 else a2 = 6
-a2 = a1

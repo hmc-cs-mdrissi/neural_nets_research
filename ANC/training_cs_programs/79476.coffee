@@ -1,1 +1,0 @@
-6 while 0 + 2 while 2 * 2 while (2 + 0) * 5 while 5 + 2 + 6 * 0 while 5

@@ -1,1 +1,0 @@
-if 5 then a0 = 2 else 5 == 3 if 8 + 5 if 5 if 9 * 3 == 3

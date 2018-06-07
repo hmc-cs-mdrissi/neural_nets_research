@@ -1,1 +1,0 @@
-if 5 + 7 + 0 == 9 then a0 = 3 else 7 * 4 if 7 + 2 if 2 + 8 if 8 + 3 + 7

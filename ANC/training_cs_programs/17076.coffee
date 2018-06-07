@@ -1,1 +1,0 @@
-if 1 then a0 = 3 * 7 if 5 == 7 if 6 else a0 = 9 == 6 if (4 == 9) + 6

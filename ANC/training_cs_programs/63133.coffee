@@ -1,1 +1,0 @@
-if 7 then a0 = 0 == 7 if 7 * 9 if 9 else a0 = 9 * 7 + 1 while (9 == 8) == 0

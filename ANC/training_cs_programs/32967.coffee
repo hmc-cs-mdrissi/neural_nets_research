@@ -1,1 +1,0 @@
-if 3 * 2 + (4 == 6) then a0 = 6 * 8 + 3 * 7 else a0 = 7 while 3 * 4 while 8 while 6 * 5

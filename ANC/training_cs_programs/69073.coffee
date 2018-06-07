@@ -1,1 +1,0 @@
-if 1 then (7 == 5) * 3 while 1 == 7 else a0 = 3 if 8 + 5 if 1 * 8 + 4

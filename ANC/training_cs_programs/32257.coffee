@@ -1,1 +1,0 @@
-if 6 then 4 else a0 = 2 + 8 + 1 * 3

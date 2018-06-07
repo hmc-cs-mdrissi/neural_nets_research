@@ -1,1 +1,0 @@
-if 3 then a0 = 9 == 9 while 0 + 7 while 5 else a0 = 7

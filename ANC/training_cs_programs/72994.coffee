@@ -1,1 +1,0 @@
-if 8 + (9 + 9) then a0 = 6 else 7 + 3 if 6 + 7 if 0 * 1 if 6 * 4 + 7

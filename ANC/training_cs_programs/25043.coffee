@@ -1,1 +1,0 @@
-if 8 then a0 = 4 * (7 + 3) else a0 = 9 + 8 if 8 + 0 if 3 if (6 == 5) + 1

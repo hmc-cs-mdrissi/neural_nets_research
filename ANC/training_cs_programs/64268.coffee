@@ -1,1 +1,0 @@
-if (7 * 5 == 4) + 9 * 9 then a0 = 1 + 1 while 4 * 9 + 7 else a0 = 4

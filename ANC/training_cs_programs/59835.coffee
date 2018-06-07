@@ -1,1 +1,0 @@
-if 1 then a0 = 2 else a0 = 3 if 6 * 1 if 5 * 1 == 4

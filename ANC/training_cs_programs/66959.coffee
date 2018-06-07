@@ -1,1 +1,0 @@
-if 8 * 3 + 6 + (2 + 2) then 6 * 1 * 0 if 6 else a0 = 2 == 0 while 7 * 4 while 3 == 3 while (2 + 7) * 7

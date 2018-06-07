@@ -1,1 +1,0 @@
-if 6 + 2 == 2 + 9 then 9 else a0 = 1 * 7 + 6 while 5 * 1 + 4

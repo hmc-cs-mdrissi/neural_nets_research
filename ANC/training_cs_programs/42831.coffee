@@ -1,1 +1,0 @@
-if 4 + 7 + 0 == 2 + 3 then a0 = 0 + 2 while 6 * 2 while 4 + 4 while 8 + 5 == 4 else a0 = 4 + 4 + 1

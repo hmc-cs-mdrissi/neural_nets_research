@@ -1,8 +1,0 @@
-5 * 8
-a0 = 9 + 8
-if a0 * 4 then a0 = a0 else a1 = a0
-while (1 == a0) * a0
-	a1 = a0
-	a2 = a1 * a1
-if 0 * 4
-	a0 = (a0 == 2) == 2 + 0

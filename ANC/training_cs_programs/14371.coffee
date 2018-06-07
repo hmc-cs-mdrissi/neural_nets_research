@@ -1,1 +1,0 @@
-if 9 * 5 + 0 + (2 + 9) then a0 = 1 + 2 if 6 if 5 else 8

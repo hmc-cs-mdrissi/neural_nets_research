@@ -1,5 +1,0 @@
-a0 = (8 == 4 + 6) == 2 * 0 * 6
-while 2 + a0 * a0
-	if a0 * a0 then a1 = 1 else 8
-	if 7
-		a1 = a0 == 7

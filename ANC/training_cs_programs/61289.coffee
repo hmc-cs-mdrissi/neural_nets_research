@@ -1,1 +1,0 @@
-6 == 8 while 8 * 4 while (7 + 1) * 8 while (2 == 8) * 3 while 8

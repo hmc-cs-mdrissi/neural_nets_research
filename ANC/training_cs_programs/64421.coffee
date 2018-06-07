@@ -1,8 +1,0 @@
-0 * 8
-a0 = 6 * 5
-if a0 == a0 then a1 = 0 else a1 = 7
-if a0
-	a1 = a0 * a0
-else
-	9
-a1 = 0 + 7 * 8 == 1 * a0 * 8

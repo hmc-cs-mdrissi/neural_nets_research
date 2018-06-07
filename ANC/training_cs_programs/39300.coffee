@@ -1,8 +1,0 @@
-a0 = 9 == 1
-a0 = 2 * 9
-if a0 + 7 then a0 = 9 else a1 = a0
-if a0
-	a1 = 1 == a0
-else
-	a1 = 7 + a0
-a1 = a0 == 3 if a0 * 2 if 1 * 6 + 8 if a0 == (2 == a0)

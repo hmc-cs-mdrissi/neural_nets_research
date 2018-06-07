@@ -1,1 +1,0 @@
-if (2 * 4 == 4) + 3 * 0 then a0 = 7 while 7 * 4 while 1 else a0 = 5 * 1 * (3 + 2)

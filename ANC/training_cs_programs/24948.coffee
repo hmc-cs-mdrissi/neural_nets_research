@@ -1,1 +1,0 @@
-if 6 then 1 * (5 + 0) else a0 = 3 == 2 while 5 == 0 while 1 * 1 while (1 == 9) + 7

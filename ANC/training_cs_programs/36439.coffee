@@ -1,1 +1,0 @@
-if 5 then a0 = (6 + 1) * 2 if 7 else a0 = 2 if 7

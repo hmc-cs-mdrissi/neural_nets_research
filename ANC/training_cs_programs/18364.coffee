@@ -1,3 +1,0 @@
-a0 = 3 * 2 * 6
-if a0 then a1 = 2 + 9 else a1 = 4 + a0
-if a0 then a0 = a0 + 4 + 9 else a1 = a0 + a0 + a0

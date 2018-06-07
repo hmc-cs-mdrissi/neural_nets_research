@@ -1,1 +1,0 @@
-if (3 * 7 == 2) + 2 * 8 then a0 = (3 == 3) * (1 == 6) else 6 * 0 while 0 while 6

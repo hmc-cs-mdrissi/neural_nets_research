@@ -1,6 +1,0 @@
-if (3 + 8) * 4 then a0 = 1 else a0 = 8 + 8 + 1
-while 3 + 1 + (0 + 8)
-	while 1 + 4
-		a0 = 2 * 6
-	while 3 == 8
-		a0 = 8 == 6

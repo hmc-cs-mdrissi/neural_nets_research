@@ -1,6 +1,0 @@
-while 7 * 0 + (2 + 7) + 3
-	a0 = 5 * 0
-	a1 = a0 * a0
-	while 3 + a0
-		a1 = a0
-	if 6 == 1 then a0 = a0 + a1 else a2 = 7 == a1

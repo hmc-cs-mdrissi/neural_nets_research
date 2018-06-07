@@ -1,1 +1,0 @@
-if 2 == 7 + 7 then a0 = 9 + 7 while 4 * 4 while 3 * 1 while (4 == 2) * 4 else a0 = 0 if (8 == 9) == 2

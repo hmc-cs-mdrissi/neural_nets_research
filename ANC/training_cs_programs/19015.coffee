@@ -1,9 +1,0 @@
-if 2 * 9 then a0 = 9 * 6 * 8 else a0 = 5
-if 6 * 3 == 9
-	if 6 + 2
-		a0 = 5
-	else
-		a0 = 4
-else
-	9 * 7
-	6 * 4

@@ -1,7 +1,0 @@
-if (4 + 5 + 7) * (8 * 2)
-	if 8 + 4
-		a0 = 6 * 4
-	else
-		a0 = 1 + 0
-else
-	if 7 == 1 then a0 = 3 + 5 else a0 = 5

@@ -1,9 +1,0 @@
-a0 = 4 * 0
-a1 = 2
-if a0
-	a2 = 3 * 9
-if a1 + 8
-	a2 = a1 + 1
-else
-	a2 = 1
-if 1 then a2 = 0 * a1 + 7 else 8 * a1 * a0
