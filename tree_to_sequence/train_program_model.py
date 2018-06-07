@@ -212,35 +212,34 @@ def make_model():
     return program_model
 
 test_accuracies = []
-for i in range(training_rounds):
-    program_model = make_model()
-    
-    # Optimizer
-    optimizer = optim.Adam(program_model.parameters(), lr=opt.lr)
-    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, patience=500, factor=0.8)
+program_model = make_model()
 
-    # Train
-    os.system("mkdir "+ save_folder)
-    best_model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies = training.train_model_tree_to_tree(
-                                    program_model, 
-                                    dset_train, 
-                                    optimizer, 
-                                    lr_scheduler=lr_scheduler, 
-                                    num_epochs=opt.num_epochs, plot_every=plot_every,
-                                    batch_size=100, 
-                                    print_every=200, 
-                                    validation_dset = dset_val,                                                          
-                                    validation_criterion=validation_criterion,
-                                    use_cuda=use_cuda, 
-                                    deep_copy_desired=False,
-                                    plateau_lr=True,
-                                    save_file=save_file,
-                                    save_folder=save_folder,
-                                    save_every=save_every)
-    
-    # Test
-    test_accuracy = training.test_model_tree_to_tree(best_model, dset_test, validation_criterion) #TODO: change where best_model is saved
-    test_accuracies.append(test_accuracy)
-    save_plots()
+# Optimizer
+optimizer = optim.Adam(program_model.parameters(), lr=opt.lr)
+lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, patience=500, factor=0.8)
+
+# Train
+os.system("mkdir "+ save_folder)
+best_model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies = training.train_model_tree_to_tree(
+                                program_model, 
+                                dset_train, 
+                                optimizer, 
+                                lr_scheduler=lr_scheduler, 
+                                num_epochs=opt.num_epochs, plot_every=plot_every,
+                                batch_size=100, 
+                                print_every=200, 
+                                validation_dset = dset_val,                                                          
+                                validation_criterion=validation_criterion,
+                                use_cuda=use_cuda, 
+                                deep_copy_desired=False,
+                                plateau_lr=True,
+                                save_file=save_file,
+                                save_folder=save_folder,
+                                save_every=save_every)
+
+# Test
+test_accuracy = training.test_model_tree_to_tree(best_model, dset_test, validation_criterion) #TODO: change where best_model is saved
+test_accuracies.append(test_accuracy)
+save_plots()
     
 save_test_accuracies()
