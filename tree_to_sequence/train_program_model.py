@@ -29,8 +29,7 @@ def count_matches(prediction, target):
 # Program accuracy (1 if completely correct, 0 otherwise)
 def program_accuracy(prediction, target):
     if decoder_type == "sequence":
-        target_list = [int(x) for x in list(target.data[:-1])]
-        return 1 if target_list == prediction else 0
+        return 1 if target.tolist() == prediction else 0
     if prediction.size() == count_matches(prediction, target) and        prediction.size() == target.size():
         return 1
     else:
@@ -105,7 +104,7 @@ if opt.problem_number == 0:
                                        output_as_seq=output_as_seq)
 elif opt.problem_number == 1:
     dset_train = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/training_CS.json", 
-                                 "ANC/MainProgramDatasets/CoffeeJavascirpt/training_JS.json",
+                                 "ANC/MainProgramDatasets/CoffeeJavascript/training_JS.json",
                                   binarize_input=binarize_input, binarize_output=binarize_output, 
                                   eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                   long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)

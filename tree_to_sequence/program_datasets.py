@@ -194,7 +194,7 @@ class JsCoffeeDataset(SyntacticProgramDataset):
         super().__init__(javascript_progs, coffeescript_progs, input_ops=javascript_ops, output_ops=coffee_ops,
                          max_children_output=max_children_output, num_vars=num_vars, 
                          num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
-                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)        
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)         
         
 class SemanticProgramDataset(Dataset):
     def __init__(self, is_lambda_calculus, num_vars=10, num_ints=11, binarize=False, 
