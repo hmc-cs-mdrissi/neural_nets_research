@@ -79,6 +79,9 @@ def make_tree_for(json, long_base_case=True):
     return parentNode
     
 def make_tree_lambda(json, long_base_case=True):
+    return make_tree_lambda_coffee(json, long_base_case=long_base_case)
+    
+def make_tree_lambda_coffee(json, long_base_case=True):
     check_general_base_cases = general_base_cases(json)
     
     if check_general_base_cases is not None:
@@ -166,7 +169,7 @@ def make_tree_javascript(json, long_base_case=True):
     pass
 
 def make_tree_coffeescript(json, long_base_case=True):
-    pass
+    return make_tree_lambda_coffee(json, long_base_case=long_base_case)
 
 def make_tree_java(json):
     pass # IMPLEMENTED IN DATASET PREPROCESSING 'CUZ IT'S MORE CONVENIENT, WILL BE TRANSFERRED WHEN DONE
@@ -238,7 +241,11 @@ def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True):
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
+<<<<<<< HEAD
+        index = (int(val[1:]) % num_vars) + num_ints #TODO: subtract 1 because we start with var a1?
+=======
         index = int(val[1:]) % num_vars + num_ints
+>>>>>>> 145b88d18847ffc68a65b70cac80841aaceb1a80
     else:
         index = num_ints + num_vars + ops[val]
 

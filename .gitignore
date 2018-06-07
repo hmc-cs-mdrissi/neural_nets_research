@@ -1,5 +1,10 @@
 */__pycache__
 .ipynb*
+ANC/For/Datasets*
+ANC/test_cs_programs*
+ANC/test_js_programs*
+test_various_models*
+ANC/AdditionalForDatasets*
 ANC/adaptive-neural-compilation*
 .DS_Store
 *.swp

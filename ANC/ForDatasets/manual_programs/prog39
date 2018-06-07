@@ -1,7 +1,0 @@
-for a4 = 9; a2 == 4; a1 do
-    if a2 == 4 then
-	a1 = a2 + 1
-    else
-	a1 = a3 + a1
-    endif
-endfor
