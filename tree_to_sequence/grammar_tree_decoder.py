@@ -81,8 +81,6 @@ class GrammarTreeDecoder(nn.Module):
         :returns: cross entropy loss
         """
         log_odds, possible_indices = self.get_log_odds(parent, child_index, vec)
-        print(possible_indices)
-        print(true_value)
         loss = self.loss_func(log_odds, torch.tensor([possible_indices.index(true_value)], device=log_odds.device))
         if print_time:
             print("possible children", possible_indices)
