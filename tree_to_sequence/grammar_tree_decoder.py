@@ -81,7 +81,7 @@ class GrammarTreeDecoder(nn.Module):
         :returns: cross entropy loss
         """
         log_odds, possible_indices = self.get_log_odds(parent, child_index, vec)
-        loss = self.loss_func(log_odds, torch.tensor([possible_indices.index(true_value)], device=log_odds.device))
+        loss = self.loss_func(log_odds, torch.tensor([possible_indices.index(true_value.item())], device=log_odds.device))
         if print_time:
             print("possible children", possible_indices)
             print("true index", self.true_index)
@@ -105,8 +105,7 @@ class GrammarTreeDecoder(nn.Module):
         if self.share_linear:
             log_odds = self.linear_lists[category](et)
         else:
-            category_index = possible_categories.index(category)
-            log_odds = self.linear_lists[parent - self.num_ints_vars][category_index](et)
+            log_odds = self.linear_lists[parent - self.num_ints_vars][category](et)
                       
         # Generate a list of possible child values
         possible_indices = self.category_to_child(category)

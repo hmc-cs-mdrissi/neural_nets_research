@@ -161,8 +161,7 @@ class SyntacticProgramDataset(Dataset):
             
         input_programs = [encode_program(prog, num_vars, num_ints, input_ops, eos_token=eos_token, 
                                          one_hot=one_hot) for prog in input_programs]
-        output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token, 
-                                          one_hot=one_hot) for prog in output_programs]
+        output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token) for prog in output_programs]
         self.program_pairs = list(zip(input_programs, output_programs))
 
     def __len__(self):

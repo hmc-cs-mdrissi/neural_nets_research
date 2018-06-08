@@ -7,10 +7,12 @@ from tree_to_sequence.translating_trees import map_tree, tree_to_list
 class TreeEncoder(nn.Module):
     """
     Takes in a tree where each node has a value vector and a list of children
-    Produces a sequence encoding of the tree
+    Produces a sequence encoding of the tree. valid_num_children is not needed
+    if you choose to use a binary_lstm_cell.
     """
-    def __init__(self, input_size, hidden_size, num_layers, valid_num_children,
-                 attention=True, one_hot=False, embedding_size=256, dropout=False):
+    def __init__(self, input_size, hidden_size, num_layers, valid_num_children=None,
+                 attention=True, one_hot=False, embedding_size=256, dropout=False,
+                 binary_tree_lstm_cell=False):
         super(TreeEncoder, self).__init__()
 
         self.lstm_list = nn.ModuleList()
@@ -21,7 +23,10 @@ class TreeEncoder(nn.Module):
             self.dropout = nn.Dropout(p=dropout)
 
         if one_hot:
-            self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
+            if binary_tree_lstm_cell:
+                self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
+            else:
+                self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
         else:
             self.embedding = nn.Embedding(input_size, embedding_size)
             self.lstm_list.append(TreeLSTM(embedding_size, hidden_size, valid_num_children))
@@ -29,7 +34,10 @@ class TreeEncoder(nn.Module):
 
         # All TreeLSTMs have input of hidden_size except the first.
         for i in range(num_layers-1):
-            self.lstm_list.append(TreeLSTM(hidden_size, hidden_size, valid_num_children))
+            if binary_tree_lstm_cell:
+                self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
+            else:
+                self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
 
         self.attention = attention
 

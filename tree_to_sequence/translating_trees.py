@@ -321,7 +321,7 @@ def clean_binarized_tree(tree):
 
 EOS = "EOS"
 
-def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=True): 
+def vectorize(val, num_vars, num_ints, ops, eos_token=False, one_hot=False): 
     """
         Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
         to the value is found. value should not correspond to the eos_token. Instead vectorization
@@ -567,7 +567,7 @@ def get_val(value):
     else:
         return value
     
-def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
+def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=False):
     if isinstance(program, Node):
         return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
                                                one_hot=one_hot), program)

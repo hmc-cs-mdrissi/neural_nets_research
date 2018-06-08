@@ -17,9 +17,6 @@ class TreeCell(nn.Module):
         """
         super(TreeCell, self).__init__()
 
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-
         # Gates = input, output, memory + one forget gate per child
         numGates = 3 + num_children
 
@@ -92,7 +89,6 @@ class TreeLSTM(nn.Module):
 
         self.valid_num_children = [0] + valid_num_children
         self.lstm_list = nn.ModuleList()
-        self.hidden_size = hidden_size
 
         for size in self.valid_num_children:
             self.lstm_list.append(TreeCell(input_size, hidden_size, size))
@@ -137,6 +133,67 @@ class TreeLSTM(nn.Module):
                 break
 
         if not found:
+            print("WHAAAAAT?")
+            raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to"
+                             " live.")
+
+        # Set our encoded vector as the root of the new tree
+        rootNode = Node(newH)
+        rootNode.children = [vec[0] for vec in children]
+        return (rootNode, newC)
+
+    def initialize_forget_bias(self, bias_value):
+        for lstm in self.lstm_list:
+            lstm.initialize_forget_bias(bias_value)
+
+class BinaryTreeLSTM(nn.Module):
+    '''
+    BinaryTreeLSTM
+
+    Takes in a binary tree where each node has a value and a list of children.
+    Produces a tree of the same size where the value of each node is now encoded.
+    '''
+
+    def __init__(self, input_size, hidden_size):
+        """
+        Initialize tree cell we'll need later.
+        """
+        super(BinaryTreeLSTM, self).__init__()
+
+        self.tree_lstm = TreeCell(input_size, hidden_size, 2)            
+        self.register_buffer('zero_buffer', torch.zeros(hidden_size))
+
+    def forward(self, node):
+        """
+        Creates a tree where each node's value is the encoded version of the original value.
+
+        :param tree: a tree where each node has a value vector and a list of children
+        :return a tuple - (root of encoded tree, cell state)
+        """
+        value = node.value
+        
+        if value is None:
+            return (Node(None), self.zero_buffer)
+        
+        # List of tuples: (node, cell state)
+        children = []
+
+        # Recursively encode children
+        for child in node.children:
+            encoded_child = self.forward(child)
+            children.append(encoded_child)
+
+        # Extract the TreeCell inputs
+        inputH = [vec[0].value for vec in children]
+        inputC = [vec[1] for vec in children]
+
+        for i, hidden in enumerate(inputH):
+            if hidden is None:
+                inputH[i] = self.zero_buffer
+        
+        if len(children) <= 2:
+            newH, newC = self.tree_lstm(value, inputH + [self.zero_buffer]*(2 - len(children)), inputC + [self.zero_buffer]*(2 - len(children)))
+        else:
             print("WHAAAAAT?")
             raise ValueError("Beware.  Something has gone horribly wrong.  You may not have long to"
                              " live.")
