@@ -30,7 +30,7 @@ def count_matches(prediction, target):
 def program_accuracy(prediction, target):
     if decoder_type == "sequence":
         return 1 if target.tolist() == prediction else 0
-    if prediction.size() == count_matches(prediction, target) and        prediction.size() == target.size():
+    if prediction.size() == count_matches(prediction, target) and prediction.size() == target.size():
         return 1
     else:
         return 0
@@ -56,7 +56,7 @@ parser.add_argument('--one_hot', action='store_true', help='Use one hot vectors 
 parser.add_argument('--binarize_input', action='store_true', help="Binarize the input. Default is not to.")
 parser.add_argument('--binarize_output', action='store_true', help="Binarize the output. Default is not to.")
 parser.add_argument('--binary_tree_lstm_cell', action='store_true', help="Use a binary tree lstm cell. Default is not to.")
-parser.add_argument('--no_long_base_case', action='store_false', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
+parser.add_argument('--no_long_base_case', action='store_true', help="Use a more minimal tree (mainly dropping out tokens that don't add any information)")
 parser.add_argument('--lr', type=float, default=0.005, help='learning rate for model using adam, default=0.005')
 parser.add_argument('--dropout', type=float, default=False, help='Dropout probability. The default is not to use dropout.')
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
