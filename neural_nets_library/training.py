@@ -7,6 +7,7 @@ import time
 import torch
 import torch.utils.data as data
 import torch.optim as optim
+import numpy as np
 
 def split_dataset(dset, batch_size=128, thread_count=4):
     """
@@ -539,7 +540,6 @@ def train_model_tree_to_tree(model,
                     batch_size=50,
                     validation_criterion=None,
                     validation_dset = None,
-                    deep_copy_desired=False,
                     plateau_lr=False,
                     use_cuda=False,
                     save_file=False,
@@ -547,8 +547,6 @@ def train_model_tree_to_tree(model,
                     save_every=1000):
     since = time.time()
 
-    best_model = model
-    best_loss = float('inf')
     model.train(True)
     
     train_plot_losses = []
@@ -571,7 +569,6 @@ def train_model_tree_to_tree(model,
     
     running_val_plot_loss = 0.0
     val_running_plot_accuracy = 0.0
-    
     
     total_batch_number = 0
 
@@ -696,24 +693,18 @@ def train_model_tree_to_tree(model,
                     curr_val_plot_accuracies = []
                     
     
-
-        # deep copy the model
-        if epoch_running_loss < best_loss / len(dset_loader):
-            best_loss = epoch_running_loss / len(dset_loader)
-            best_model = copy.deepcopy(model)
-            # Save model
-            if save_file and save_folder:
-                torch.save(best_model, save_folder + "/" + save_file + "_model")
+        # Save model
+        if save_file and save_folder:
+            torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
 
     print()
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
-    print('Best loss: {:4f}'.format(best_loss))
 
     model.train(False)
-    return best_model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies
+    return model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies
 
 
 def test_model(model, dset_loader):
@@ -746,6 +737,7 @@ def test_model_tree_to_tree(model, dset_loader, metric, use_cuda=False):
     model.train(False)
 
     running_corrects = 0
+    accuracies = []
 
     for inputs, labels in dset_loader:
         if use_cuda:
@@ -753,6 +745,8 @@ def test_model_tree_to_tree(model, dset_loader, metric, use_cuda=False):
         
         # forward
         output = model.forward_prediction(inputs)
-        running_corrects += metric(output, labels)
+        accuracies.append(metric(output, labels))
+        
+    mean = np.mean(accuracies)
 
-    return running_corrects/(len(dset_loader))
+    return mean
