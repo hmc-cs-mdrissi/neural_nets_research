@@ -567,7 +567,7 @@ def get_val(value):
     else:
         return value
     
-def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=True):
+def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=False):
     if isinstance(program, Node):
         return map_tree(lambda node: vectorize(node, num_vars, num_ints, ops, eos_token=eos_token, 
                                                one_hot=one_hot), program)
