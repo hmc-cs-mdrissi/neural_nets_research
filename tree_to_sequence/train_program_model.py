@@ -61,6 +61,7 @@ parser.add_argument('--lr', type=float, default=0.005, help='learning rate for m
 parser.add_argument('--dropout', type=float, default=False, help='Dropout probability. The default is not to use dropout.')
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
 parser.add_argument('--no_cuda', action='store_true', help='Disables cuda')
+parser.add_argument('--model', default=False, help='File name for model to continue training.')
 opt = parser.parse_args()
 
 decoder_type = opt.decoder_type
@@ -180,12 +181,14 @@ def make_model():
     encoder = TreeEncoder(encoder_input_size, hidden_size, num_layers, [1, 2, 3, 4, 5], attention=True, one_hot=one_hot, 
                           binary_tree_lstm_cell=opt.binary_tree_lstm_cell)
 
+    if opt.model:
+        return torch.load("test_various_models/" + opt.model)
+        
     if decoder_type == "grammar":
         decoder = GrammarTreeDecoder(embedding_size, hidden_size, num_categories, 
                                      num_possible_parents, parent_to_category, 
                                      category_to_child, share_linear=True, share_lstm_cell=True, 
                                      num_ints_vars=num_ints + num_vars)
-        
         program_model = TreeToTreeAttention(encoder, decoder, 
                                             hidden_size, embedding_size, 
                                             nclass=nclass, root_value=nclass,

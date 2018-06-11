@@ -40,7 +40,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model', required=True, help='Name of model file.')
 # parser.add_argument('--problem_number', type=int, required=True, help='Number of the program translation problem. 0 corresponds to for-lambda while 1 is javascript-coffeescript')
 parser.add_argument('--decoder_type', required=True, help='Name of decoder. Should be either grammar, sequence, or tree.')
-parser.add_argument('--device_number', default=0, help='Number of device to test on. Default is 0')
+parser.add_argument('--device_number', type=int, default=0, help='Number of device to test on. Default is 0')
 opt = parser.parse_args()
 
 torch.cuda.set_device(opt.device_number)
