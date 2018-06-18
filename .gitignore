@@ -13,3 +13,4 @@ ANC/adaptive-neural-compilation*
 *.pyc
 *.json
 */.idea
+summer_uccs_research/fairseq*
