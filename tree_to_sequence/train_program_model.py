@@ -61,6 +61,7 @@ parser.add_argument('--lr', type=float, default=0.005, help='learning rate for m
 parser.add_argument('--dropout', type=float, default=False, help='Dropout probability. The default is not to use dropout.')
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
 parser.add_argument('--no_cuda', action='store_true', help='Disables cuda')
+parser.add_argument('--model', default=False, help='File name for model to continue training.')
 opt = parser.parse_args()
 
 decoder_type = opt.decoder_type
@@ -171,21 +172,23 @@ def save_plots():
     plt.legend(("Train", "Validation"))
     plt.savefig(save_folder + "/" + save_file + "_accuracy_plot.png")
 
-def save_test_accuracies():
+def save_test_accuracy():
     with open(save_folder + "/" + save_file + "_test.txt", "a") as file:
-        for val in test_accuracies:
-            file.write(str(val) + ",")
+        file.write(str(test_accuracy))
+    print('really done')
 
 def make_model():
     encoder = TreeEncoder(encoder_input_size, hidden_size, num_layers, [1, 2, 3, 4, 5], attention=True, one_hot=one_hot, 
                           binary_tree_lstm_cell=opt.binary_tree_lstm_cell)
 
+    if opt.model:
+        return torch.load("test_various_models/" + opt.model)
+        
     if decoder_type == "grammar":
         decoder = GrammarTreeDecoder(embedding_size, hidden_size, num_categories, 
                                      num_possible_parents, parent_to_category, 
                                      category_to_child, share_linear=True, share_lstm_cell=True, 
                                      num_ints_vars=num_ints + num_vars)
-        
         program_model = TreeToTreeAttention(encoder, decoder, 
                                             hidden_size, embedding_size, 
                                             nclass=nclass, root_value=nclass,
@@ -223,7 +226,7 @@ lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, pat
 
 # Train
 os.system("mkdir "+ save_folder)
-best_model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies = training.train_model_tree_to_tree(
+model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies = training.train_model_tree_to_tree(
                                 program_model, 
                                 dset_train, 
                                 optimizer, 
@@ -234,15 +237,15 @@ best_model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_
                                 validation_dset = dset_val,                                                          
                                 validation_criterion=validation_criterion,
                                 use_cuda=use_cuda, 
-                                deep_copy_desired=False,
                                 plateau_lr=True,
                                 save_file=save_file,
                                 save_folder=save_folder,
                                 save_every=save_every)
 
 # Test
-test_accuracy = training.test_model_tree_to_tree(best_model, dset_test, validation_criterion) #TODO: change where best_model is saved
+test_accuracy = training.test_model_tree_to_tree(model, dset_test, validation_criterion, use_cuda=True)
 test_accuracies.append(test_accuracy)
-save_plots()
+# save_plots()
+print("test", test_accuracy)
     
-save_test_accuracies()
+save_test_accuracy()
