@@ -707,6 +707,188 @@ def train_model_tree_to_tree(model,
     return model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies
 
 
+def yet_another_train_func(model,
+                    dset_loader,
+                    optimizer,
+                    lr_scheduler=None,
+                    num_epochs=20,
+                    print_every=200,
+                    plot_every=100,
+                    batch_size=50,
+                    validation_criterion=None,
+                    validation_dset = None,
+                    plateau_lr=False,
+                    use_cuda=True, # unused argument, for compatibility with other training funcs
+                    save_file=False,
+                    save_folder=False,
+                    print_example=False,
+                    save_every=1000):
+    
+    since = time.time()
+
+    model.train(True)
+    
+    train_plot_losses = []
+    train_plot_accuracies = []
+    
+    curr_train_plot_losses = []
+    curr_train_plot_accuracies = []
+    
+    val_plot_losses = []
+    val_plot_accuracies = []
+    
+    curr_val_plot_losses = []
+    curr_val_plot_accuracies = []
+    
+    running_train_plot_loss = 0.0
+    running_train_print_loss = 0.0
+    
+    train_running_plot_accuracy = 0.0
+    train_running_print_accuracy = 0.0
+    
+    running_val_plot_loss = 0.0
+    val_running_plot_accuracy = 0.0
+    
+    total_batch_number = 0
+
+    # Loss used for batches
+    loss = 0
+
+    for epoch in range(num_epochs):
+        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        print('-' * 10)
+
+        epoch_running_loss = 0.0
+        current_batch = 0
+
+        if lr_scheduler is not None and not plateau_lr:
+            lr_scheduler.step(epoch)
+
+        # Iterate over data.
+        for i in range(int(len(dset_loader)/batch_size)):
+            tree_list = dset_loader[i * batch_size: (i + 1) * batch_size]
+            input_tree_list = [tree_tuple[0] for tree_tuple in tree_list]
+            target_tree_list = [tree_tuple[1] for tree_tuple in tree_list]
+            
+            total_batch_number += 1
+            current_batch += 1
+
+            iteration_loss = model.forward_train(input_tree_list, target_tree_list)
+            loss += iteration_loss
+            
+            if total_batch_number % batch_size == 0:
+                loss /= batch_size
+                loss.backward()
+                clip_grads(model)
+                optimizer.step()
+
+                if plateau_lr:
+                    lr_scheduler.step(float(loss))
+
+                loss = 0
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+            if validation_criterion is not None:
+                output = model.forward_prediction(input_tree)
+                validation_loss = validation_criterion(output, target_tree)
+                train_running_plot_accuracy += validation_loss
+                train_running_print_accuracy += validation_loss
+                if validation_dset:
+                    input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
+                    if use_cuda:
+                        input_val, target_val = input_val.cuda(), target_val.cuda()
+                    output_val = model.forward_prediction(input_val)
+                    val_running_plot_accuracy += validation_criterion(output_val, target_val)
+                
+            # statistics
+            epoch_running_loss += float(iteration_loss)
+            running_train_plot_loss += float(iteration_loss)
+            if validation_dset:
+                input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
+                if use_cuda:
+                    input_val, target_val = input_val.cuda(), target_val.cuda()
+                running_val_plot_loss += float(model.forward_train(input_val, target_val))
+            running_train_print_loss += float(iteration_loss)
+
+            if total_batch_number % print_every == 0:
+                curr_loss = running_train_print_loss / print_every
+                time_elapsed = time.time() - since
+
+                print('Epoch Number: {}, Batch Number: {}, Training Loss: {:.4f}'.format(
+                    epoch, current_batch, curr_loss))
+                print('Time so far is {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+                running_train_print_loss = 0.0
+                
+                if validation_criterion is not None:
+                    curr_validation_loss = train_running_print_accuracy / print_every
+                    print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
+                    epoch, current_batch, curr_validation_loss))
+                    print('Example output:')
+                    if print_examples:
+                        model.print_example(input_tree_list[0], target_tree_list[0])
+                    train_running_print_accuracy = 0.0
+                
+            if total_batch_number % plot_every == 0:
+                train_plot_losses.append(running_train_plot_loss / plot_every)
+                curr_train_plot_losses.append(running_train_plot_loss / plot_every)
+                running_train_plot_loss = 0.0
+                
+                if validation_dset:
+                    val_plot_losses.append(running_val_plot_loss / plot_every)
+                    curr_val_plot_losses.append(running_val_plot_loss / plot_every)
+                    running_val_plot_loss = 0.0
+                    
+                    val_plot_accuracies.append(val_running_plot_accuracy/plot_every)
+                    curr_val_plot_accuracies.append(val_running_plot_accuracy/plot_every)
+                    val_running_plot_accuracy = 0.0
+                
+                
+                if validation_criterion is not None:
+                    train_plot_accuracies.append(train_running_plot_accuracy/plot_every)
+                    curr_train_plot_accuracies.append(train_running_plot_accuracy/plot_every)
+                    train_running_plot_accuracy = 0.0
+                    
+            if save_file and save_folder and total_batch_number % save_every == 0:
+                # Save losses
+                with open(save_folder + "/" + save_file + "_train_loss.txt", "a") as file:
+                    for val in curr_train_plot_losses:
+                        file.write(str(val) + ",")
+                curr_train_plot_losses = []
+                # Save accuracies
+                with open(save_folder + "/" + save_file + "_train_accuracy.txt", "a") as file:
+                    for val in curr_train_plot_accuracies:
+                        file.write(str(val) + ",")
+                curr_train_plot_accuracies = []
+                if validation_dset:
+                    # Save losses
+                    with open(save_folder + "/" + save_file + "_val_loss.txt", "a") as file:
+                        for val in curr_val_plot_losses:
+                            file.write(str(val) + ",")
+                    curr_val_plot_losses = []
+                    # Save accuracies
+                    with open(save_folder + "/" + save_file + "_val_accuracy.txt", "a") as file:
+                        for val in curr_val_plot_accuracies:
+                            file.write(str(val) + ",")
+                    curr_val_plot_accuracies = []
+                    
+    
+        # Save model
+        if save_file and save_folder:
+            torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
+
+    print()
+
+    time_elapsed = time.time() - since
+    print('Training complete in {:.0f}m {:.0f}s'.format(
+        time_elapsed // 60, time_elapsed % 60))
+
+    model.train(False)
+    return model, train_plot_losses, train_plot_accuracies
+
+
+
 def test_model(model, dset_loader):
     """
     Tests a model on a given data set and returns the accuracy of the model
