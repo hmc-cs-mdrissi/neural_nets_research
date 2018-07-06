@@ -68,7 +68,7 @@ decoder_type = opt.decoder_type
 save_file = opt.save_file
 save_folder = opt.save_folder
 use_cuda = not opt.no_cuda
-torch.cuda.set_device(opt.cuda_device)
+# torch.cuda.set_device(opt.cuda_device)
 
 num_vars = opt.num_vars
 num_ints = opt.num_ints
