@@ -159,9 +159,6 @@ class SyntacticProgramDataset(Dataset):
             output_programs = map(lambda prog: add_eos(prog, num_children=max_children_output), 
                                   output_programs)
             
-        x = [pretty_print_tree(prog) for prog in input_programs]
-        y = [pretty_print_tree(prog) for prog in output_programs]
-            
         input_programs = [encode_program(prog, num_vars, num_ints, input_ops, eos_token=eos_token, 
                                          one_hot=one_hot) for prog in input_programs]
         output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token) for prog in output_programs]
@@ -176,7 +173,7 @@ class SyntacticProgramDataset(Dataset):
 class ForLambdaDataset(SyntacticProgramDataset):
     def __init__(self, path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
                  input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True):
-        progs_json = json.load(open(path))[:5]
+        progs_json = json.load(open(path))
         for_progs = [make_tree_for(prog, long_base_case=long_base_case) for prog in progs_json]
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
 
