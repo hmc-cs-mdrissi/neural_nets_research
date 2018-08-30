@@ -31,7 +31,7 @@ class TreeDecoderBatch(nn.Module):
         
         Wmy does this exist?
         """
-        return self.cross_entropy(a.squeeze(1), b)
+        return self.cross_entropy(a.squeeze(1), b.squeeze(1))
     
     def calculate_loss(self, parent, child_index, et, true_value):
         """
@@ -66,7 +66,7 @@ class TreeDecoderBatch(nn.Module):
             hidden, cell = self.lstm_list[i](input[i], (hidden_state[i], cell_state[i]))
             hiddens.append(hidden)
             cell_states.append(cell)
-        return torch.cat(hiddens, dim=0), torch.cat(cell_states, dim=0)
+        return torch.cat(hiddens, dim=0).unsqueeze(1), torch.cat(cell_states, dim=0).unsqueeze(1)
     
     def initialize_forget_bias(self, bias_value):
         """

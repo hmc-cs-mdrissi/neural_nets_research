@@ -707,6 +707,7 @@ def train_model_tree_to_tree(model,
     return model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies
 
 
+# This one is for testing batching!!!
 def yet_another_train_func(model,
                     dset_loader,
                     optimizer,
@@ -776,19 +777,18 @@ def yet_another_train_func(model,
             iteration_loss = model.forward_train(input_tree_list, target_tree_list)
             loss += iteration_loss
             
-            if total_batch_number % batch_size == 0:
-                loss /= batch_size
-                loss.backward()
-                clip_grads(model)
-                optimizer.step()
+            loss /= batch_size
+            loss.backward()
+            clip_grads(model)
+            optimizer.step()
 
-                if plateau_lr:
-                    lr_scheduler.step(float(loss))
+            if plateau_lr:
+                lr_scheduler.step(float(loss))
 
-                loss = 0
+            loss = 0
 
-                # zero the parameter gradients
-                optimizer.zero_grad()
+            # zero the parameter gradients
+            optimizer.zero_grad()
 
             if validation_criterion is not None:
                 output = model.forward_prediction(input_tree)
@@ -872,13 +872,13 @@ def yet_another_train_func(model,
                         for val in curr_val_plot_accuracies:
                             file.write(str(val) + ",")
                     curr_val_plot_accuracies = []
-                    
+        print("just finished epoch " + str(epoch))            
     
         # Save model
-        if save_file and save_folder:
-            torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
+#         if save_file and save_folder:
+#             torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
 
-    print()
+    print("all done!!!")
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(

@@ -13,7 +13,7 @@ class TreeEncoderBatch(nn.Module):
         super(TreeEncoderBatch, self).__init__()
         
         self.tree_lstm = TreeCell(input_size, hidden_size, num_children=2)            
-        self.register_buffer('zero_buffer', torch.zeros(1, 1, hidden_size)) 
+        self.register_buffer('zero_buffer', torch.zeros(1, hidden_size)) 
         
         # Will be set later by the tree_to_tree file.
         self.embedding = None
@@ -30,6 +30,7 @@ class TreeEncoderBatch(nn.Module):
 
         """
         value = self.embedding(node.value)
+        
         if value is None:
             return fold.add('encode_none_node').split(3)
 
@@ -51,7 +52,6 @@ class TreeEncoderBatch(nn.Module):
 
         :return annotations, hidden_state, cell_state
         """
-        print("zero node")
         return self.zero_buffer.unsqueeze(1), self.zero_buffer, self.zero_buffer
     
     # TODO: Later make this stackable
@@ -69,12 +69,9 @@ class TreeEncoderBatch(nn.Module):
         
         :return annotations, hidden state, cell state
         """
-        print("fancy node", value.shape)
-        print("LEFT", leftA.shape, leftH.shape, leftC.shape)
-        print("RIGHT", rightA.shape, rightH.shape, rightC.shape)
-        newH, newC = self.tree_lstm(value.unsqueeze(1), [leftH, rightH], [leftC, rightC])
+        newH, newC = self.tree_lstm(value, [leftH, rightH], [leftC, rightC])
         newA = newH.unsqueeze(1)
-        newA = torch.cat([newA, leftA, rightA], 2)
+        newA = torch.cat([newA, leftA.float(), rightA.float()])
         return newA, newH, newC
         
 
