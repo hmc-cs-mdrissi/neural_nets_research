@@ -1,2 +1,4 @@
 # neural_nets_research
-A collection of projects for neural nets research in Prof Mehdi's research group.
+[![Build Status](https://travis-ci.com/hmc-cs-mdrissi/neural_nets_research.svg?branch=master)](https://travis-ci.com/hmc-cs-mdrissi/neural_nets_research)
+
+A collection of neural network research projects for Prof Mehdi's research group.
