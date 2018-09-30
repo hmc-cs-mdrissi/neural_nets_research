@@ -4,7 +4,7 @@ python:
   - "3.6"
 
 install:
-  - pip install -q --progress-bar off -r requirements.txt
+  - pip install -q -r requirements.txt
 
 script:
   - pytest
