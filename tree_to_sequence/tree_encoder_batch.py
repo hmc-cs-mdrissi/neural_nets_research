@@ -13,7 +13,7 @@ class TreeEncoderBatch(nn.Module):
         super(TreeEncoderBatch, self).__init__()
         
         self.tree_lstm = TreeCell(input_size, hidden_size, num_children=2)            
-        self.register_buffer('zero_buffer', torch.zeros(1, hidden_size)) 
+        self.register_buffer('zero_buffer', torch.zeros(1, 1, hidden_size)) 
         
         # Will be set later by the tree_to_tree file.
         self.embedding = None
@@ -32,7 +32,7 @@ class TreeEncoderBatch(nn.Module):
         value = self.embedding(node.value)
         
         if value is None:
-            return fold.add('encode_none_node').split(3)
+            return fold.add('encode_none_node').split(2)
 
         # List of tuples: (node, cell state)
         children = []
@@ -41,10 +41,10 @@ class TreeEncoderBatch(nn.Module):
             encoded = self.forward(fold, child)
             children += list(encoded)
 
-        while len(children) < 6:
-            children += fold.add('encode_none_node').split(3)
+        while len(children) < 4:
+            children += fold.add('encode_none_node').split(2)
 
-        return  fold.add('encode_node_with_children', value, *children).split(3)
+        return fold.add('encode_node_with_children', value, *children).split(2)
     
     def encode_none_node(self):
         """
@@ -52,27 +52,31 @@ class TreeEncoderBatch(nn.Module):
 
         :return annotations, hidden_state, cell_state
         """
-        return self.zero_buffer.unsqueeze(1), self.zero_buffer, self.zero_buffer
+        return self.zero_buffer, self.zero_buffer
     
     # TODO: Later make this stackable
-    def encode_node_with_children(self, value, leftA, leftH, leftC, rightA, rightH, rightC):
+    def encode_node_with_children(self, value, leftH, leftC, rightH, rightC):
         """
         Returns the encoding of a node with children.
         
         :param value: node's value
-        :param leftA: left child's annotations
         :param leftH: left child's hidden state
         :param leftC: left child's cell state
-        :param rightA: left child's annotations
         :param rightH: right child's hidden state
         :param rightC: right child's cell state
         
         :return annotations, hidden state, cell state
         """
+#         print("value", value)
+#         print("leftH", leftH)
+#         print("leftC", leftC)
+#         print("rightH", rightH)
+#         print("rightC", rightC)
         newH, newC = self.tree_lstm(value, [leftH, rightH], [leftC, rightC])
-        newA = newH.unsqueeze(1)
-        newA = torch.cat([newA, leftA.float(), rightA.float()])
-        return newA, newH, newC
+#         print("VALUE", value)
+#         print("NEWH", newH.shape, newH)
+        return newH, newC
+
         
 
     def initialize_forget_bias(self, bias_value):

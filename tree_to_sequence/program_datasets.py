@@ -4,6 +4,7 @@ from tree_to_sequence.translating_trees import *
 
 import copy
 import json
+from random import shuffle
 
 for_ops = {
             "<VAR>": 0,
@@ -131,7 +132,7 @@ javascript_ops = {
 class SyntacticProgramDataset(Dataset):
     def __init__(self, input_programs, output_programs, input_ops=None, output_ops=None, 
                          max_children_output=None, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, 
-                 eos_token=True,  input_as_seq=False, output_as_seq=True, one_hot=False):
+                 eos_token=True,  input_as_seq=False, output_as_seq=True, one_hot=False, sort_by_length=False):
         if eos_token and not output_as_seq and max_children_output is None:
             raise ValueError("When the output is a tree and you want end of tree tokens, it is"
                              " necessary that max_children_output is not None.")
@@ -163,19 +164,22 @@ class SyntacticProgramDataset(Dataset):
                                          one_hot=one_hot) for prog in input_programs]
         output_programs = [encode_program(prog, num_vars, num_ints, output_ops, eos_token=eos_token) for prog in output_programs]
         self.program_pairs = list(zip(input_programs, output_programs))
+        
+        # Sort dataset by length
+        if sort_by_length:
+            self.program_pairs.sort(key=lambda x: x[0].size())
+
 
     def __len__(self):
         return len(self.program_pairs)
 
     def __getitem__(self, index):
         return self.program_pairs[index]
-    
-class ForLambdaDataset(SyntacticProgramDataset):
-    def __init__(self, path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
-                 input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True, num_samples=False):
-        progs_json = json.load(open(path))
-        if num_samples:
-            progs_json = progs_json[:num_samples]
+
+class ForLambdaDatasetLengthBatched(SyntacticProgramDataset):
+    def __init__(self, path, batch_size, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
+                 input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True, num_samples=None):
+        progs_json = json.load(open(path))[:num_samples]
         for_progs = [make_tree_for(prog, long_base_case=long_base_case) for prog in progs_json]
         lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
 
@@ -183,7 +187,48 @@ class ForLambdaDataset(SyntacticProgramDataset):
         super().__init__(for_progs, lambda_progs, input_ops=for_ops, output_ops=lambda_ops,
                          max_children_output=max_children_output, num_vars=num_vars, 
                          num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
-                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot)
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot,
+                         sort_by_length=True)
+        
+    
+        index = 0
+        all_batches = []
+        while index < len(self.program_pairs):
+            batch_items = []
+            size = self.program_pairs[index][0].size()
+            for item_index in range(index, min(len(self.program_pairs), index + batch_size)):
+                if self.program_pairs[item_index][0].size() == size:
+                    batch_items.append(self.program_pairs[item_index])
+                    index += 1
+                else:
+                    break
+            all_batches.append(batch_items)
+
+
+        shuffle(all_batches)
+        print("Num batches", len(all_batches))
+        print("total length is", len(self.program_pairs))
+        print("batch size is", batch_size)
+        print("shortest", min([len(x) for x in all_batches]))
+        print("longest", max([len(x) for x in all_batches]))
+        print("shortest", min([len(x) for x in all_batches]))
+        
+        self.program_pairs = all_batches
+        
+
+class ForLambdaDataset(SyntacticProgramDataset):
+    def __init__(self, path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
+                 input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True, num_samples=None, sort_by_length=False):
+        progs_json = json.load(open(path))[:num_samples]
+        for_progs = [make_tree_for(prog, long_base_case=long_base_case) for prog in progs_json]
+        lambda_progs = [translate_from_for(copy.deepcopy(for_prog)) for for_prog in for_progs]
+
+        max_children_output = 2 if binarize_output else max_children_lambda
+        super().__init__(for_progs, lambda_progs, input_ops=for_ops, output_ops=lambda_ops,
+                         max_children_output=max_children_output, num_vars=num_vars, 
+                         num_ints=num_ints, binarize_input=binarize_input, binarize_output=binarize_output, 
+                         eos_token=eos_token, input_as_seq=input_as_seq, output_as_seq=output_as_seq, one_hot=one_hot,
+                         sort_by_length=sort_by_length)
 
 class JsCoffeeDataset(SyntacticProgramDataset):
     def __init__(self, coffeescript_path, javascript_path, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 

@@ -6,6 +6,7 @@ from six import string_types
 
 from functools import partial
 import itertools
+from collections import deque
 
 class Node:
     """
@@ -21,6 +22,25 @@ class Node:
     def size(self):
         return 1 + sum([child.size() for child in self.children])
 
+def pre_order(tree):
+    if tree.value is None:
+        return None
+    return torch.cat([tree.value.unsqueeze(0)] + [pre_order(child) for child in tree.children], 0)
+    
+def reverse_level(tree):
+    vec_list = []
+    queue = deque()
+    queue.append(tree)
+    while len(queue) > 0:
+        new_node = queue.popleft()
+        for child in new_node.children:
+            queue.append(child)
+        vec_list.append(new_node.value)
+    return torch.stack(vec_list[::-1])
+
+    def append_vec(tree):
+        vec_list.append(tree.value)
+    
 def make_var_name(var_name):
     if var_name == 'h':
         return '<HEAD>'

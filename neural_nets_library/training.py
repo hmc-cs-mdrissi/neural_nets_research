@@ -764,13 +764,13 @@ def yet_another_train_func(model,
 
         if lr_scheduler is not None and not plateau_lr:
             lr_scheduler.step(epoch)
-
-        # Iterate over data.
-        for i in range(int(len(dset_loader)/batch_size)):
-            tree_list = dset_loader[i * batch_size: (i + 1) * batch_size]
+            
+            
+        for batch in dset_loader:
+            tree_list = batch
             input_tree_list = [tree_tuple[0] for tree_tuple in tree_list]
             target_tree_list = [tree_tuple[1] for tree_tuple in tree_list]
-            
+                               
             total_batch_number += 1
             current_batch += 1
 

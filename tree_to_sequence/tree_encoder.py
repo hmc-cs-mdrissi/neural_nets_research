@@ -12,12 +12,14 @@ class TreeEncoder(nn.Module):
     """
     def __init__(self, input_size, hidden_size, num_layers, valid_num_children=None,
                  attention=True, one_hot=False, embedding_size=256, dropout=False,
-                 binary_tree_lstm_cell=False):
+                 binary_tree_lstm_cell=False, annotation_method=None, randomize_hiddens=False):
         super(TreeEncoder, self).__init__()
 
         self.lstm_list = nn.ModuleList()
         self.one_hot = one_hot
         self.dropout = False
+        self.annotation_method = annotation_method
+        self.randomize_hiddens = randomize_hiddens
         
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
@@ -36,8 +38,10 @@ class TreeEncoder(nn.Module):
         for i in range(num_layers-1):
             if binary_tree_lstm_cell:
                 self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
+#                 self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
             else:
                 self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
+#                 self.lstm_list.append(TreeLSTM(hidden_size, hidden_size, valid_num_children))
 
         self.attention = attention
 
@@ -68,11 +72,21 @@ class TreeEncoder(nn.Module):
         cell_states = torch.stack(cell_states)
 
         if self.attention:
-            annotations = torch.stack(list(filter(lambda x: x is not None, tree_to_list(tree))))
+            if self.annotation_method:
+                annotations = self.annotation_method(tree)
+            else:
+                annotations = torch.stack(list(filter(lambda x: x is not None, tree_to_list(tree))))
+                if self.randomize_hiddens:
+                    print("Annotations 1: ", annotations[0:1])
+                    annotations = annotations[torch.randperm(annotations.size(0))]
+                    print("Annotations 2: ", annotations[0:1])
             return annotations, hiddens, cell_states
         else:
             return hiddens, cell_states
+    
+    from collections import deque
 
+    
     def initialize_forget_bias(self, bias_value):
         for lstm in self.lstm_list:
             lstm.initialize_forget_bias(bias_value)
