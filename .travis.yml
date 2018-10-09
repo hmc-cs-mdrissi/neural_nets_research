@@ -1,0 +1,10 @@
+language: python
+cache: pip
+python:
+  - "3.6"
+
+install:
+  - pip install -q -r requirements.txt
+
+script:
+  - pytest tests/
