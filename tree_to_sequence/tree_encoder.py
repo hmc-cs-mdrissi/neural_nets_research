@@ -17,7 +17,7 @@ class TreeEncoder(nn.Module):
 
         self.lstm_list = nn.ModuleList()
         self.one_hot = one_hot
-        self.dropout = False
+        self.dropout = dropout
         self.annotation_method = annotation_method
         self.randomize_hiddens = randomize_hiddens
         
@@ -37,11 +37,9 @@ class TreeEncoder(nn.Module):
         # All TreeLSTMs have input of hidden_size except the first.
         for i in range(num_layers-1):
             if binary_tree_lstm_cell:
-                self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
-#                 self.lstm_list.append(BinaryTreeLSTM(input_size, hidden_size))
+                self.lstm_list.append(BinaryTreeLSTM(hidden_size, hidden_size))
             else:
-                self.lstm_list.append(TreeLSTM(input_size, hidden_size, valid_num_children))
-#                 self.lstm_list.append(TreeLSTM(hidden_size, hidden_size, valid_num_children))
+                self.lstm_list.append(TreeLSTM(hidden_size, hidden_size, valid_num_children))
 
         self.attention = attention
 
@@ -77,15 +75,10 @@ class TreeEncoder(nn.Module):
             else:
                 annotations = torch.stack(list(filter(lambda x: x is not None, tree_to_list(tree))))
                 if self.randomize_hiddens:
-                    print("Annotations 1: ", annotations[0:1])
                     annotations = annotations[torch.randperm(annotations.size(0))]
-                    print("Annotations 2: ", annotations[0:1])
             return annotations, hiddens, cell_states
         else:
             return hiddens, cell_states
-    
-    from collections import deque
-
     
     def initialize_forget_bias(self, bias_value):
         for lstm in self.lstm_list:
