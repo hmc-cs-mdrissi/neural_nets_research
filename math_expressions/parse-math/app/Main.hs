@@ -14,9 +14,8 @@ main = do
   -- a <- B.readFile "TEST2016_INKML_GT_GET_Strings.json"
   case decode file :: Maybe (Map String String) of
     Just loadedExprs ->
-      either print (B.writeFile "just_testing.json" . encode ) $
+      either print (B.writeFile "../just_testing.json" . encode ) $
         mapM parseMath (Map.elems loadedExprs)
     Nothing -> print "Unparsable"
-  putStrLn "hi"
 
 -- main = putStrLn parseString

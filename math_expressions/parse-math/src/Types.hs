@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Types where
   -- Need to export all constructors...
   -- ( MathExpression
@@ -9,6 +11,9 @@ module Types where
   -- , PUnOp
   -- , BarOp
   -- ) where
+
+import Data.Aeson
+import GHC.Generics
 
 data MathExpression
   = IntegerM Integer
@@ -22,9 +27,9 @@ data MathExpression
   | DoubOp DoubOp MathExpression MathExpression
   | NatBinOp MathExpression NatBinOp MathExpression
   | Sum MathExpression MathExpression MathExpression
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
-data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq)
+data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq, Generic)
 
 data NatBinOp =
     Plus |
@@ -41,13 +46,13 @@ data NatBinOp =
     Leq |
     Ge |
     Geq |
-    Neq deriving (Show, Eq)
+    Neq deriving (Show, Eq, Generic)
 
 data UnOp =
-    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq)
+    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq, Generic)
 
 data DoubOp =
-    FracOp | LogOp | LimOp deriving (Show, Eq)
+    FracOp | LogOp | LimOp deriving (Show, Eq, Generic)
 
 data Symbol =
     Alpha |
@@ -57,8 +62,16 @@ data Symbol =
     Pi |
     Theta |
     Infty |
-    Ldots deriving (Show, Eq)
+    Ldots deriving (Show, Eq, Generic)
 
-data PUnOp = Factorial deriving (Show, Eq)
+data PUnOp = Factorial deriving (Show, Eq, Generic)
 
-data BarOp = Bar deriving (Show, Eq)
+data BarOp = Bar deriving (Show, Eq, Generic)
+
+instance ToJSON MathExpression
+instance ToJSON ContainerSymbol
+instance ToJSON NatBinOp
+instance ToJSON UnOp
+instance ToJSON DoubOp
+instance ToJSON Symbol
+instance ToJSON PUnOp
