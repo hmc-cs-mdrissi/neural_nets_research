@@ -1,4 +1,5 @@
 
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 
 module LambdaParser where
 
@@ -20,11 +21,14 @@ import qualified Data.ByteString.Lazy as B
 import Data.Text (Text)
 import Data.Map (Map)
 import qualified Data.Map.Lazy as Map
-
+import Data.ByteString.Lazy (writeFile)
+import Prelude hiding (writeFile)
+import GHC.Generics
 
 --Let expressions are not part of the definition because let expressions can be viewed as syntactic sugar.
 --let x = y in z is the same as (lambda x.z) y.
 data MathExpression = 
+    ParseFail |
     IntegerM Integer | DoubleM Double |
     VarName Char |
     Nil | 
@@ -34,9 +38,10 @@ data MathExpression =
     PUnOp MathExpression PUnOp |
     DoubOp DoubOp MathExpression MathExpression |
     NatBinOp MathExpression NatBinOp MathExpression |
-    Sum MathExpression MathExpression MathExpression  deriving (Show, Eq)
+    Sum MathExpression MathExpression MathExpression  deriving (Show, Eq, Generic)
 
-data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq)
+
+data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq, Generic)
 
 data NatBinOp =
     Plus | 
@@ -53,13 +58,13 @@ data NatBinOp =
     Leq |
     Ge |
     Geq |
-    Neq deriving (Show, Eq)
+    Neq deriving (Show, Eq, Generic)
 
 data UnOp = 
-    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq) 
+    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq, Generic) 
     
 data DoubOp =
-    FracOp | LogOp | LimOp deriving (Show, Eq) 
+    FracOp | LogOp | LimOp deriving (Show, Eq, Generic) 
 
 data Symbol = 
     Alpha |
@@ -69,14 +74,22 @@ data Symbol =
     Pi |
     Theta |
     Infty | 
-    Ldots deriving (Show, Eq) 
+    Ldots deriving (Show, Eq, Generic) 
 
-data PUnOp = Factorial deriving (Show, Eq) 
+data PUnOp = Factorial deriving (Show, Eq, Generic) 
 
-data BarOp = Bar deriving (Show, Eq)
 
--- instance Show MathExpression where
---     show = showExpr 0
+instance ToJSON MathExpression
+instance ToJSON ContainerSymbol
+instance ToJSON NatBinOp
+instance ToJSON UnOp
+instance ToJSON DoubOp
+instance ToJSON Symbol
+instance ToJSON PUnOp
+
+
+
+
 
 mathDef :: P.LanguageDef()
 mathDef = emptyDef {P.identStart = letter
@@ -365,10 +378,11 @@ mathExpression' 9 bool sumBool absBool = (if bool then ((varname <|> number <|> 
 parseMath :: String -> Either ParseError MathExpression
 parseMath str = parse (whiteSpace *> mathExpression' 0 True False False) "" (tail (tail str))
 
-parseString =  show (parseMath "--\\sqrt{-3}")
+-- parseString =  show (parseMath "--\\sqrt{-3}")
 
 
-
+-- parseMath :: String -> MathExpression
+-- parseMath str = Nil
 
 
 
@@ -390,14 +404,24 @@ parseString =  show (parseMath "--\\sqrt{-3}")
 -- brackets
 -- mbox
 
+
+
+
 main :: IO()
 main = do 
   a <- B.readFile "single_expr.json"
   -- a <- B.readFile "TEST2016_INKML_GT_GET_Strings.json"
   case decode a :: Maybe (Map String String) of
-    Just loadedExprs -> writeFile "just_testing.json" $ encode (Map.map (parseMath) (loadedExprs))
+    Just loadedExprs -> writeFile "just_testing.json" $ encode (toJSON (Map.map (parseMath) (loadedExprs)))
     Nothing -> print "Unparsable"
   putStrLn "hi"
 
 -- main = putStrLn parseString
+-- loadedExprs is a map from the String to (Either ParseError MathExpression)
+-- sequence is... something???  WE REALLY WANT IT TO GO FROM (WHATEVER) TO (TOJSON)
+-- encode :: ToJSON a => a -> ByteString
+-- writeFile:: FilePath -> ByteString -> IO ()
+
+
+
 
