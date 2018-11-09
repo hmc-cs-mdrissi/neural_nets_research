@@ -21,7 +21,7 @@ import Data.Text (Text)
 import Data.Map (Map)
 import qualified Data.Map.Lazy as Map
 
-mathDef :: P.LanguageDef()
+mathDef :: P.LanguageDef ()
 mathDef = emptyDef {P.identStart = letter
                      ,P.identLetter = alphaNum <|> char '\''
                      ,P.opStart = oneOf "=.[];"

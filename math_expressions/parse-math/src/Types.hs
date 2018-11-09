@@ -27,15 +27,15 @@ data MathExpression
 data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq)
 
 data NatBinOp =
-    Plus | 
-    Minus | 
-    Div | 
-    Mult | 
-    PlusMinus | 
-    Equal | 
-    Marrow | 
-    SubscriptOp | 
-    SuperscriptOp | 
+    Plus |
+    Minus |
+    Div |
+    Mult |
+    PlusMinus |
+    Equal |
+    Marrow |
+    SubscriptOp |
+    SuperscriptOp |
     ImplicitMult |
     Le |
     Leq |
@@ -43,25 +43,22 @@ data NatBinOp =
     Geq |
     Neq deriving (Show, Eq)
 
-data UnOp = 
-    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq) 
-    
-data DoubOp =
-    FracOp | LogOp | LimOp deriving (Show, Eq) 
+data UnOp =
+    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq)
 
-data Symbol = 
+data DoubOp =
+    FracOp | LogOp | LimOp deriving (Show, Eq)
+
+data Symbol =
     Alpha |
     Beta |
-    Gamma | 
+    Gamma |
     Phi |
     Pi |
     Theta |
-    Infty | 
-    Ldots deriving (Show, Eq) 
+    Infty |
+    Ldots deriving (Show, Eq)
 
-data PUnOp = Factorial deriving (Show, Eq) 
+data PUnOp = Factorial deriving (Show, Eq)
 
 data BarOp = Bar deriving (Show, Eq)
-
--- instance Show MathExpression where
---     show = showExpr 0
