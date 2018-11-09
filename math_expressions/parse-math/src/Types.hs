@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Types where
+module Syntax where
   -- Need to export all constructors...
   -- ( MathExpression
   -- , ContainerSymbol

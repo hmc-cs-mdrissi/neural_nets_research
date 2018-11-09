@@ -152,12 +152,6 @@ limP = P.reservedOp lexer "\\lim"
 fracP :: Parser()
 fracP = P.reservedOp lexer "\\frac"
 
-
-
-
-
-
-
 underscoreP :: Parser()
 underscoreP = P.reservedOp lexer "_"
 
@@ -199,9 +193,7 @@ number :: Parser MathExpression
 number = do num <- P.naturalOrFloat lexer
             case num of
                 Left x -> return $ IntegerM x
-                Right x -> return $ DoubleM x 
-                
-
+                Right x -> return $ DoubleM x
 
 mathExpression' :: Int -> Bool -> Bool -> Bool -> Parser MathExpression
 mathExpression' 0 bool sumBool absBool = (mathExpression' 1 bool sumBool absBool `chainl1` (pure (\x -> NatBinOp x ImplicitMult)))
@@ -240,7 +232,7 @@ mathExpression' 7 bool sumBool absBool= (do sinS <- many sinP
                         return $ iterate (UnOp Sqrt) exp !! (length sqrtS))
 mathExpression' 8 bool sumBool absBool = if sumBool then (mathExpression' 9 False sumBool absBool `chainl1` (underscoreP *> pure (\x -> NatBinOp x SubscriptOp))) else (mathExpression' 9 False sumBool absBool `chainl1` (((underscoreP *> pure (\x -> NatBinOp x SubscriptOp))) <|> (superscriptP *> pure (\x -> NatBinOp x SuperscriptOp))))
 
--- subscript, superscript  :)             
+-- subscript, superscript  :)
 mathExpression' 9 bool sumBool absBool = (if bool then ((varname <|> number <|> symbol) `chainl1` (pure (\x -> NatBinOp x ImplicitMult))) else (varname <|> number))
                     <|>
                     (do logP

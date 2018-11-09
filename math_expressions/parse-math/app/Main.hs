@@ -1,6 +1,6 @@
 module Main where
 
-import Types
+import Syntax
 import Parser
 
 import Data.Aeson
