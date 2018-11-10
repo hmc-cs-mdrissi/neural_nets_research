@@ -1,1 +1,0 @@
-lambda (x : list int) (y : int). match x with case [] -> cons y nil case h ; t -> if y == h then x else cons y x

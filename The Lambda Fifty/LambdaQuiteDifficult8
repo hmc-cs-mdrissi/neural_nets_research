@@ -1,1 +1,0 @@
-lambda (y: list int). let tail = lambda (b : list int). match b with case [] -> [] case h ; t -> t in let head = lambda (a : list int). match a with case [] -> 0 case h ; t -> h in head (tail y)

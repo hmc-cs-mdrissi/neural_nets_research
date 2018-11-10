@@ -1,1 +1,0 @@
-lambda (x : int) (y : int). cons x (cons y nil)

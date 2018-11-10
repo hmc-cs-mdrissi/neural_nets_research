@@ -1,1 +1,0 @@
-let rec fac : int -> int = lambda (i : int). if i == 1 then 1 else i * (fac i-1) in fac

@@ -1,1 +1,0 @@
-let rec app : list int -> list int -> list int = lambda (l1 : list int) (l2 : list int). match l1 with case [] -> l2 case x ; y -> cons x (app y l2) in app

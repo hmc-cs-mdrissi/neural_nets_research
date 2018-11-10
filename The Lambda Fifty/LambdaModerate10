@@ -1,1 +1,0 @@
-lambda (x : list int). match x with case [] -> [] case h ; t -> t

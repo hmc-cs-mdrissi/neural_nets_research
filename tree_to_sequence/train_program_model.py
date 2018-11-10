@@ -62,13 +62,20 @@ parser.add_argument('--dropout', type=float, default=False, help='Dropout probab
 parser.add_argument('--num_epochs', type=int, default=5, help='Number of epochs to train for. The default is 5.')
 parser.add_argument('--no_cuda', action='store_true', help='Disables cuda')
 parser.add_argument('--model', default=False, help='File name for model to continue training.')
+parser.add_argument('--annotation_method', default=None, help='Annotation order (for the attention matrix).  Options are "pre_order" and "reverse_level".')
+parser.add_argument('--seed', type=int, default=None, help='Random seed.  Used to ensure reproducibility.')
+parser.add_argument('--num_samples', type=int, default=None, help='Num of samples in dataset.  Currently only valid for For/Lambda.  Used for testing so things go faster.')
+
 opt = parser.parse_args()
 
 decoder_type = opt.decoder_type
 save_file = opt.save_file
 save_folder = opt.save_folder
 use_cuda = not opt.no_cuda
-# torch.cuda.set_device(opt.cuda_device)
+torch.cuda.set_device(opt.cuda_device)
+
+if not opt.seed is None:
+    torch.manual_seed(opt.seed)
 
 num_vars = opt.num_vars
 num_ints = opt.num_ints
@@ -79,45 +86,51 @@ eos_token = (decoder_type != "grammar")
 long_base_case = not opt.no_long_base_case
 input_as_seq = False
 output_as_seq = (decoder_type == "sequence")
+annotation_method = None
+if opt.annotation_method == "pre_order":
+    annotation_method = pre_order
+if opt.annotation_method == "reverse_level":
+    annotation_method = reverse_level
+        
 
 if opt.problem_number == 0:
     # Make dataset
-    dset_train = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/training_For.json",
+    dset_train = ForLambdaDataset("anc/MainProgramDatasets/ForLambda/training_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
                                        long_base_case=long_base_case, 
                                        input_as_seq=input_as_seq, 
-                                       output_as_seq=output_as_seq)
+                                       output_as_seq=output_as_seq, num_samples=opt.num_samples)
 
-    dset_val = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/validation_For.json",
+    dset_val = ForLambdaDataset("anc/MainProgramDatasets/ForLambda/validation_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
                                        long_base_case=long_base_case, 
                                        input_as_seq=input_as_seq, 
-                                       output_as_seq=output_as_seq)
+                                       output_as_seq=output_as_seq, num_samples=opt.num_samples)
 
-    dset_test = ForLambdaDataset("ANC/MainProgramDatasets/ForLambda/test_For.json",
+    dset_test = ForLambdaDataset("anc/MainProgramDatasets/ForLambda/test_For.json",
                                        binarize_input=binarize_input, binarize_output=binarize_output, 
                                        eos_token=eos_token, one_hot=one_hot,
                                        num_ints=num_ints, num_vars=num_vars,
                                        long_base_case=long_base_case, 
                                        input_as_seq=input_as_seq, 
-                                       output_as_seq=output_as_seq)
+                                       output_as_seq=output_as_seq, num_samples=opt.num_samples)
 elif opt.problem_number == 1:
-    dset_train = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/training_CS.json", 
-                                 "ANC/MainProgramDatasets/CoffeeJavascript/training_JS.json",
+    dset_train = JsCoffeeDataset("anc/MainProgramDatasets/CoffeeJavascript/training_CS.json", 
+                                 "anc/MainProgramDatasets/CoffeeJavascript/training_JS.json",
                                   binarize_input=binarize_input, binarize_output=binarize_output, 
                                   eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                   long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)
 
-    dset_val = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/validation_CS.json", "ANC/MainProgramDatasets/CoffeeJavascript/validation_JS.json",
+    dset_val = JsCoffeeDataset("anc/MainProgramDatasets/CoffeeJavascript/validation_CS.json", "anc/MainProgramDatasets/CoffeeJavascript/validation_JS.json",
                                 binarize_input=binarize_input, binarize_output=binarize_output, 
                                 eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                 long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)
 
-    dset_test = JsCoffeeDataset("ANC/MainProgramDatasets/CoffeeJavascript/test_CS.json", "ANC/MainProgramDatasets/CoffeeJavascript/test_JS.json",
+    dset_test = JsCoffeeDataset("anc/MainProgramDatasets/CoffeeJavascript/test_CS.json", "anc/MainProgramDatasets/CoffeeJavascript/test_JS.json",
                                  binarize_input=binarize_input, binarize_output=binarize_output, 
                                  eos_token=eos_token, one_hot=one_hot, num_ints=num_ints, num_vars=num_vars,
                                  long_base_case=long_base_case, input_as_seq=input_as_seq, output_as_seq=output_as_seq)
@@ -179,7 +192,7 @@ def save_test_accuracy():
 
 def make_model():
     encoder = TreeEncoder(encoder_input_size, hidden_size, num_layers, [1, 2, 3, 4, 5], attention=True, one_hot=one_hot, 
-                          binary_tree_lstm_cell=opt.binary_tree_lstm_cell)
+                          binary_tree_lstm_cell=opt.binary_tree_lstm_cell, annotation_method=annotation_method)
 
     if opt.model:
         return torch.load("test_various_models/" + opt.model)

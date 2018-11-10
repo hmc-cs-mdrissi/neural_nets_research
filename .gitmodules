@@ -1,3 +1,3 @@
-[submodule "summer_uccs_research/-f"]
-	path = summer_uccs_research/-f
+[submodule "summer_uccs_research/fairseq"]
+	path = summer_uccs_research/fairseq
 	url = https://github.com/hmc-cs-mdrissi/fairseq.git

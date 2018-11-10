@@ -1,1 +1,0 @@
-let rec sum : list int -> int = lambda l : list int. match l with case [] -> 0 case x ; y -> x + sum y in sum
