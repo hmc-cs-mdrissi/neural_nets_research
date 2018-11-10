@@ -1,3 +1,4 @@
+# Dependencies to install when testing with Travis
 torch
 torchvision
 numpy
