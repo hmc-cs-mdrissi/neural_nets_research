@@ -2,7 +2,6 @@ anc/For/Datasets*
 anc/MainProgramDatasets
 anc/AdditionalForDatasets*
 anc/adaptive-neural-compilation*
-summer_uccs_research/fairseq*
 summer_uccs_research/datasets*
 test_various_models*
 tests/._.*
