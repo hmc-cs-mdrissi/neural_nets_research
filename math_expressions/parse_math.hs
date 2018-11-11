@@ -27,32 +27,33 @@ import GHC.Generics
 
 --Let expressions are not part of the definition because let expressions can be viewed as syntactic sugar.
 --let x = y in z is the same as (lambda x.z) y.
-data MathExpression = 
-    ParseFail |
-    IntegerM Integer | DoubleM Double |
-    VarName Char |
-    Nil | 
-    Symbol Symbol|
-    Container ContainerSymbol MathExpression ContainerSymbol |
-    UnOp UnOp MathExpression|
-    PUnOp MathExpression PUnOp |
-    DoubOp DoubOp MathExpression MathExpression |
-    NatBinOp MathExpression NatBinOp MathExpression |
-    Sum MathExpression MathExpression MathExpression  deriving (Show, Eq, Generic)
-
+data MathExpression
+  = IntegerM Integer
+  | DoubleM Double
+  | VarName Char
+  | Nil
+  | Symbol Symbol
+  | Container ContainerSymbol MathExpression ContainerSymbol
+  | UnOp UnOp MathExpression
+  | PUnOp MathExpression PUnOp
+  | DoubOp DoubOp MathExpression MathExpression
+  | BinOp MathExpression BinOp MathExpression
+  | Sum MathExpression MathExpression MathExpression
+  | Integral MathExpression MathExpression MathExpression -- think about this more.  do we want bounds?  integraion vars?
+  deriving (Show, Eq, Generic)
 
 data ContainerSymbol = AbsBar | LeftParen | RightParen | LeftBrace | RightBrace| Magnitude deriving (Show, Eq, Generic)
 
-data NatBinOp =
-    Plus | 
-    Minus | 
-    Div | 
-    Mult | 
-    PlusMinus | 
-    Equal | 
-    Marrow | 
-    SubscriptOp | 
-    SuperscriptOp | 
+data BinOp =
+    Plus |
+    Minus |
+    Div |
+    Mult |
+    BinaryPm |
+    Equal |
+    Marrow |
+    SubscriptOp |
+    SuperscriptOp |
     ImplicitMult |
     Le |
     Leq |
@@ -60,28 +61,30 @@ data NatBinOp =
     Geq |
     Neq deriving (Show, Eq, Generic)
 
-data UnOp = 
-    Sin | Cos | Tan | Sqrt | NegSign deriving (Show, Eq, Generic) 
-    
-data DoubOp =
-    FracOp | LogOp | LimOp deriving (Show, Eq, Generic) 
+data UnOp =
+    Sin | Cos | Tan | Sqrt | NegSign | UnaryPm deriving (Show, Eq, Generic)
 
-data Symbol = 
+data DoubOp =
+    FracOp | LogOp | LimOp deriving (Show, Eq, Generic)
+
+data Symbol =
     Alpha |
     Beta |
-    Gamma | 
+    Gamma |
     Phi |
     Pi |
     Theta |
-    Infty | 
-    Ldots deriving (Show, Eq, Generic) 
+    Infty |
+    Ldots deriving (Show, Eq, Generic)
 
-data PUnOp = Factorial deriving (Show, Eq, Generic) 
+data PUnOp = Factorial deriving (Show, Eq, Generic)
+
+data BarOp = Bar deriving (Show, Eq, Generic) 
 
 
 instance ToJSON MathExpression
 instance ToJSON ContainerSymbol
-instance ToJSON NatBinOp
+instance ToJSON BinOp
 instance ToJSON UnOp
 instance ToJSON DoubOp
 instance ToJSON Symbol
@@ -91,16 +94,20 @@ instance ToJSON PUnOp
 
 
 
-mathDef :: P.LanguageDef()
+mathDef :: P.LanguageDef ()
 mathDef = emptyDef {P.identStart = letter
                      ,P.identLetter = alphaNum <|> char '\''
                      ,P.opStart = oneOf "=.[];"
-                     ,P.opLetter = oneOf "=+/*"
-                     ,P.reservedOpNames = ["=", "+", "-", "/","*", "\\sin", "\\cos", "\\tan", "!", "\\lim", "\\sum", "|", "\\log", "_", "\\frac", "\\alpha", "\\beta", "\\gamma", "\\phi", "\\pi", "\\theta", "\\infty", "\\ldots", "\\sqrt"]
+                     ,P.opLetter = oneOf "=/*"
+                     ,P.reservedOpNames = ["}", "{", "$", "=", "+", "-", "d x", "\\int", "\\pm", "\\div","\\times", "\\sin", "\\cos", "\\tan", "!", "\\lim", "\\sum", "|", "\\log", "_", "\\frac", "\\alpha", "\\beta", "\\gamma", "\\phi", "\\pi", "\\theta", "\\infty", "\\ldots", "\\sqrt"]
                      ,P.reservedNames = []
                      }
 
+integralP :: Parser ()
+integralP = P.reservedOp lexer "\\int"
 
+dxP :: Parser ()
+dxP = P.reservedOp lexer "d x"
 
 alphaP :: Parser ()
 alphaP = P.reservedOp lexer "\\alpha"
@@ -140,19 +147,16 @@ factorial :: Parser ()
 factorial = P.reservedOp lexer "!"
 
 plus :: Parser ()
-plus = P.reservedOp lexer "+"
+plus = char '+' *> return ()
 
 minus :: Parser ()
 minus = P.reservedOp lexer "-"
 
 divide :: Parser ()
-divide = P.reservedOp lexer "/"
+divide = P.reservedOp lexer "\\div"
 
 mult :: Parser ()
-mult = P.reservedOp lexer "*"
-
--- negation :: Parser ()
--- negation = P.reservedOp lexer "~"
+mult = P.reservedOp lexer "\\times"
 
 marrow :: Parser ()
 marrow = P.reservedOp lexer "\\rightarrow"
@@ -202,18 +206,17 @@ absP = P.reservedOp lexer "|"
 magP :: Parser ()
 magP = P.reservedOp lexer "||"
 
-
 lParenP :: Parser ()
-lParenP = P.reservedOp lexer "(" 
+lParenP = P.reservedOp lexer "\\left(" 
 
 rParenP :: Parser ()
-rParenP = P.reservedOp lexer ")"
+rParenP = P.reservedOp lexer "\\right)"
 
 lBraceP :: Parser ()
 lBraceP = P.reservedOp lexer "{"
 
 rBraceP :: Parser ()
-rBraceP = P.reservedOp lexer "}"
+rBraceP = char '}' *> return ()
 
 logP :: Parser()
 logP = P.reservedOp lexer "\\log"
@@ -224,14 +227,14 @@ limP = P.reservedOp lexer "\\lim"
 fracP :: Parser()
 fracP = P.reservedOp lexer "\\frac"
 
-
-
-
-
-
-
 underscoreP :: Parser()
 underscoreP = P.reservedOp lexer "_"
+
+dollar :: Parser()
+dollar = P.reservedOp lexer "$"
+
+pm :: Parser()
+pm = P.reservedOp lexer "\\pm"
 
 superscriptP :: Parser()
 superscriptP = P.reservedOp lexer "^"
@@ -271,78 +274,93 @@ number :: Parser MathExpression
 number = do num <- P.naturalOrFloat lexer
             case num of
                 Left x -> return $ IntegerM x
-                Right x -> return $ DoubleM x 
-                
+                Right x -> return $ DoubleM x
 
 
 mathExpression' :: Int -> Bool -> Bool -> Bool -> Parser MathExpression
-mathExpression' 0 bool sumBool absBool = (mathExpression' 1 bool sumBool absBool `chainl1` (pure (\x -> NatBinOp x ImplicitMult)))
+mathExpression' 0 bool sumBool absBool = (mathExpression' 1 bool sumBool absBool `chainl1` (pure (\x -> BinOp x ImplicitMult)))
 mathExpression' 1 bool sumBool absBool = mathExpression' 2 bool sumBool absBool `chainl1` (
-                        (leP *> pure (\x -> NatBinOp x Le)) <|> 
-                        (leqP *> pure (\x -> NatBinOp x Leq)) <|> 
-                        (geP *> pure (\x -> NatBinOp x Ge)) <|> 
-                        (geqP *> pure (\x -> NatBinOp x Geq)) <|> 
-                        (equalP *> pure (\x -> NatBinOp x Equal)) <|> 
-                        (neqP *> pure (\x -> NatBinOp x Neq) )) -- all the comparison ops  :)
-mathExpression' 2 bool sumBool absBool = mathExpression' 3 bool sumBool absBool `chainl1` ((marrow *> pure (\x -> NatBinOp x Marrow))) -- arrow :)
-mathExpression' 3 bool sumBool absBool = mathExpression' 4 bool sumBool absBool `chainl1` ((trace "plus" $ plus *> pure (\x -> NatBinOp x Plus)) <|> (trace "minus" $ minus *> pure (\x -> NatBinOp x Minus))) -- plus, minus  :)
-mathExpression' 4 bool sumBool absBool = mathExpression' 5 bool sumBool absBool `chainl1` ((trace "mul" $ mult *> pure (\x -> NatBinOp x Mult)) <|> (trace "div" $ divide *> pure (\x -> NatBinOp x Div))) -- times, div :)
+                        (leP *> pure (\x -> BinOp x Le)) <|> 
+                        (leqP *> pure (\x -> BinOp x Leq)) <|> 
+                        (geP *> pure (\x -> BinOp x Ge)) <|> 
+                        (geqP *> pure (\x -> BinOp x Geq)) <|> 
+                        (equalP *> pure (\x -> BinOp x Equal)) <|> 
+                        (neqP *> pure (\x -> BinOp x Neq) )) -- all the comparison ops  :)
+mathExpression' 2 bool sumBool absBool = mathExpression' 3 bool sumBool absBool `chainl1` ((marrow *> pure (\x -> BinOp x Marrow))) -- arrow :)
+mathExpression' 3 bool sumBool absBool = mathExpression' 4 bool sumBool absBool `chainl1` ((plus *> pure (\x -> BinOp x Plus)) <|> (minus *> pure (\x -> BinOp x Minus)) <|> (pm *> pure (\x -> BinOp x BinaryPm))) -- plus, minus  :)
+mathExpression' 4 bool sumBool absBool = mathExpression' 5 bool sumBool absBool `chainl1` ((mult *> pure (\x -> BinOp x Mult)) <|> (divide *> pure (\x -> BinOp x Div))) -- times, div :)
 mathExpression' 5 bool sumBool absBool = do exp <- mathExpression' 6 bool sumBool absBool
                                             facs <- many factorial
                                             return $ iterate (flip PUnOp Factorial) exp !! (length facs) -- factorial
-mathExpression' 6 bool sumBool absBool = trace "negate" $ do minusSigns <- many minus
-                                                             exp <- mathExpression' 7 bool sumBool absBool
-                                                             return $ iterate (UnOp NegSign) exp !! (length minusSigns) -- negate
+mathExpression' 6 bool sumBool absBool = do minusSigns <- many minus
+                                            exp <- mathExpression' 65 bool sumBool absBool ----- 777
+                                            return $ iterate (UnOp NegSign) exp !! (length minusSigns) -- negate
+mathExpression' 65 bool sumBool absBool = (do pmSign <- many pm
+                                              exp <- mathExpression' 8 bool sumBool absBool ----- 777
+                                              return (UnOp NegSign exp))
+                                          <|> 
+                                          mathExpression' 8 bool sumBool absBool
                        
 
-mathExpression' 7 bool sumBool absBool= (do sinS <- many sinP 
-                                            exp <- mathExpression' 8 bool sumBool absBool
+mathExpression' 7 bool sumBool absBool= (do sinS <- some sinP 
+                                            exp <- mathExpression' 9 bool sumBool absBool ---888
                                             return $ iterate (UnOp Sin) exp !! (length sinS))
                 <|> 
-                    (do cosS <- many cosP 
-                        exp <- mathExpression' 8 bool sumBool absBool
+                    (do cosS <- some cosP 
+                        exp <- mathExpression' 7 bool sumBool absBool
                         return $ iterate (UnOp Cos) exp !! (length cosS))
                 <|> 
-                    (do tanS <- many tanP 
-                        exp <- mathExpression' 8 bool sumBool absBool
+                    (do tanS <- some tanP 
+                        exp <- mathExpression' 7 bool sumBool absBool
                         return $ iterate (UnOp Tan) exp !! (length tanS))
                 <|> 
-                    (do sqrtS <- many sqrtP 
-                        exp <- mathExpression' 8 bool sumBool absBool
+                    (do sqrtS <- some sqrtP 
+                        exp <- mathExpression' 7 bool sumBool absBool
                         return $ iterate (UnOp Sqrt) exp !! (length sqrtS))
-mathExpression' 8 bool sumBool absBool = if sumBool then (mathExpression' 9 False sumBool absBool `chainl1` (underscoreP *> pure (\x -> NatBinOp x SubscriptOp))) else (mathExpression' 9 False sumBool absBool `chainl1` (((underscoreP *> pure (\x -> NatBinOp x SubscriptOp))) <|> (superscriptP *> pure (\x -> NatBinOp x SuperscriptOp))))
-
--- subscript, superscript  :)             
-mathExpression' 9 bool sumBool absBool = (if bool then ((varname <|> number <|> symbol) `chainl1` (pure (\x -> NatBinOp x ImplicitMult))) else (varname <|> number))
-                    <|>
+                <|>
                     (do logP
                         ((do res <- underscoreP
-                             logB <- mathExpression' 0 False False False
-                             logV <- mathExpression' 0 False False False
+                             logB <- mathExpression' 7  False sumBool absBool --TODO: CHANGE THESE BACK!!!
+                             logV <- mathExpression' 7 False sumBool absBool 
                              return $ DoubOp LogOp logB logV) <|>
-                         (do logV <- mathExpression' 0 False False False
+                         (do logV <- mathExpression' 7 False sumBool absBool 
                              return $ DoubOp LogOp Nil logV)))
-                    <|> 
-                       (do trace "sum" sumP
-                           lowerBound <- optionMaybe (do underscoreP
-                                                         mathExpression' 0 False True False)
-                           upperBound <- optionMaybe (do superscriptP
-                                                         mathExpression' 0 False False False)
-                           bodyValue <- mathExpression' 0 True False False
-                           let lowerBoundValue = fromMaybe Nil lowerBound
-                           let upperBoundValue = fromMaybe Nil upperBound
-                           return $ Sum lowerBoundValue upperBoundValue bodyValue)  
-                    <|> 
-                       (do trace "lim" limP
-                           underscoreP
-                           limB <- mathExpression' 0 False False False
-                           limV <- mathExpression' 0 True False False
-                           return $ DoubOp LimOp limB limV)
-                    <|> 
-                       (do trace "frac" fracP
-                           numerator <- mathExpression' 0 False False False
-                           denominator <- mathExpression' 0 False False False
-                           return $ DoubOp FracOp numerator denominator)
+                <|> 
+                   (do limP
+                       underscoreP
+                       limB <- mathExpression' 7 False sumBool absBool
+                       limV <- mathExpression' 7 True sumBool absBool
+                       return $ DoubOp LimOp limB limV)
+                <|> 
+                   (do fracP
+                       numerator <- mathExpression' 7 False sumBool absBool
+                       denominator <- mathExpression' 7 False sumBool absBool
+                       return $ DoubOp FracOp numerator denominator)
+                <|> 
+                   (do sumP
+                       lowerBound <- optionMaybe (do underscoreP
+                                                     mathExpression' 7 bool True absBool)
+                       upperBound <- optionMaybe (do superscriptP
+                                                     mathExpression' 7 bool True absBool)
+                       bodyValue <- mathExpression' 0 bool sumBool absBool
+                       let lowerBoundValue = fromMaybe Nil lowerBound
+                       let upperBoundValue = fromMaybe Nil upperBound
+                       return $ Sum lowerBoundValue upperBoundValue bodyValue)
+                <|>
+                    (do integralP
+                        body <- mathExpression' 7 False sumBool absBool 
+                        dxP 
+                        return $ Integral Nil Nil body)
+                <|>
+                  mathExpression' 9 bool sumBool absBool ---888
+
+mathExpression' 8 bool sumBool absBool =  if sumBool then  --- 999
+                                            (mathExpression' 7 False sumBool absBool `chainl1` (underscoreP *> pure (\x -> BinOp x SubscriptOp))) else 
+                                            (mathExpression' 7 bool sumBool absBool `chainl1` (((underscoreP *> pure (\x -> BinOp x SubscriptOp))) <|> 
+                                                                                                (trace (show bool) superscriptP *> pure (\x -> BinOp x SuperscriptOp))))
+
+-- subscript, superscript  :)             
+mathExpression' 9 bool sumBool absBool = (if (bool && not sumBool) then ((varname <|> number <|> symbol) `chainl1` (pure (\x -> BinOp x ImplicitMult))) else (varname <|> number <|> symbol))
                     <|> 
                        case absBool of 
                          True -> fail "nothing is working"
@@ -357,28 +375,27 @@ mathExpression' 9 bool sumBool absBool = (if bool then ((varname <|> number <|> 
                          False -> (do
                                       absP
                                       expr <- mathExpression' 0 True False True
-                                      absP
+                                      trace "final absp" absP
                                       return $ Container AbsBar expr AbsBar)
                    <|>
-                       (do trace "paren" lParenP
+                       (do lParenP
                            expr <- mathExpression' 0 True False False
                            inputLeft <- getInput
                            rParenP
                            return $ Container LeftParen expr RightParen)
                     <|> 
-                       (do trace "last" lBraceP
+                       (do lBraceP
                            expr <- mathExpression' 0 True False False
                            inputLeft <- getInput
                            rBraceP
                            return $ Container LeftBrace expr RightBrace)
-                   
-   
-     
 
 parseMath :: String -> Either ParseError MathExpression
-parseMath str = parse (whiteSpace *> mathExpression' 0 True False False) "" (tail (tail str))
+parseMath = parse (optional dollar *> mathExpression' 0 True False False) ""
+-- parseMath = parse (whiteSpace *> between (char '$') (char '$') (mathExpression' 0 True False False) <* whiteSpace) ""
+-- parseMath str = parse (whiteSpace *> mathExpression' 0 True False False) "" (tail str)
 
--- parseString =  show (parseMath "--\\sqrt{-3}")
+parseString =  show (parseMath "--\\frac{-3}{1}")
 
 
 -- parseMath :: String -> MathExpression
@@ -407,14 +424,14 @@ parseMath str = parse (whiteSpace *> mathExpression' 0 True False False) "" (tai
 
 
 
-main :: IO()
-main = do 
-  a <- B.readFile "single_expr.json"
-  -- a <- B.readFile "TEST2016_INKML_GT_GET_Strings.json"
-  case decode a :: Maybe (Map String String) of
-    Just loadedExprs -> writeFile "just_testing.json" $ encode (toJSON (Map.map (parseMath) (loadedExprs)))
-    Nothing -> print "Unparsable"
-  putStrLn "hi"
+-- main :: IO()
+-- main = do 
+--   a <- B.readFile "single_expr.json"
+--   -- a <- B.readFile "TEST2016_INKML_GT_GET_Strings.json"
+--   case decode a :: Maybe (Map String String) of
+--     Just loadedExprs -> writeFile "just_testing.json" $ encode (toJSON (Map.map (parseMath) (loadedExprs)))
+--     Nothing -> print "Unparsable"
+--   putStrLn "hi"
 
 -- main = putStrLn parseString
 -- loadedExprs is a map from the String to (Either ParseError MathExpression)

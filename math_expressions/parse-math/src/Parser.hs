@@ -209,11 +209,6 @@ number :: Parser MathExpression
 number = do num <- P.natural lexer 
             return $ IntegerM num
 
--- number = do num <- P.naturalOrFloat lexer
---             case num of
---                 Left x -> return $ IntegerM x
---                 Right x -> return $ DoubleM x
-
 
 mathExpression' :: Int -> Bool -> Bool -> Bool -> Parser MathExpression
 mathExpression' 0 bool sumBool absBool = (mathExpression' 1 bool sumBool absBool `chainl1` (pure (\x -> BinOp x ImplicitMult)))

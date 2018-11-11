@@ -9,7 +9,6 @@ module Types where
   -- , DoubOp
   -- , Symbol
   -- , PUnOp
-  -- , BarOp
   -- ) where
 
 import Data.Aeson
@@ -68,8 +67,6 @@ data Symbol =
     Ldots deriving (Show, Eq, Generic)
 
 data PUnOp = Factorial deriving (Show, Eq, Generic)
-
-data BarOp = Bar deriving (Show, Eq, Generic)
 
 instance ToJSON MathExpression
 instance ToJSON ContainerSymbol
