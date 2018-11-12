@@ -94,7 +94,7 @@ def transform_coord(trace_groups):
 	# 1. Shift trace_group
 	trace_groups = shift_trace_group(trace_groups, x_min=x, y_min=y)
 	x, y, width, height = get_tracegrp_properties(trace_groups)
-	print (x,y,width, height)
+	#print (x,y,width, height)
 	return trace_groups
 def extract_traces_image(inkml_file_abs_path):
     trace_grps = extract_trace_grps(inkml_file_abs_path)
