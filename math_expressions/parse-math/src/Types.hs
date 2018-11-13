@@ -68,7 +68,7 @@ data Symbol =
     Cdots |
     Ldots deriving (Show, Eq, Generic)
 
-data PUnOp = Factorial deriving (Show, Eq, Generic)
+data PUnOp = Factorial | Whatever deriving (Show, Eq, Generic)
 
 instance ToJSON MathExpression
 instance ToJSON ContainerSymbol

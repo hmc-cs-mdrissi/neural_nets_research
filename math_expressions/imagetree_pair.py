@@ -6,7 +6,7 @@ from translating_math_trees import make_tree_math
 import pickle
 
 root_dir = './CROHME2011_data/'
-inkml_train_dir = root_dir + 'CROHME_training/CROHME_training/'
+inkml_train_dir = root_dir + 'CROHME_training/'
 inkml_test_dir = root_dir + 'CROHME_testGT/CROHME_testGT/'
 
 training_set =  os.listdir(inkml_train_dir)
@@ -16,8 +16,8 @@ test_set = os.listdir(inkml_test_dir)
 
 def imagesExtract():
 	root_dir = './CROHME2011_data/'
-	inkml_train_dir = root_dir + 'CROHME_training/CROHME_training/'
-	inkml_test_dir = root_dir + 'CROHME_test/CROHME_test/'
+	inkml_train_dir = root_dir + 'CROHME_training/'
+	inkml_test_dir = root_dir + 'CROHME_test/CROHME_testGT/'
 	print ("hi")
 	for inkml_name in os.listdir(inkml_train_dir):
 		print (inkml_name)
@@ -57,21 +57,21 @@ train_tree_json_path = './2011_parsed_train.json'
 test_inkml_json_path = './2011_dataset_test.json'
 test_tree_json_path = './2011_parsed_test.json'
 
-# train_data = image_tree_pair(train_inkml_json_path, train_tree_json_path, True)
-# test_data = image_tree_pair(test_inkml_json_path, test_tree_json_path, False)
+train_data = image_tree_pair(train_inkml_json_path, train_tree_json_path, True)
+test_data = image_tree_pair(test_inkml_json_path, test_tree_json_path, False)
 
 #https://stackoverflow.com/questions/25464295/how-to-pickle-a-list/25465148
-# with open('train_data.pkl', 'wb') as f:
-# 	pickle.dump(train_data, f)
-# with open('test_data.pkl', 'wb') as f:
-# 	pickle.dump(test_data, f)
+with open('train_data.pkl', 'wb') as f:
+	pickle.dump(train_data, f)
+with open('test_data.pkl', 'wb') as f:
+	pickle.dump(test_data, f)
 
 
-# How to unpickle
-with open('train_data.pkl', 'rb') as f:
-	train_data = pickle.load(f)
-with open('test_data.pkl', 'rb') as f:
-	test_data = pickle.load(f)
+# # How to unpickle
+# with open('train_data.pkl', 'rb') as f:
+# 	train_data = pickle.load(f)
+# with open('test_data.pkl', 'rb') as f:
+# 	test_data = pickle.load(f)
 # print (train_data)
 # print (len(train_data), "train")
 # print (len(test_data), "test")

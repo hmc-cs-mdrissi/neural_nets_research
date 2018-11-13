@@ -10,8 +10,6 @@ def make_tree_math(json, big_tree=False):
     # Base case for variable names, symbols, or numbers
     base_case = general_base_cases(json)
     if (base_case):
-        if not isinstance(json, string_types):
-            print(json)
         return base_case
     
     # Base case for empty lists (we just ignore these)
