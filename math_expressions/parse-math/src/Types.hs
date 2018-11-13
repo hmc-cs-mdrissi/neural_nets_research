@@ -26,6 +26,7 @@ data MathExpression
   | PUnOp MathExpression PUnOp
   | DoubOp DoubOp MathExpression MathExpression
   | BinOp MathExpression BinOp MathExpression
+  | Digit MathExpression Integer
   | Sum MathExpression MathExpression MathExpression
   | Integral MathExpression MathExpression MathExpression -- think about this more.  do we want bounds?  integraion vars?
   deriving (Show, Eq, Generic)
@@ -64,6 +65,7 @@ data Symbol =
     Pi |
     Theta |
     Infty |
+    Cdots |
     Ldots deriving (Show, Eq, Generic)
 
 data PUnOp = Factorial deriving (Show, Eq, Generic)

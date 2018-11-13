@@ -18,7 +18,7 @@ main = do
   file <- B.readFile "../2011_dataset.json"
   case decode file :: Maybe (Map String String) of
     Just loadedExprs -> 
-      either print (B.writeFile "../just_testing.json" . encode ) $
+      either print (B.writeFile "../2011_parsed_dset.json" . encode ) $
         mapM parseMath (Map.elems loadedExprs)
     Nothing -> print "Unparsable"
 

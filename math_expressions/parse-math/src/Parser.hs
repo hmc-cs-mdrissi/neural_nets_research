@@ -60,6 +60,9 @@ inftyP = try $ string "\\infty" *> whiteSpace
 ldotsP :: Parser ()
 ldotsP = try $ string "\\ldots" *> whiteSpace
 
+cdotsP :: Parser ()
+cdotsP = try $ string "\\cdots" *> whiteSpace
+
 lexer :: P.TokenParser ()
 lexer = P.makeTokenParser mathDef
 
@@ -195,6 +198,9 @@ symbol = (do sym <- alphaP
           <|> 
           (do sym <- ldotsP
               return $ Symbol Ldots)
+          <|> 
+          (do sym <- cdotsP
+              return $ Symbol Cdots)
 
 
 varname :: Parser MathExpression
@@ -205,9 +211,18 @@ varname = do name <- identifier
 whiteSpace :: Parser ()
 whiteSpace = P.whiteSpace lexer
 
+
+strToNum :: Char -> Integer
+strToNum c = read [c] :: Integer
+
+
+
+
+
 number :: Parser MathExpression
 number = do num <- P.natural lexer 
-            return $ IntegerM num
+            let numStr = show num
+            return $ foldr (\num -> \tree -> (Digit tree num)) Nil (map strToNum numStr)
 
 
 mathExpression' :: Int -> Bool -> Bool -> Bool -> Parser MathExpression
