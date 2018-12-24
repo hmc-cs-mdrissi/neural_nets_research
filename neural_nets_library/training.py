@@ -542,9 +542,14 @@ def train_model_tree_to_tree(model,
                     validation_dset = None,
                     plateau_lr=False,
                     use_cuda=False,
+                    skip_output_cuda=False,
+                    skip_input_cuda=False,
                     save_file=False,
                     save_folder=False,
-                    save_every=1000):
+                    save_every=1000,
+                    tokens=None,
+                    save_current_only=False,
+                    save_model_every=10):
     since = time.time()
 
     model.train(True)
@@ -588,17 +593,30 @@ def train_model_tree_to_tree(model,
         # Iterate over data.
         for input_tree, target_tree in dset_loader:
             if use_cuda:
-                input_tree, target_tree = input_tree.cuda(), target_tree.cuda()
+                if not skip_input_cuda:
+                    input_tree = input_tree.long()
+                    input_tree = input_tree.cuda()
+                    input_tree = input_tree.float()
+                    if type(target_tree) == list:
+                        target_tree = [actual_tree.cuda() for actual_tree in target_tree]
+                    else:
+                        target_tree = target_tree.cuda()
+    
             
             total_batch_number += 1
             current_batch += 1
 
+            model.train()
             iteration_loss = model.forward_train(input_tree, target_tree)
             loss += iteration_loss
             
             if total_batch_number % batch_size == 0:
                 loss /= batch_size
                 loss.backward()
+#                 print("just went back")
+#                 for param in model.parameters():
+#                     print(type(param.grad))
+#                     print("GRAD IS", torch.max(torch.abs(param.grad)))
                 clip_grads(model)
                 optimizer.step()
 
@@ -611,6 +629,7 @@ def train_model_tree_to_tree(model,
                 optimizer.zero_grad()
 
             if validation_criterion is not None:
+                model.eval()
                 output = model.forward_prediction(input_tree)
                 validation_loss = validation_criterion(output, target_tree)
                 train_running_plot_accuracy += validation_loss
@@ -618,7 +637,18 @@ def train_model_tree_to_tree(model,
                 if validation_dset:
                     input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
                     if use_cuda:
-                        input_val, target_val = input_val.cuda(), target_val.cuda()
+                        if not skip_input_cuda:
+                            input_val = input_val.cuda()
+                            
+                            input_val = input_val.long()
+                            input_val = input_val.cuda()
+                            input_val = input_val.float()
+                        if not skip_output_cuda:                            
+                            if type(target_val) == list:
+                                target_val = [actual_tree.cuda() for actual_tree in target_val]
+                            else:
+                                target_val = target_val.cuda()
+                    model.eval()
                     output_val = model.forward_prediction(input_val)
                     val_running_plot_accuracy += validation_criterion(output_val, target_val)
                 
@@ -629,6 +659,7 @@ def train_model_tree_to_tree(model,
                 input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
                 if use_cuda:
                     input_val, target_val = input_val.cuda(), target_val.cuda()
+                model.train()
                 running_val_plot_loss += float(model.forward_train(input_val, target_val))
             running_train_print_loss += float(iteration_loss)
 
@@ -646,7 +677,8 @@ def train_model_tree_to_tree(model,
                     print('Epoch Number: {}, Batch Number: {}, Validation Metric: {:.4f}'.format(
                     epoch, current_batch, curr_validation_loss))
                     print('Example output:')
-#                     model.print_example(input_tree, target_tree)
+                    model.eval()
+                    model.print_img_tree_example(input_tree, target_tree, tokens) #THIS BREAKS A LOT OF STUFF
                     train_running_print_accuracy = 0.0
                 
             if total_batch_number % plot_every == 0:
@@ -695,7 +727,11 @@ def train_model_tree_to_tree(model,
     
         # Save model
         if save_file and save_folder:
-            torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
+            if save_current_only:
+                torch.save(model, save_folder + "/" + save_file + "_model")
+            elif epoch % save_model_every == 0:
+                torch.save(model, save_folder + "/" + save_file + "_epoch_" + str(epoch) + "_model")
+            
 
     print()
 

@@ -13,6 +13,7 @@ class TreeDecoderBatch(nn.Module):
         super(TreeDecoderBatch, self).__init__()
                 
         self.cross_entropy = nn.CrossEntropyLoss(reduce=False)
+        self.max_num_children = max_num_children
         
         # Linear layer to calculate log odds. The one is to account for the eos token.
         self.output_log_odds = nn.Linear(hidden_size, nclass + 1)        
@@ -33,7 +34,7 @@ class TreeDecoderBatch(nn.Module):
         """
         return self.cross_entropy(a.squeeze(1), b.squeeze(1))
     
-    def calculate_loss(self, parent, child_index, et, true_value):
+    def calculate_loss(self, parent, child_index, et, true_value, print_time=False):
         """
         Calculate cross entropy loss from et.
         
@@ -45,6 +46,15 @@ class TreeDecoderBatch(nn.Module):
         :returns: cross entropy loss
         """
         log_odds = self.output_log_odds(et)
+#         print("shapes train", log_odds.shape)
+#         print("true value shape", true_value.shape)
+#         print("log odds TRAINING", log_odds)
+        _, max_index = torch.max(log_odds.squeeze(1), 1)
+        for i, vec in enumerate(print_time):
+            if vec:
+                pass
+#                 print("log odds TRAINING", log_odds.shape, log_odds[i])
+#                 print("choosing TRAINING", max_index[i], "true val is", true_value[i])
         return self.loss_func(log_odds, true_value)
     
     
@@ -63,6 +73,8 @@ class TreeDecoderBatch(nn.Module):
         return self.lstm_list[child_index](input, (hidden_state, cell_state))
     
     
+    def number_children(self, parent):
+        return self.max_num_children
     
     
     def get_next_child_states_left(self, parent, input, hidden_state, cell_state):
@@ -106,7 +118,7 @@ class TreeDecoderBatch(nn.Module):
             nn.init.constant_(lstm.bias_ih, bias_value)
             nn.init.constant_(lstm.bias_hh, bias_value)
             
-    def make_prediction(self, parent, child_index, et):
+    def make_prediction(self, parent, child_index, et, print_time=False):
         """
         Predict new child node value
         
@@ -116,4 +128,10 @@ class TreeDecoderBatch(nn.Module):
         """
         log_odds = self.output_log_odds(et)
         _, max_index = torch.max(log_odds, 1)
+        #         print("shapes test", log_odds.shape)
+        if print_time:
+            pass
+#             print("log odds PREDICTION", log_odds)
+#             print("choosing PREDICTION", max_index)
+#         _, max_index = torch.max(log_odds[0], 1)
         return max_index

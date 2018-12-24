@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from tree_to_sequence.translating_trees import ( Node, pretty_print_tree, Lambda )
+from matplotlib import pyplot as plt
+import numpy as np
 
 class TreeToTreeAttention(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass,
@@ -108,7 +110,7 @@ class TreeToTreeAttention(nn.Module):
         
         # Encode tree
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
-        
+
         # Counter of how many nodes we've generated so far
         num_nodes = 0
         
@@ -136,7 +138,12 @@ class TreeToTreeAttention(nn.Module):
             decoder_hidden = decoder_hiddens[-1].unsqueeze(0)
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
+            print("at_hid_val", attention_hidden_values.shape, "dec_hid", decoder_hidden.shape)
+            print("at_log", attention_logits.shape)
+#             print(attention_logits)
+            print("att_probs", attention_probs.shape)
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
+            print("shapes", attention_probs.shape, annotations.shape,(attention_probs * annotations).shape, context_vec.shape)
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
             next_input = self.decoder.make_prediction(parent_val, child_index, et)
@@ -151,6 +158,7 @@ class TreeToTreeAttention(nn.Module):
             if int(curr_root.value) == self.EOS_value:
                 continue
                 
+            print("dims", self.embedding(next_input).shape, et.shape)
             decoder_input = torch.cat((self.embedding(next_input), et), 1)
             parent = next_input
             
@@ -175,6 +183,22 @@ class TreeToTreeAttention(nn.Module):
         pretty_print_tree(target_tree)
         print("WE GOT!")
         pretty_print_tree(self.forward_prediction(input_tree))
+        
+    def display_normally(self, pic, title=None):
+        if not title is None:
+            plt.title(title)
+        plt.imshow(np.repeat(np.int0(pic)[:,:,np.newaxis], 3, axis=2))
+        plt.show()
+    
+    def print_img_tree_example(self, img, tree):
+        print("IMAGE")
+        print(img.shape)
+        print(np.repeat(img[0][0], 3).shape)
+        self.display_normally(img[0][0])
+        print("WE WANTED")
+        pretty_print_tree(tree)
+        print("WE GOT")
+        pretty_print_tree(self.forward_prediction(img))
 
     def attention_logits(self, attention_hidden_values, decoder_hidden):
         """

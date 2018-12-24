@@ -2,12 +2,13 @@ import torch
 import torch.nn as nn
 from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
 from tree_to_sequence.translating_trees import map_tree
-# from tree_to_sequence.fold import Fold
 from torchfold import Fold
+import numpy as np
+from matplotlib import pyplot as plt
 
 class TreeToTreeAttentionBatch(nn.Module):
     def __init__(self, encoder, decoder, hidden_size, embedding_size, nclass,
-                 root_value=-1, alignment_size=50, align_type=1, max_size=50):
+                 root_value=-1, alignment_size=50, align_type=1, max_size=50, use_cuda=False):
         """
         Translates an encoded representation of one tree into another
         """
@@ -20,6 +21,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         self.align_type = align_type
         self.max_size = max_size
         self.root_value = root_value
+        self.use_cuda = use_cuda
         
         # EOS is always the last token
         self.EOS_value = nclass
@@ -59,7 +61,7 @@ class TreeToTreeAttentionBatch(nn.Module):
                                                        dim=2))) # 1 x hidden_size
         return et
     
-    def calc_loss(self, parent, child_index, et, true_value):
+    def calc_loss(self, parent, child_index, et, true_value, print_time):
         """
         Call the decoder's loss function.
         
@@ -71,7 +73,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         :returns: cross entropy loss
         
         """
-        return self.decoder.calculate_loss(parent, child_index, et, true_value)
+        return self.decoder.calculate_loss(parent, child_index, et, true_value, print_time)
     
     def get_next_decoder_input(self, next_input, et):
         """
@@ -115,6 +117,11 @@ class TreeToTreeAttentionBatch(nn.Module):
             return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1) 
         
 
+#     def forward_train_real(self, input_tree_list, target_tree_list, teacher_forcing=True):
+#         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree_list)
+        
+        
+    
     def forward_train(self, input_tree_list, target_tree_list, teacher_forcing=True):
         """
         Encodes nodes of a tree in the rows of a matrix.
@@ -124,41 +131,40 @@ class TreeToTreeAttentionBatch(nn.Module):
                 the hidden/cell states of the root node.
 
         """
-#         input_tree_list = [map_tree(lambda node: node.unsqueeze(0), tree) for tree in input_tree_list]
+        specific_example = [self.find_example(tree) for tree in target_tree_list]
+#         input_tree_list = [map_tree(lambda node: node.unsqueeze(0), tree) for tree in input_tree_list] #T2T
         target_tree_list = [map_tree(lambda node: node.unsqueeze(0), tree) for tree in target_tree_list]
         
-#         # Encoding
-#         fold = Fold()
-#         self.encoder.embedding = self.embedding
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree_list)
+        print("TRAIN input, hiddens, annotations", input_tree_list.shape, decoder_hiddens.shape, annotations.shape)
+#         print("SPECIFIC EXAMPLE", specific_example)
+#         for i, our_example in enumerate(specific_example):
+#             if our_example:
+#                 print("TRAINING DECODER HIDDEN", decoder_hiddens[i][:7])
+
+#         annotations_list = [] #T2T
+#         decoder_hiddens_list = [] #T2T
+#         decoder_cell_states_list = [] #T2T
         
-        
-#         result = [self.encoder(fold, tree) for tree in input_tree_list]
-#         hiddens = [x[0] for x in result]
-#         cell_states = [x[1] for x in result]
-#         decoder_hiddens, decoder_cell_states = fold.apply(self, [hiddens, cell_states])
-#         annotations = fold.get_all_computed("encode_node_with_children", 0)
-        
-#         # UGLY UGLY UGLY
-#         annotations = annotations.squeeze(2)
-#         annotations = annotations.unsqueeze(1)
-        
-#         print('ANNOTATIONS, DECODER_HIDDENS', annotations.shape, decoder_hiddens.shape)
-        annotations_list = []
-        decoder_hiddens_list = []
-        decoder_cell_states_list = []
-        
-        for input_tree in input_tree_list:
-            annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
-            annotations_list.append(annotations)
-            decoder_hiddens_list.append(decoder_hiddens)
-            decoder_cell_states_list.append(decoder_cell_states)
+#         for input_tree in input_tree_list #T2T
+#             annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree) #T2T
+#             annotations_list.append(annotations) #T2T
+#             decoder_hiddens_list.append(decoder_hiddens) #T2T
+#             decoder_cell_states_list.append(decoder_cell_states) #T2T
             
-        annotations = torch.stack(annotations_list, 0).unsqueeze(1)
-        decoder_hiddens = torch.stack(decoder_hiddens_list, 0)
-        decoder_cell_states = torch.stack(decoder_cell_states_list, 0)
+#         annotations = torch.stack(annotations_list, 0).unsqueeze(1) #T2T
+#         decoder_hiddens = torch.stack(decoder_hiddens_list, 0) #T2T
+#         decoder_cell_states = torch.stack(decoder_cell_states_list, 0) #T2T
+        
+    
+        # Expand the dimensions of each of our encoder outputs
+        annotations = annotations.unsqueeze(1)
+        decoder_hiddens = decoder_hiddens.unsqueeze(1)
+        decoder_cell_states = decoder_cell_states.unsqueeze(1)
+        
         
         fold2 = Fold()
-        losses = [self.decode(fold2, hidden, cell_state, tree, -1, 0, annotation) for hidden, cell_state, tree, annotation in zip(decoder_hiddens, decoder_cell_states, target_tree_list, annotations)]        
+        losses = [self.decode(fold2, hidden, cell_state, tree, -1, 0, annotation, bool_val) for hidden, cell_state, tree, annotation, bool_val in zip(decoder_hiddens, decoder_cell_states, target_tree_list, annotations, specific_example)] 
         computed_losses = fold2.apply(self, [losses])[0]
         return torch.sum(computed_losses) / len(input_tree_list)
     
@@ -203,9 +209,13 @@ class TreeToTreeAttentionBatch(nn.Module):
     
     
     def make_tensor(self, x):
-        return torch.tensor([x]).unsqueeze(0)
+        tensor_x = torch.tensor([x]).unsqueeze(0)
+        if self.use_cuda:
+            return tensor_x.cuda()
+        else:
+            return tensor_x
     
-    def decode(self, fold, decoder_hiddens, decoder_cell_states, targetNode, parent_val, child_index, annotations): 
+    def decode(self, fold, decoder_hiddens, decoder_cell_states, targetNode, parent_val, child_index, annotations, print_time=False): 
         """
         Generate predictions for an output tree given an input tree, then calculate the loss.
         
@@ -222,7 +232,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         
         """
         et = fold.add("calc_attention", decoder_hiddens, annotations)
-        loss = fold.add("calc_loss", self.make_tensor(parent_val), self.make_tensor(child_index), et, self.make_tensor(targetNode.value))
+        loss = fold.add("calc_loss", self.make_tensor(parent_val), self.make_tensor(child_index), et, self.make_tensor(targetNode.value), self.make_tensor(print_time))
         next_input = targetNode.value
         decoder_input = fold.add("get_next_decoder_input", self.make_tensor(next_input), et)
         for i, child in enumerate(targetNode.children):
@@ -234,58 +244,42 @@ class TreeToTreeAttentionBatch(nn.Module):
             elif i == 1:
                 func_name = "get_next_child_states_right"
             else:
-                raise ValueError("Invalid child index")
+                raise ValueError("Invalid child index %i" % i)
             child_hiddens, child_cell_states = fold.add(func_name, torch.tensor(parent), 
                                                                      decoder_input, 
                                                                      decoder_hiddens, 
                                                                      decoder_cell_states).split(2)
 
-            new_loss = self.decode(fold, child_hiddens, child_cell_states, child, parent, new_child_index, annotations)
+            new_loss = self.decode(fold, child_hiddens, child_cell_states, child, parent, new_child_index, annotations, print_time)
             loss = fold.add("plus", loss, new_loss)
 
         return loss
     
     
-    def forward_prediction(self, input_tree_list, output_tree_list):
-        # Encoding
-        fold = Fold()
-        self.encoder.embedding = self.embedding
-        result = [self.encoder(fold, tree) for tree in input_tree_list]
-        annotations = [x[0] for x in result]
-        hiddens = [x[1] for x in result]
-        cell_states = [x[2] for x in result]
-        annotations, hiddens, cell_states = fold.apply(self, [annotations, hiddens, cell_states])
 
-        # Decoding
-        fold2 = Fold()
-        a_bigger = [fold2.add("nothing", vec) for vec in annotations]
-        h_bigger = [fold2.add("unsqueeze2", vec) for vec in hiddens]
-        c_bigger = [fold2.add("unsqueeze2", vec) for vec in cell_states]
-        
-        annotations_real, hiddens_real, cell_states_real = fold2.apply(self, [a_bigger, h_bigger, c_bigger])
-        
-        prediction_count = [self.predict(fold3, annotation, hidden, cell_state, input_tree, target_tree) for 
-                            annotation, hidden, cell_state, input_tree, target_tree in
-                           zip(annotations, hiddens, cell_states, input_tree_list, target_tree_list)]
-        
-        return torch.sum(prediction_count)
-        
-        
     
-    def forward_prediction(self, input_tree, max_size=None):
+    def forward_prediction(self, input_tree, max_size=None, output=None):
         """
         Generate an output tree given an input tree
-        
-        :param input_tree: encoded input tree
-        :param max_size: max. number of nodes to generate
-        :returns: predicted output tree
         """
+#         print("we're forward predicting")
+        
+        special_example = False
+        if not output is None:
+            print("we've got output", output.value)
+            special_example = self.find_example(output)
+        if special_example:
+            print("we got a special example")
+        
         if max_size is None:
             max_size = self.max_size
         
         # Encode tree
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree)
-        
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree[:1])
+#         print("TEST input, hiddens, annotations", input_tree[:1].shape, decoder_hiddens.shape, annotations.shape)
+#         if special_example:
+#             print("PREDICTION DECODER HIDDEN", decoder_hiddens[:7])
+
         # Counter of how many nodes we've generated so far
         num_nodes = 0
         
@@ -302,7 +296,7 @@ class TreeToTreeAttentionBatch(nn.Module):
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-        
+        first = special_example
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
@@ -310,13 +304,20 @@ class TreeToTreeAttentionBatch(nn.Module):
             unexpanded.pop()  
             
             # Use attention and pass hidden state to make a prediction
+#             print("decoder hidden before", decoder_hiddens.shape)
             decoder_hidden = decoder_hiddens[-1].unsqueeze(0)
+#             print("decoder hidden after", decoder_hidden.shape)
             attention_logits = self.attention_logits(attention_hidden_values, decoder_hiddens)
             attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
+            #print("at_hid_val", attention_hidden_values.shape, "dec_hid", decoder_hidden.shape)
+            #print("at_log", attention_logits.shape)
+#             print(attention_logits)
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
+            #print("shapes", attention_probs.shape, annotations.shape,(attention_probs * annotations).shape, context_vec.shape)
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
-            next_input = self.decoder.make_prediction(parent_val, child_index, et)
+            next_input = self.decoder.make_prediction(parent_val, child_index, et, print_time=first)
+#             first=False
             curr_root.value = next_input
             num_nodes += 1
             
@@ -328,6 +329,7 @@ class TreeToTreeAttentionBatch(nn.Module):
             if int(curr_root.value) == self.EOS_value:
                 continue
                 
+            #print("dims", self.embedding(next_input).shape, et.shape)
             decoder_input = torch.cat((self.embedding(next_input), et), 1)
             parent = next_input
             
@@ -344,6 +346,12 @@ class TreeToTreeAttentionBatch(nn.Module):
                 curr_root.children.append(curr_child)
         return tree
     
+    def find_example(self, tree):
+        PLUS = 6 + 26 * 2 + 10
+        # Check root
+        return tree.value == PLUS
+        
+    
     def print_example(self, input_tree, target_tree):
         """
         Print out the desired and actual output trees for one example
@@ -356,7 +364,30 @@ class TreeToTreeAttentionBatch(nn.Module):
         print("WE GOT!")
         pretty_print_tree(self.forward_prediction(input_tree))
 
-    
+    def display_normally(self, pic, title=None):
+        if not title is None:
+            plt.title(title)
+        pic = pic * 255.0
+        plt.imshow(np.repeat(np.int0(pic)[:,:,np.newaxis], 3, axis=2))
+        plt.show()
+        
+    def print_img_tree_example(self, img, trees, tokens=None):
+        tree = trees[0]
+        print("IMAGE")
+        self.display_normally(img[0][0])
+        print("WE WANTED")
+        if tokens is None:
+            pretty_print_tree(tree)
+            print("WE GOT")
+            pretty_print_tree(self.forward_prediction(img, output=tree))
+        else:
+            pretty_print_tree(tree, tokens)
+            print("WE GOT")
+            pretty_print_tree(self.forward_prediction(img, output=tree), tokens)
+            
+        
+        
+        
     def update_max_size(self, max_size):
         self.max_size = max_size
         

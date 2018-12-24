@@ -19,6 +19,9 @@ class Node:
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
     
+    def float(self):
+        return map_tree(lambda value: value.float(), self)
+    
     def size(self):
         return 1 + sum([child.size() for child in self.children])
 
@@ -568,12 +571,14 @@ def pretty_print_attention_tree(attention_list, input_tree, parent, write_index,
         
     return curr_index
         
-def pretty_print_tree(tree):
+def pretty_print_tree(tree, tokens=None):
     """
     Print a tree out with a visualized tree structure.
     
     :param tree: the tree to print
     """
+    if tokens:
+        tree = map_tree(lambda val: anti_vectorize(val, tokens), tree)
     pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
     
 def get_val(value):
@@ -598,6 +603,58 @@ def encode_program(program, num_vars, num_ints, ops, eos_token=False, one_hot=Fa
             return torch.stack(list(program))
         else:
             return torch.LongTensor(list(program))
+        
+def vectorize_math(val, ops): 
+    """
+        Based on the value, num_variables, num_ints, and the possible ops, the index corresponding
+        to the value is found. value should not correspond to the eos_token. Instead vectorization
+        should occur prior to adding eos_tokens. Nodes with value None are simply returned as None.
+    """
+    num_ints = 10
+#     alphabet = "abcdefghijklmnopqrstuvwxyz"
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    num_vars = len(alphabet)
+    
+    if val == EOS:
+        index = num_ints + num_vars + len(ops.keys())
+    elif type(val) is int:
+        index = val % num_ints
+    elif val not in ops:
+        index = alphabet.index(val) + num_ints
+    else:
+        index = num_ints + num_vars + ops[val]
+
+    return torch.LongTensor([index])
+
+def anti_vectorize(index, ops):
+    index = int(index)
+    num_ints = 10
+#     alphabet = "abcdefghijklmnopqrstuvwxyz"
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    num_vars = len(alphabet)
+    
+    
+    # EOS case
+    if index == num_ints + num_vars + len(ops.keys()):
+        val = "EOS"
+    # Int case
+    elif index < num_ints:
+        val = str(index)
+    # Variable case
+    elif index < num_ints + num_vars:
+        val = alphabet[index - num_ints]
+    # Op case
+    else:
+        for poss_val in ops.keys():
+            if ops[poss_val] == index - num_ints - num_vars:
+                val = poss_val
+                break
+    return val
+
+
+def encode_math_program(program, ops):
+    return map_tree(lambda node: vectorize_math(node, ops), program)        
+        
 
 def decode_tokens(seq, num_vars, num_ints, ops):
     reverse_ops = dict(map(lambda p: (p[1], p[0]), ops.items()))

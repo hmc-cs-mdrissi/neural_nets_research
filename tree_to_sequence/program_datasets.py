@@ -1,10 +1,15 @@
 import torch
 from torch.utils.data import Dataset
 from tree_to_sequence.translating_trees import *
+from math_expressions.translating_math_trees import *
+
 
 import copy
 import json
 from random import shuffle
+import pickle
+import cv2
+import numpy as np
 
 for_ops = {
             "<VAR>": 0,
@@ -176,6 +181,118 @@ class SyntacticProgramDataset(Dataset):
     def __getitem__(self, index):
         return self.program_pairs[index]
 
+import matplotlib.pyplot as plt
+def display_normally(pic, title=None):
+    if not title is None:
+        plt.title(title)
+    plt.imshow(np.repeat(np.int0(pic)[:,:,np.newaxis], 3, axis=2))
+    plt.show()
+
+class MathExprDatasetBatched(Dataset):
+    def __init__(self, data_path, 
+                     batch_size=128,
+                     binarize_output=False,
+                     eos_token=True, 
+                     validation_set=False,
+                     max_children_output=3,
+                     num_samples=None,
+                     normalize=False,
+                     max_depth=None):
+    
+        with open(data_path, 'rb') as f:
+            program_pairs = pickle.load(f)
+        
+        def sorting_func(element):
+            return element[0].shape[1]
+        
+        def sorting_func2(element):
+            return element[1].size()
+        
+        # Sort by width of expression
+#         print("image sizes are", [img.shape for img, tree in program_pairs])
+        program_pairs = sorted(program_pairs, key=sorting_func2)[:num_samples] 
+        
+        input_programs = [img for img, tree in program_pairs]
+        output_programs = [tree for img, tree in program_pairs]
+    
+        if not max_depth is None:
+            output_programs = [self.trim_depth(tree, max_depth) for tree in output_programs]
+        
+        # Format the input trees correctly
+        input_programs = [self.process_img(img) for img in input_programs]
+        
+        if normalize:
+            input_programs = [img/255.0 for img in input_programs]
+        
+        # Binarize output trees if specified
+        if binarize_output:
+            output_programs = map(binarize_tree, output_programs)
+            
+        # Add EOS tokens if specified
+        if eos_token:
+            output_programs = map(lambda prog: add_eos(prog, num_children=max_children_output), output_programs)
+        
+        # Turn strings into numbers in the output trees
+        output_programs = [encode_math_program(prog, math_tokens_short) for prog in output_programs]
+        
+        
+        # Chop into batches
+        index = 0
+        all_batches = []
+        while index < len(input_programs):
+            end_index = min(len(input_programs), index + batch_size)
+            all_batches.append(self.batch_images((input_programs[index:end_index], output_programs[index:end_index])))
+            index = end_index
+
+        # Shuffle so you don't get all the small ones first
+        shuffle(all_batches)
+        
+        self.program_pairs = all_batches
+        
+    def trim_depth(self, tree, max_depth):
+        if max_depth == 1:
+            tree.children = []
+            return tree
+        
+        tree.children = [self.trim_depth(child, max_depth - 1) for child in tree.children]
+        return tree
+    
+    def batch_images(self, batch):  
+        images = batch[0]
+        width = 0
+        height = 305 #current height of image
+        padded = []
+        for image in images:
+            # Find the largest width
+            if image.shape[3] > width:
+                width = image.shape[3]
+        
+        for image in images:
+            print("MAX2", image.max())
+            new_empty = np.ones((1, 1, 305, width-image.shape[3]), dtype=float)
+            new_filled = np.c_[image, new_empty]
+            padded.append(new_filled)
+        batched = padded[0]
+        for image_idx in range(1,len(padded)):
+            batched = np.concatenate((batched, padded[image_idx]), axis=0)
+        print("MAX", np.max(batched))
+        
+        return(torch.FloatTensor(batched), batch[1])
+    
+    
+    def process_img(self, img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = torch.FloatTensor(img).unsqueeze(0).unsqueeze(0)
+        return img   
+    
+    def __len__(self):
+        return len(self.program_pairs)
+
+    def __getitem__(self, index):
+        return self.program_pairs[index]
+    
+    
+    
 class ForLambdaDatasetLengthBatched(SyntacticProgramDataset):
     def __init__(self, path, batch_size, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 
                  input_as_seq=False, output_as_seq=True, one_hot=True, long_base_case=True, num_samples=None):
@@ -214,6 +331,12 @@ class ForLambdaDatasetLengthBatched(SyntacticProgramDataset):
         print("shortest", min([len(x) for x in all_batches]))
         
         self.program_pairs = all_batches
+        
+    def __len__(self):
+        return len(self.program_pairs)
+
+    def __getitem__(self, index):
+        return self.program_pairs[index]
         
 
 class ForLambdaDataset(SyntacticProgramDataset):
