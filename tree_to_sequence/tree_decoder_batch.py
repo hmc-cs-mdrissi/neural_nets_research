@@ -45,14 +45,18 @@ class TreeDecoderBatch(nn.Module):
         :param true_value: true value of the new node
         :returns: cross entropy loss
         """
+#         print("ET", et.shape, et[:5,0,:30])
         log_odds = self.output_log_odds(et)
+#         print("LOG ODDS - TRAIN", log_odds.shape)
+#         print(log_odds[0,0,:3])
+#         assert False
 #         print("shapes train", log_odds.shape)
 #         print("true value shape", true_value.shape)
 #         print("log odds TRAINING", log_odds)
-        _, max_index = torch.max(log_odds.squeeze(1), 1)
-        for i, vec in enumerate(print_time):
-            if vec:
-                pass
+#         _, max_index = torch.max(log_odds.squeeze(1), 1)
+#         for i, vec in enumerate(print_time):
+#             if vec:
+#                 pass
 #                 print("log odds TRAINING", log_odds.shape, log_odds[i])
 #                 print("choosing TRAINING", max_index[i], "true val is", true_value[i])
         return self.loss_func(log_odds, true_value)
@@ -126,11 +130,15 @@ class TreeDecoderBatch(nn.Module):
         :param child_index: index of generated child (dummy; used for compatibility with grammar decoder)
         :param et: attention vector of the parent
         """
+#         print("ET", et.shape, et[0,:3])
         log_odds = self.output_log_odds(et)
+#         print("LOG ODDS - Prediction", log_odds.shape)
+#         print(log_odds[0,:3])
+#         assert False
         _, max_index = torch.max(log_odds, 1)
         #         print("shapes test", log_odds.shape)
-        if print_time:
-            pass
+#         if print_time:
+#             pass
 #             print("log odds PREDICTION", log_odds)
 #             print("choosing PREDICTION", max_index)
 #         _, max_index = torch.max(log_odds[0], 1)

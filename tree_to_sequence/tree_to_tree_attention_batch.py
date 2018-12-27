@@ -28,6 +28,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         
         # Useful functions
         self.softmax = nn.Softmax(0)
+        self.batch_softmax = nn.Softmax(1)
         self.tanh = nn.Tanh()
         
         # Set up attention
@@ -37,6 +38,8 @@ class TreeToTreeAttentionBatch(nn.Module):
             self.attention_alignment_vector = nn.Linear(alignment_size, 1)
         elif align_type == 1:
             self.attention_hidden = nn.Linear(hidden_size, hidden_size)
+#             print("align type 1")
+#         print("attention hidden takes in", hidden_size, "spits out", hidden_size)
             
         self.attention_presoftmax = nn.Linear(2 * hidden_size, hidden_size)
         self.embedding = nn.Embedding(nclass + 1, embedding_size)  
@@ -49,16 +52,30 @@ class TreeToTreeAttentionBatch(nn.Module):
         """
         #TODO: Move this part to an outer func
         if self.align_type <= 1:
+#             print("annotations should be batch x 209 or something x 512 or something")
+#             print("annotations really is", annotations.shape)
             attention_hidden_values = self.attention_hidden(annotations)
+            
         else:
             attention_hidden_values = annotations
         
         decoder_hidden_expanded = decoder_hiddens.unsqueeze(1)
         attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden_expanded)
-        attention_probs = self.softmax(attention_logits) # number_of_nodes x 1
+        attention_probs = self.batch_softmax(attention_logits) # number_of_nodes x 1
         context_vec = (attention_probs * annotations).sum(1).unsqueeze(1) #1 x 1 x hidden_size
+#         print("annotations", annotations.shape, annotations[0,0,:5])
+#         print("att hidd vals", attention_hidden_values.shape, attention_hidden_values[0,0,:5])
+#         print("logits", attention_logits.shape, attention_logits[0,:5])
+#         print("probs", attention_probs.shape, attention_probs[0,:5])
+#         print("context vec", context_vec.shape, context_vec[0,0,:5])
+#         print("decoder_hidden_expanded", decoder_hidden_expanded.shape, decoder_hidden_expanded[0,0,:5])
+        temp1 = self.attention_presoftmax(torch.cat((decoder_hidden_expanded, context_vec), dim=2))
+#         print("presoftmaxed", temp1.shape, temp1[0,0,:5])
+        
         et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden_expanded, context_vec), 
                                                        dim=2))) # 1 x hidden_size
+#         print("full et", et.shape, et[0,0,:5])
+#         assert False
         return et
     
     def calc_loss(self, parent, child_index, et, true_value, print_time):
@@ -114,7 +131,9 @@ class TreeToTreeAttentionBatch(nn.Module):
             return self.attention_alignment_vector(self.tanh(self.attention_context(decoder_hidden) 
                                                              + attention_hidden_values))
         else:
-            return (decoder_hidden * attention_hidden_values).sum(1).unsqueeze(1) 
+            # We want the last index
+            index = len(attention_hidden_values.shape) - 1
+            return (decoder_hidden * attention_hidden_values).sum(index).unsqueeze(index) 
         
 
 #     def forward_train_real(self, input_tree_list, target_tree_list, teacher_forcing=True):
@@ -135,8 +154,12 @@ class TreeToTreeAttentionBatch(nn.Module):
 #         input_tree_list = [map_tree(lambda node: node.unsqueeze(0), tree) for tree in input_tree_list] #T2T
         target_tree_list = [map_tree(lambda node: node.unsqueeze(0), tree) for tree in target_tree_list]
         
+        # kangaroo
         annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree_list)
-        print("TRAIN input, hiddens, annotations", input_tree_list.shape, decoder_hiddens.shape, annotations.shape)
+        annotations = annotations.transpose(0, 1)
+#         print("TRAIN input, hiddens, annotations", input_tree_list.shape, decoder_hiddens.shape, annotations.shape)
+#         print(decoder_hiddens[:3,:3])
+#         assert False
 #         print("SPECIFIC EXAMPLE", specific_example)
 #         for i, our_example in enumerate(specific_example):
 #             if our_example:
@@ -264,19 +287,22 @@ class TreeToTreeAttentionBatch(nn.Module):
         """
 #         print("we're forward predicting")
         
-        special_example = False
-        if not output is None:
-            print("we've got output", output.value)
-            special_example = self.find_example(output)
-        if special_example:
-            print("we got a special example")
+#         special_example = False
+#         if not output is None:
+#             print("we've got output", output.value)
+#             special_example = self.find_example(output)
+#         if special_example:
+#             print("we got a special example")
         
         if max_size is None:
             max_size = self.max_size
         
         # Encode tree
-        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree[:1])
+        # penguin
+        annotations, decoder_hiddens, decoder_cell_states = self.encoder(input_tree[:1], training=False)
 #         print("TEST input, hiddens, annotations", input_tree[:1].shape, decoder_hiddens.shape, annotations.shape)
+#         print(decoder_hiddens[:3,:3])
+#         assert False
 #         if special_example:
 #             print("PREDICTION DECODER HIDDEN", decoder_hiddens[:7])
 
@@ -296,7 +322,8 @@ class TreeToTreeAttentionBatch(nn.Module):
             attention_hidden_values = self.attention_hidden(annotations)
         else:
             attention_hidden_values = annotations
-        first = special_example
+#         print("annotations", annotations.shape, annotations[0, :5])
+        first = False #special_example
         # while stack isn't empty:
         while (len(unexpanded)) > 0:
             # Pop last item
@@ -313,9 +340,21 @@ class TreeToTreeAttentionBatch(nn.Module):
             #print("at_log", attention_logits.shape)
 #             print(attention_logits)
             context_vec = (attention_probs * annotations).sum(0).unsqueeze(0) # 1 x hidden_size
+#             print("att hidd vals", attention_hidden_values.shape, attention_hidden_values[0,:5])
+#             print("logits", attention_logits.shape, attention_logits[:5])
+#             print("probs", attention_probs.shape, attention_probs[:5])
+#             print("context vec", context_vec.shape, context_vec[0,:5])
+#             print("decoder_hidden_expanded", decoder_hiddens.shape, decoder_hiddens[0,:5])
+#             temp1 = self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), dim=1))
+#             print("presoftmaxed", temp1.shape, temp1[0,:5])
+        
+        
+#             print("context vec", context_vec.shape, annotations.shape, attention_probs.shape, decoder_hiddens.shape)
             #print("shapes", attention_probs.shape, annotations.shape,(attention_probs * annotations).shape, context_vec.shape)
             et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hiddens, context_vec), 
                                                                dim=1))) # 1 x hidden_size
+#             print("full et", et.shape, et[0,:5])
+#             assert False
             next_input = self.decoder.make_prediction(parent_val, child_index, et, print_time=first)
 #             first=False
             curr_root.value = next_input
