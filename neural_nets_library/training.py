@@ -549,6 +549,7 @@ def train_model_tree_to_tree(model,
                     save_every=1000,
                     tokens=None,
                     save_current_only=False,
+                    input_tree_form=True,
                     save_model_every=10):
     since = time.time()
 
@@ -594,29 +595,24 @@ def train_model_tree_to_tree(model,
         for input_tree, target_tree in dset_loader:
             if use_cuda:
                 if not skip_input_cuda:
-                    input_tree = input_tree.long()
                     input_tree = input_tree.cuda()
-                    input_tree = input_tree.float()
+                if not skip_output_cuda:
                     if type(target_tree) == list:
                         target_tree = [actual_tree.cuda() for actual_tree in target_tree]
                     else:
                         target_tree = target_tree.cuda()
-    
             
             total_batch_number += 1
             current_batch += 1
 
             model.train()
-            iteration_loss = model.forward_train(input_tree, target_tree)
+            iteration_loss = model.forward_train(input_tree, target_tree, input_tree_form=input_tree_form)
             loss += iteration_loss
             
             if total_batch_number % batch_size == 0:
                 loss /= batch_size
                 loss.backward()
-#                 print("just went back")
-#                 for param in model.parameters():
-#                     print(type(param.grad))
-#                     print("GRAD IS", torch.max(torch.abs(param.grad)))
+                
                 clip_grads(model)
                 optimizer.step()
 
@@ -660,7 +656,7 @@ def train_model_tree_to_tree(model,
                 if use_cuda:
                     input_val, target_val = input_val.cuda(), target_val.cuda()
                 model.train()
-                running_val_plot_loss += float(model.forward_train(input_val, target_val))
+                running_val_plot_loss += float(model.forward_train(input_val, target_val, input_tree_form=input_tree_form))
             running_train_print_loss += float(iteration_loss)
 
             if total_batch_number % print_every == 0:

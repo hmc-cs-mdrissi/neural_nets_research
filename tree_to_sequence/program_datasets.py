@@ -209,7 +209,6 @@ class MathExprDatasetBatched(Dataset):
             return element[1].size()
         
         # Sort by width of expression
-#         print("image sizes are", [img.shape for img, tree in program_pairs])
         program_pairs = sorted(program_pairs, key=sorting_func2)[:num_samples] 
         
         input_programs = [img for img, tree in program_pairs]
@@ -268,14 +267,12 @@ class MathExprDatasetBatched(Dataset):
                 width = image.shape[3]
         
         for image in images:
-            print("MAX2", image.max())
             new_empty = np.ones((1, 1, 305, width-image.shape[3]), dtype=float)
             new_filled = np.c_[image, new_empty]
             padded.append(new_filled)
         batched = padded[0]
         for image_idx in range(1,len(padded)):
             batched = np.concatenate((batched, padded[image_idx]), axis=0)
-        print("MAX", np.max(batched))
         
         return(torch.FloatTensor(batched), batch[1])
     
