@@ -1,3 +1,6 @@
+math_expressions/CROHME2011_data*
+math_expressions/models*
+*.pkl
 */__pycache__
 .ipynb*
 ANC/For/Datasets*
