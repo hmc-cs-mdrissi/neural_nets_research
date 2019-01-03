@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from tree_to_sequence.translating_trees import ( Node, pretty_print_tree )
+from tree_to_sequence.translating_trees import ( Node, pretty_print_tree, print_tree_differences, check_same )
 from tree_to_sequence.translating_trees import map_tree
 from torchfold import Fold
 import numpy as np
@@ -350,14 +350,15 @@ class TreeToTreeAttentionBatch(nn.Module):
         print("IMAGE")
         self.display_normally(img[0][0])
         print("WE WANTED")
-        if tokens is None:
-            pretty_print_tree(tree)
-            print("WE GOT")
-            pretty_print_tree(self.forward_prediction(img, output=tree))
+        pretty_print_tree(tree, tokens)
+        print("WE GOT")
+        output_tree = self.forward_prediction(img, output=tree)
+        pretty_print_tree(output_tree, tokens)
+        if check_same(tree, output_tree):
+            print("\x1b[31m Same! \x1b[0m")
         else:
-            pretty_print_tree(tree, tokens)
-            print("WE GOT")
-            pretty_print_tree(self.forward_prediction(img, output=tree), tokens)
+            print("\x1b[31m Found Issues! \x1b[0m")
+            print_tree_differences(tree, output_tree, tokens)
             
         
     def update_max_size(self, max_size):

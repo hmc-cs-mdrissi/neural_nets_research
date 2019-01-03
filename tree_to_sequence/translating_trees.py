@@ -15,6 +15,20 @@ class Node:
     def __init__(self, value):
         self.value = value
         self.children = []
+        
+    def __eq__(self, other):
+        if isinstance(self.value, string_types) or type(self.value) is int:
+            if not self.value == other.value:
+                return False
+        else: # If not int or string, assume tensor
+            if not torch.equal(self.value, other.value):
+                return False
+        if not len(self.children) == len(other.children):
+            return False
+        for my_child, other_child in zip(self.children, other.children):
+            if not my_child == other_child:
+                return False
+        return True
 
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
@@ -580,6 +594,50 @@ def pretty_print_tree(tree, tokens=None):
     if tokens:
         tree = map_tree(lambda val: anti_vectorize(val, tokens), tree)
     pptree.print_tree(map_tree(lambda val: str(get_val(val)), tree), nameattr="value")
+    
+    
+def check_same(tree1, tree2):
+    if not tree1.value == tree2.value:
+        return False
+    if not len(tree1.children) == len(tree2.children):
+        return False
+    for c1, c2 in zip(tree1.children, tree2.children):
+        if not check_same(c1, c2):
+            return False
+    return True
+    
+    
+def print_tree_differences(desired, real, tokens=None):
+    if tokens:
+        desired = map_tree(lambda val: anti_vectorize(val, tokens), desired)
+        real = map_tree(lambda val: anti_vectorize(val, tokens), real)
+    mark_diffs(desired, real)
+        
+    pptree.print_tree(map_tree(lambda val: str(get_val(val)), desired), nameattr="value")
+    
+def mark_diffs(desired, real, last_bad=False):
+    if not (desired.value == real.value):
+        desired.value == "**" + desired.value + "**(" + real.value + ")**"
+    if len(desired.children) == len(real.children):
+        for d_child, r_child in zip(desired.children, real.children):
+            mark_diffs(d_child, r_child)
+    # Assume each node has 2 or 0 children (since binarized)
+    elif len(desired.children) == 0:
+        mark_bad(real, tag="EXTRA")
+        desired.children = real.children
+    elif len(real.children) == 0:
+        temp = desired.value
+        mark_bad(desired, tag="NEEDS")
+        real.value = temp
+    
+
+def mark_bad(tree, tag="BAD"):
+    tree.value = tag + "(" + tree.value + ")"
+    for child in tree.children:
+        mark_bad(child, tag)
+    
+    
+    
     
 def get_val(value):
     """

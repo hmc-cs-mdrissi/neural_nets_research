@@ -635,10 +635,6 @@ def train_model_tree_to_tree(model,
                     if use_cuda:
                         if not skip_input_cuda:
                             input_val = input_val.cuda()
-                            
-                            input_val = input_val.long()
-                            input_val = input_val.cuda()
-                            input_val = input_val.float()
                         if not skip_output_cuda:                            
                             if type(target_val) == list:
                                 target_val = [actual_tree.cuda() for actual_tree in target_val]
@@ -654,7 +650,14 @@ def train_model_tree_to_tree(model,
             if validation_dset:
                 input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
                 if use_cuda:
-                    input_val, target_val = input_val.cuda(), target_val.cuda()
+                    if not skip_input_cuda:
+                        input_val = input_val.cuda()
+                    if not skip_output_cuda:
+                        if type(target_val) == list:
+                            target_val = [actual_tree.cuda() for actual_tree in target_val]
+                        else:
+                            target_val = target_val.cuda()
+                        
                 model.train()
                 running_val_plot_loss += float(model.forward_train(input_val, target_val, input_tree_form=input_tree_form))
             running_train_print_loss += float(iteration_loss)

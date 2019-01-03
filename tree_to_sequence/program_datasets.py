@@ -188,28 +188,41 @@ def display_normally(pic, title=None):
     plt.imshow(np.repeat(np.int0(pic)[:,:,np.newaxis], 3, axis=2))
     plt.show()
 
-class MathExprDatasetBatched(Dataset):
-    def __init__(self, data_path, 
-                     batch_size=128,
-                     binarize_output=False,
-                     eos_token=True, 
-                     validation_set=False,
-                     max_children_output=3,
-                     num_samples=None,
-                     normalize=False,
-                     max_depth=None):
     
-        with open(data_path, 'rb') as f:
-            program_pairs = pickle.load(f)
+def load_shuffled_data(data_path):
+    with open(data_path, 'rb') as f:
+        program_pairs = pickle.load(f)
+    shuffle(program_pairs)
+    return program_pairs
+    
+    
+class MathExprDatasetBatched(Dataset):
+    def __init__(self, 
+                 program_pairs=None,
+                 data_path=None, 
+                 batch_size=128,
+                 binarize_output=False,
+                 eos_token=True, 
+                 validation_set=False,
+                 max_children_output=3,
+                 num_samples=None,
+                 normalize=False,
+                 max_depth=None):
+    
+        assert(program_pairs or data_path)
         
-        def sorting_func(element):
+        if data_path:
+            with open(data_path, 'rb') as f:
+                program_pairs = pickle.load(f)
+        
+        def sort_by_img_size(element):
             return element[0].shape[1]
         
-        def sorting_func2(element):
+        def sort_by_tree_size(element):
             return element[1].size()
         
         # Sort by width of expression
-        program_pairs = sorted(program_pairs, key=sorting_func2)[:num_samples] 
+        program_pairs = sorted(program_pairs, key=sort_by_img_size)[:num_samples] 
         
         input_programs = [img for img, tree in program_pairs]
         output_programs = [tree for img, tree in program_pairs]
