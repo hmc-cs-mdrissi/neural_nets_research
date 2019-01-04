@@ -142,7 +142,8 @@ math_tokens_short = {
     "Theta": 35,
     "Infty": 36,
     "Ldots": 37,
-    "Factorial": 28,
+    "Cdots": 38,
+    "Factorial": 38,
 }
 
 
@@ -203,6 +204,7 @@ math_tokens_short = {
 #     "Theta": 48,
 #     "Infty": 49,
 #     "Ldots": 50,
-#     "Factorial": 51,
+#     "Cdots": 51,
+#     "Factorial": 52,
     
 # }
