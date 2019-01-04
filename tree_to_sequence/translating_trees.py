@@ -29,6 +29,9 @@ class Node:
             if not my_child == other_child:
                 return False
         return True
+    
+    def __hash__(self):
+        return object.__hash__(self)
 
     def cuda(self):
         return map_tree(lambda value: value.cuda(), self)
@@ -678,6 +681,7 @@ def vectorize_math(val, ops):
     elif type(val) is int:
         index = val % num_ints
     elif val not in ops:
+        assert val in alphabet, "The string %s wasn't in the alphabet" % val
         index = alphabet.index(val) + num_ints
     else:
         index = num_ints + num_vars + ops[val]
