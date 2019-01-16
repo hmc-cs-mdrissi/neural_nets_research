@@ -530,6 +530,8 @@ def train_model_tree_to_ntm(model,
     model.train(False)
     return best_model, train_plot_losses
 
+
+import time
 def train_model_tree_to_tree(model,
                     dset_loader,
                     optimizer,
@@ -579,7 +581,7 @@ def train_model_tree_to_tree(model,
     total_batch_number = 0
 
     # Loss used for batches
-    loss = 0
+    loss = 0  # MUST UNCOMMENT IF YOU WANT TO BE ABLE TO BACKPROP AFTER MORE THAN 1
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -593,6 +595,8 @@ def train_model_tree_to_tree(model,
 
         # Iterate over data.
         for input_tree, target_tree in dset_loader:
+            start_time = time.time()
+            loss = 0
             if use_cuda:
                 if not skip_input_cuda:
                     input_tree = input_tree.cuda()
@@ -619,7 +623,8 @@ def train_model_tree_to_tree(model,
                 if plateau_lr:
                     lr_scheduler.step(float(loss))
 
-                loss = 0
+#                 del loss
+#                 loss = 0
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -628,8 +633,8 @@ def train_model_tree_to_tree(model,
                 model.eval()
                 output = model.forward_prediction(input_tree)
                 validation_loss = validation_criterion(output, target_tree)
-                train_running_plot_accuracy += validation_loss
-                train_running_print_accuracy += validation_loss
+                train_running_plot_accuracy += float(validation_loss)
+                train_running_print_accuracy += float(validation_loss)
                 if validation_dset:
                     input_val, target_val = validation_dset[total_batch_number % len(validation_dset)]
                     if use_cuda:
@@ -642,7 +647,7 @@ def train_model_tree_to_tree(model,
                                 target_val = target_val.cuda()
                     model.eval()
                     output_val = model.forward_prediction(input_val)
-                    val_running_plot_accuracy += validation_criterion(output_val, target_val)
+                    val_running_plot_accuracy += float(validation_criterion(output_val, target_val))
                 
             # statistics
             epoch_running_loss += float(iteration_loss)
@@ -722,7 +727,11 @@ def train_model_tree_to_tree(model,
                         for val in curr_val_plot_accuracies:
                             file.write(str(val) + ",")
                     curr_val_plot_accuracies = []
-                    
+#             print("DONE WITH BATCH")
+#             check_allocation()
+            end_time = time.time()
+#             print("One batch took: ", end_time - start_time)
+#             get_gpu_memory_map()
     
         # Save model
         if save_file and save_folder:
@@ -740,6 +749,58 @@ def train_model_tree_to_tree(model,
 
     model.train(False)
     return model, train_plot_losses, train_plot_accuracies, val_plot_losses, val_plot_accuracies
+
+import subprocess
+
+def get_gpu_memory_map():
+    """Get the current gpu usage.
+
+    Returns
+    -------
+    usage: dict
+        Keys are device ids as integers.
+        Values are memory usage as integers in MB.
+    """
+    result = subprocess.check_output(
+        [
+            'nvidia-smi', '--query-gpu=memory.used',
+            '--format=csv,nounits,noheader'
+        ], encoding='utf-8')
+    # Convert lines into a dictionary
+    gpu_memory = [int(x) for x in result.strip().split('\n')]
+    gpu_memory_map = dict(zip(range(len(gpu_memory)), gpu_memory))
+    print("Current usage: %i of 11178" % gpu_memory_map[1])
+
+
+import gc
+def check_allocation():
+    print("STARTING ALLOCATION CHECK")
+    total_objects = 0
+    bad_stuff = 0
+    num_tensors = 0
+    num_one_tensors = 0
+    num_bigger_tensors = 0
+    non_tensors = 0
+    for obj in gc.get_objects():
+        total_objects += 1
+        try:
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+#                 print(type(obj), obj.size())
+                if torch.is_tensor(obj):
+                    num_tensors += 1
+                    if len(obj.size()) == 1 and obj.size()[0] == 1:
+                        num_one_tesnors += 1
+                    else:
+                        num_bigger_tensors += 1
+                else:
+                    non_tensors += 1
+#                 
+        except:
+            bad_stuff += 1
+#             print("allcoation check error")
+    print("total", total_objects, "bad", bad_stuff, "num tesnors", num_tensors, "bigger", num_bigger_tensors, "non_tensors", non_tensors)
+    print("ENDING ALLOCATION CHECK")
+#     assert False
 
 
 # This one is for testing batching!!!
@@ -820,7 +881,7 @@ def yet_another_train_func(model,
             if plateau_lr:
                 lr_scheduler.step(float(loss))
 
-            loss = 0
+            loss *= 0 #TODO:CHANGE BACK!!
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -952,6 +1013,7 @@ def test_model_tree_to_tree(model, dset_loader, metric, use_cuda=False):
     on the set.
     """
     model.train(False)
+    model.eval()
 
     running_corrects = 0
     accuracies = []

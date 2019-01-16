@@ -10,6 +10,8 @@ from random import shuffle
 import pickle
 import cv2
 import numpy as np
+import math
+import random
 
 for_ops = {
             "<VAR>": 0,
@@ -203,10 +205,12 @@ class MathExprDatasetBatched(Dataset):
                  batch_size=128,
                  binarize_output=False,
                  eos_token=True, 
-                 validation_set=False,
                  max_children_output=3,
                  num_samples=None,
                  normalize=False,
+                 trim_factor=1,
+                 left_align=True,
+                 num_copies=1,
                  max_depth=None):
     
         assert(program_pairs or data_path)
@@ -216,10 +220,13 @@ class MathExprDatasetBatched(Dataset):
                 program_pairs = pickle.load(f)
         
         def sort_by_img_size(element):
-            return element[0].shape[1]
+            return -1 * element[0].shape[1]
         
         def sort_by_tree_size(element):
             return element[1].size()
+        
+        self.trim_factor = trim_factor
+        self.left_align = left_align
         
         # Sort by width of expression
         program_pairs = sorted(program_pairs, key=sort_by_img_size)[:num_samples] 
@@ -246,20 +253,22 @@ class MathExprDatasetBatched(Dataset):
         
         # Turn strings into numbers in the output trees
         output_programs = [encode_math_program(prog, math_tokens_short) for prog in output_programs]
-        
-        
-        # Chop into batches
-        index = 0
-        all_batches = []
-        while index < len(input_programs):
-            end_index = min(len(input_programs), index + batch_size)
-            all_batches.append(self.batch_images((input_programs[index:end_index], output_programs[index:end_index])))
-            index = end_index
 
-        # Shuffle so you don't get all the small ones first
-        shuffle(all_batches)
+        self.program_pairs = []
         
-        self.program_pairs = all_batches
+        for _ in range(num_copies):
+            # Chop into batches
+            index = 0
+            all_batches = []
+            while index < len(input_programs):
+                end_index = min(len(input_programs), index + batch_size)
+                all_batches.append(self.batch_images((input_programs[index:end_index], output_programs[index:end_index])))
+                index = end_index
+            
+            # Shuffle so you don't get all the small ones first
+            shuffle(all_batches[1:]) #TODO: ADD HTIS BACK
+            
+            self.program_pairs = self.program_pairs + all_batches
         
     def trim_depth(self, tree, max_depth):
         if max_depth == 1:
@@ -269,7 +278,8 @@ class MathExprDatasetBatched(Dataset):
         tree.children = [self.trim_depth(child, max_depth - 1) for child in tree.children]
         return tree
     
-    def batch_images(self, batch):  
+    def batch_images(self, batch):
+        num = len(batch[0])
         images = batch[0]
         width = 0
         height = 305 #current height of image
@@ -279,29 +289,40 @@ class MathExprDatasetBatched(Dataset):
             if image.shape[3] > width:
                 width = image.shape[3]
         
-        for image in images:
-            new_empty = np.ones((1, 1, 305, width-image.shape[3]), dtype=float)
-            new_filled = np.c_[image, new_empty]
-            padded.append(new_filled)
-        batched = padded[0]
-        for image_idx in range(1,len(padded)):
-            batched = np.concatenate((batched, padded[image_idx]), axis=0)
+        blank = np.ones((num, 1, height, width), dtype=float)
+        for i, image in enumerate(images):
+            img_width = image.shape[3]
+            if self.left_align:
+                start_index = 0
+            else:
+                max_index = width - img_width
+                start_index = random.randint(0, max_index)
+                
+            blank[i, :, :, start_index:start_index + img_width] = image
+        batch_img = torch.FloatTensor(blank)
+        batch_img = self.trim_by_factor(batch_img, self.trim_factor)
+        return (batch_img, batch[1])
         
-        return(torch.FloatTensor(batched), batch[1])
-    
     
     def process_img(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = torch.FloatTensor(img).unsqueeze(0).unsqueeze(0)
         return img   
     
+    def trim_by_factor(self, img, factor):
+        trim_amount = img.shape[3] % factor
+        if trim_amount > 0:
+            img = img[:, :, :, :-trim_amount]
+        batch, channels, height, width = img.shape
+        new_img = torch.nn.functional.interpolate(img, size=(height, width // factor), mode="bilinear")
+        return torch.FloatTensor(new_img)
+    
     def __len__(self):
         return len(self.program_pairs)
 
     def __getitem__(self, index):
         return self.program_pairs[index]
-    
-    
+
     
 class ForLambdaDatasetLengthBatched(SyntacticProgramDataset):
     def __init__(self, path, batch_size, num_vars=10, num_ints=11, binarize_input=False, binarize_output=False, eos_token=True, 

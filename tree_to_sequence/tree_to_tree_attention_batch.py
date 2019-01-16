@@ -55,9 +55,14 @@ class TreeToTreeAttentionBatch(nn.Module):
             attention_hidden_values = annotations
         
         decoder_hidden_expanded = decoder_hiddens.unsqueeze(1)
+        del decoder_hiddens
         attention_logits = self.attention_logits(attention_hidden_values, decoder_hidden_expanded)
+        del attention_hidden_values
         attention_probs = self.batch_softmax(attention_logits) # number_of_nodes x 1
+        del attention_logits
         context_vec = (attention_probs * annotations).sum(1).unsqueeze(1) #1 x 1 x hidden_size
+        del annotations
+        del attention_probs
         et = self.tanh(self.attention_presoftmax(torch.cat((decoder_hidden_expanded, context_vec), 
                                                        dim=2))) # 1 x hidden_size
         return et
@@ -160,7 +165,11 @@ class TreeToTreeAttentionBatch(nn.Module):
         
         
         fold2 = Fold()
-        losses = [self.decode(fold2, hidden, cell_state, tree, -1, 0, annotation) for hidden, cell_state, tree, annotation in zip(decoder_hiddens, decoder_cell_states, target_tree_list, annotations)] 
+        losses = [self.decode(fold2, hidden, cell_state, tree, -1, 0, annotation) for hidden, cell_state, tree, annotation in zip(decoder_hiddens, decoder_cell_states, target_tree_list, annotations)]
+        del annotations
+        del decoder_hiddens
+        del decoder_cell_states
+        
         computed_losses = fold2.apply(self, [losses])[0]
         return torch.sum(computed_losses) / len(input_tree_list)
     
@@ -231,6 +240,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         loss = fold.add("calc_loss", self.make_tensor(parent_val), self.make_tensor(child_index), et, self.make_tensor(targetNode.value))
         next_input = targetNode.value
         decoder_input = fold.add("get_next_decoder_input", self.make_tensor(next_input), et)
+        del et
         for i, child in enumerate(targetNode.children):
             # Parent node of a node's children is that node
             parent = next_input
@@ -241,7 +251,8 @@ class TreeToTreeAttentionBatch(nn.Module):
                 func_name = "get_next_child_states_right"
             else:
                 raise ValueError("Invalid child index %i" % i)
-            child_hiddens, child_cell_states = fold.add(func_name, torch.tensor(parent), 
+#             child_hiddens, child_cell_states = fold.add(func_name, torch.tensor(parent), # ORIGINAL
+            child_hiddens, child_cell_states = fold.add(func_name, parent, 
                                                                      decoder_input, 
                                                                      decoder_hiddens, 
                                                                      decoder_cell_states).split(2)
@@ -339,6 +350,7 @@ class TreeToTreeAttentionBatch(nn.Module):
         pretty_print_tree(self.forward_prediction(input_tree))
 
     def display_normally(self, pic, title=None):
+        pic = pic.cpu()
         if not title is None:
             plt.title(title)
         pic = pic * 255.0
